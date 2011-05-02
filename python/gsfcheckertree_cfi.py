@@ -5,8 +5,8 @@ gsfcheckerjob = cms.EDAnalyzer("GsfCheckerTree",
 
   src = cms.InputTag('genParticles'),
   logEvents = cms.uint32(10),                                        
-  ##TriggerResultsTag = cms.InputTag("TriggerResults","","HLT"),
-  TriggerResultsTag = cms.InputTag("TriggerResults","","RECO"),
+  TriggerResultsTag = cms.InputTag("TriggerResults","","HLT"),
+  ##TriggerResultsTag = cms.InputTag("TriggerResults","","RECO"),
   usegendata = cms.bool(False),
   usegendatageneral = cms.bool(True)
 
