@@ -289,6 +289,15 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   runnumber = iEvent.id().run();
   eventnumber = iEvent.id().event();
 
+
+
+  HLT_Photon20_CaloIdVL_IsoL_v1 = -10;
+  HLT_DoublePhoton33_vx = -10;
+  HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2 = -10;
+  HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2 = -10;
+  HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2 = -10;
+
+
   HLT_Ele10_SW_EleId_L1R = -10;
   HLT_Ele10_SW_L1R = -10;
   HLT_Ele15_LW_L1R = -10;
@@ -560,7 +569,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   //------------------------------
   //Added from Vincent
-  for (int i=0;i<200;i++) HLTriggers[i]  = -10;
+  for (int i=0;i<300;i++) HLTriggers[i]  = -10;
 
   nJetsAKT_pt15 = -1;
   nJetsIC5_pt15 = -1;
@@ -977,6 +986,11 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     if ((hlNames_.at(i)== "HLT_DoubleEle10_SW_L1R") && (HLTR->accept(i) == 0)) HLT_DoubleEle10_SW_L1R = 0;
     if ((hlNames_.at(i)== "HLT_DoubleEle10_SW_L1R") && (HLTR->accept(i) == 1)) HLT_DoubleEle10_SW_L1R  = 1;
 
+    if ((hlNames_.at(i)== "HLT_Photon20_CaloIdVL_IsoL_v1") && (HLTR->accept(i) == 1)) HLT_Photon20_CaloIdVL_IsoL_v1  = 1;
+    if (((hlNames_.at(i)== "HLT_DoublePhoton33_v1") || (hlNames_.at(i)== "HLT_DoublePhoton33_v2")) && (HLTR->accept(i) == 1))  HLT_DoublePhoton33_vx = 1;
+    if ((hlNames_.at(i)== "HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2") && (HLTR->accept(i) == 1)) HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2  = 1;
+    if ((hlNames_.at(i)== "HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2") && (HLTR->accept(i) == 1)) HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2  = 1;
+    if ((hlNames_.at(i)== "HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2") && (HLTR->accept(i) == 1)) HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2  = 1;
 
   }
   //hlNamesTab = (hlNames_.at(2)+"\0").c_str();
@@ -1944,7 +1958,7 @@ GsfCheckerTree::beginJob()
   mytree->Branch("hlWasRun_",&hlWasRun_,"hlWasRun_/I");
   mytree->Branch("hlWasRunTab",hlWasRunTab,"hlWasRunTab[200]/I");
   mytree->Branch("hlAccept_",&hlAccept_);
-  mytree->Branch("hlAcceptTab",hlAcceptTab,"hlAcceptTab[200]/I");
+  mytree->Branch("hlAcceptTab",hlAcceptTab,"hlAcceptTab[300]/I");
   mytree->Branch("hlErrorTab",hlErrorTab,"hlErrorTab[200]/I");
   //mytree->Branch("hlNamesTab",hlNamesTab,"hlNamesTab[200]/C");
   mytree->Branch("hlNamesTab",&hlNamesTab,"hlNamesTab/C");
@@ -1963,6 +1977,12 @@ GsfCheckerTree::beginJob()
   mytree->Branch("HLT_DoubleEle4_SW_eeRes_L1R",&HLT_DoubleEle4_SW_eeRes_L1R,"HLT_DoubleEle4_SW_eeRes_L1R/I");
   mytree->Branch("HLT_DoubleEle10_SW_L1R",&HLT_DoubleEle10_SW_L1R,"HLT_DoubleEle10_SW_L1R/I");
   //END FROM ARNAUD
+
+  mytree->Branch("HLT_Photon20_CaloIdVL_IsoL_v1", &HLT_Photon20_CaloIdVL_IsoL_v1, "HLT_Photon20_CaloIdVL_IsoL_v1/I");
+  mytree->Branch("HLT_DoublePhoton33_vx", & HLT_DoublePhoton33_vx, " HLT_DoublePhoton33_vx/I");
+  mytree->Branch("HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2", &HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2, "HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2/I");
+  mytree->Branch("HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2", &HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2, "HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2/I");
+  mytree->Branch("HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2", &HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2, "HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2/I");
 
   //ok
   //GLOBAL 
