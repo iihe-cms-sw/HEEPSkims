@@ -189,7 +189,7 @@ private:
 
   // HLT
   int hltCount;
-  int HLTriggers[200];
+  int HLTriggers[300];
 
   int PhysDecl_bool;
   
@@ -623,9 +623,9 @@ private:
   unsigned int  nErrors_;           // # where at least one HLT had error
 
   std::vector<unsigned int> hlWasRun_; // # where HLT[i] was run
-  int hlWasRunTab[200];
-  int hlAcceptTab[200];
-  int hlErrorTab[200];
+  int hlWasRunTab[300];
+  int hlAcceptTab[300];
+  int hlErrorTab[300];
   //TString hlNamesTab[200];
   const char* hlNamesTab;
   //std::vector<unsigned int> *phlWasRun_ = &hlWasRun_; // # where HLT[i] was run
@@ -655,6 +655,11 @@ private:
   int HLT_DoubleEle4_SW_eeRes_L1R;
   int HLT_DoubleEle10_SW_L1R;
   //  int ;
+  int   HLT_Photon20_CaloIdVL_IsoL_v1;
+  int   HLT_DoublePhoton33_vx;
+  int   HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2;
+  int   HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2 ;
+  int   HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2 ;
 
 
 
