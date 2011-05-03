@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 HEEPSkim2Ele = cms.EDFilter("HEEPSkim2Ele",
-                   PtCut = cms.untracked.double(15.0),                 
+                   PtCut = cms.untracked.double(20.0),                 
                    HoECut = cms.untracked.double(0.1),                 
                    )
 
