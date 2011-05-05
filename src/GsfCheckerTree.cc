@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id$
+// $Id: GsfCheckerTree.cc,v 1.2 2011/05/02 09:56:28 agay Exp $
 //
 //
 
@@ -290,13 +290,11 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   eventnumber = iEvent.id().event();
 
 
-
   HLT_Photon20_CaloIdVL_IsoL_v1 = -10;
   HLT_DoublePhoton33_vx = -10;
   HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2 = -10;
   HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2 = -10;
   HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2 = -10;
-
 
   HLT_Ele10_SW_EleId_L1R = -10;
   HLT_Ele10_SW_L1R = -10;
@@ -310,7 +308,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   HLT_Ele25_SW_L1R = -10;
   HLT_DoubleEle4_SW_eeRes_L1R = -10;
   HLT_DoubleEle10_SW_L1R = -10;
-
+  HLT_Mu15_Photon20_CaloIdL = -10; //VINCENT
 
   pthat = -5000.;
   alphaqcd = -5000.;
@@ -992,6 +990,13 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     if ((hlNames_.at(i)== "HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2") && (HLTR->accept(i) == 1)) HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2  = 1;
     if ((hlNames_.at(i)== "HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2") && (HLTR->accept(i) == 1)) HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2  = 1;
 
+    //FROM VINCENT
+    if (((hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v1") || (hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v2") || (hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v3") || (hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v4")  
+	 || (hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v5")  || (hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v6"))&& (HLTR->accept(i) == 0)) HLT_Mu15_Photon20_CaloIdL = 0;
+    if (((hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v1") || (hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v2") || (hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v3") || (hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v4")  
+	 || (hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v5")  || (hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v6"))&& (HLTR->accept(i) == 1)) HLT_Mu15_Photon20_CaloIdL = 1;
+
+
   }
   //hlNamesTab = (hlNames_.at(2)+"\0").c_str();
   //cout<<"hlNamesTab = "<<hlNamesTab<<endl;
@@ -1160,6 +1165,13 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     pvx[indexpv] = pvIt->x();
     pvy[indexpv] = pvIt->y();   
     pvz[indexpv] = pvIt->z();
+    
+    pv_isValid[indexpv] = pvIt->isValid();
+    pv_ndof[indexpv] = pvIt->ndof();
+    pv_nTracks[indexpv] = pvIt->nTracks();
+    pv_normChi2[indexpv] = pvIt->normalizedChi2();
+    pv_totTrackSize[indexpv] = pvIt->tracksSize();
+
     indexpv++;
   }
 
@@ -1842,10 +1854,10 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   
   //HOMEMADE SKIMMING!!!
-  //if (gsfPtMax>25.) mytree->Fill();
+  if (gsfPtMax>25.) mytree->Fill();
 
-  //if (gsfPtMax>25. && muonPtMax>25.) mytree->Fill();
-  mytree->Fill();
+  //if (gsfPtMax>25. && muonPtMax>25.) mytree->Fill(); // SKIM 1ele1muon
+  //mytree->Fill();
 
   //cout<<"ici 6  "<<endl;
 
@@ -1976,6 +1988,7 @@ GsfCheckerTree::beginJob()
   mytree->Branch("HLT_Ele25_SW_L1R",&HLT_Ele25_SW_L1R,"HLT_Ele25_SW_L1R/I");
   mytree->Branch("HLT_DoubleEle4_SW_eeRes_L1R",&HLT_DoubleEle4_SW_eeRes_L1R,"HLT_DoubleEle4_SW_eeRes_L1R/I");
   mytree->Branch("HLT_DoubleEle10_SW_L1R",&HLT_DoubleEle10_SW_L1R,"HLT_DoubleEle10_SW_L1R/I");
+  mytree->Branch("HLT_Mu15_Photon20_CaloIdL",&HLT_Mu15_Photon20_CaloIdL,"HLT_Mu15_Photon20_CaloIdL/I"); //FROM VINCENT
   //END FROM ARNAUD
 
   mytree->Branch("HLT_Photon20_CaloIdVL_IsoL_v1", &HLT_Photon20_CaloIdVL_IsoL_v1, "HLT_Photon20_CaloIdVL_IsoL_v1/I");
@@ -2095,6 +2108,12 @@ GsfCheckerTree::beginJob()
   mytree->Branch("pvx",&pvx,"pvx[pvsize]/F");
   mytree->Branch("pvy",&pvy,"pvy[pvsize]/F");
   mytree->Branch("pvz",&pvz,"pvz[pvsize]/F");
+
+  mytree->Branch("pv_isValid",&pv_isValid,"pv_isValid[pvsize]/B");
+  mytree->Branch("pv_ndof",&pv_ndof,"pv_ndof[pvsize]/F");
+  mytree->Branch("pv_nTracks",&pv_nTracks,"pv_nTracks[pvsize]/I");
+  mytree->Branch("pv_normChi2",&pv_normChi2,"pv_normChi2[pvsize]/F");
+  mytree->Branch("pv_totTrackSize",&pv_totTrackSize,"pv_totTrackSize[pvsize]/I");
 
   //Supercluster variables
   //fill e,et,eta,phi,charge for every SC in the event
