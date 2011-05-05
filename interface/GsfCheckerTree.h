@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id$
+// $Id: GsfCheckerTree.h,v 1.2 2011/05/02 09:53:10 agay Exp $
 //
 //
 
@@ -372,6 +372,12 @@ private:
   float pvy[20];
   float pvz[20];
 
+  bool pv_isValid[20];
+  float pv_ndof[20];
+  int pv_nTracks[20];
+  float pv_normChi2[20];
+  int pv_totTrackSize[20];
+
   //Superclusters matching gen electrons
   //In case of several SC matching a gen elec
   //we take the one with higher energy
@@ -654,12 +660,13 @@ private:
   int HLT_Ele25_SW_L1R;
   int HLT_DoubleEle4_SW_eeRes_L1R;
   int HLT_DoubleEle10_SW_L1R;
-  //  int ;
-  int   HLT_Photon20_CaloIdVL_IsoL_v1;
-  int   HLT_DoublePhoton33_vx;
-  int   HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2;
-  int   HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2 ;
-  int   HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2 ;
+  int HLT_Mu15_Photon20_CaloIdL; //VINCENT
+ 
+  int HLT_Photon20_CaloIdVL_IsoL_v1;
+  int HLT_DoublePhoton33_vx;
+  int HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2;
+  int HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2 ;
+  int HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2 ;
 
 
 
