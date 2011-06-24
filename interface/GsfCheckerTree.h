@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.3 2011/05/05 13:07:58 vdero Exp $
+// $Id: GsfCheckerTree.h,v 1.4 2011/06/24 09:01:55 treis Exp $
 //
 //
 
@@ -195,25 +195,25 @@ private:
   
   //GLOBAL
   int nJetsAKT_pt15;
-  int nJetsIC5_pt15;
+  //  int nJetsIC5_pt15;
   float calomet;
   float met;
   float mass;
 
   //JETS
-  /* int jetAKT_size; */
+  int jetAKT_size;
 
-/*   float jetAKT_pt[50]; */
-/*   float jetAKT_eta[50]; */
-/*   float jetAKT_phi[50]; */
-/*   float jetAKT_em[50]; */
+  float jetAKT_pt[50];
+  float jetAKT_eta[50];
+  float jetAKT_phi[50];
+  float jetAKT_em[50];
   
-  int jetIC5_size;
+//   int jetIC5_size;
 
-  float jetIC5_pt[100];
-  float jetIC5_eta[100];
-  float jetIC5_phi[100];
-  float jetIC5_em[100];
+//   float jetIC5_pt[100];
+//   float jetIC5_eta[100];
+//   float jetIC5_phi[100];
+//   float jetIC5_em[100];
   
 
   //MUON
@@ -279,6 +279,7 @@ private:
   int runnumber;
   int eventnumber;
   int eventcounter;
+  int luminosityBlock;
 
   float pthat;
   float alphaqcd;
