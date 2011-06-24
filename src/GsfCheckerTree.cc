@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.2 2011/05/02 09:56:28 agay Exp $
+// $Id: GsfCheckerTree.cc,v 1.3 2011/05/05 13:06:40 vdero Exp $
 //
 //
 
@@ -506,6 +506,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     gsfpass_ISOLPTTRKS[i] = 0; 
     gsfpass_ECALDRIVEN[i] = 0; 
     gsfpass_INVALID[i] = 0;
+    gsfpass_NOMISSINGHITS[i] = 0;
 
     gsfpass_HEEP[i] = 0;
 
@@ -524,6 +525,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     gsf_dxy[i] = -1.;
     gsf_vz[i] = -1.;
     gsf_nHits[i] = -1;
+    gsf_nLostInnerHits[i] = -1;
+    gsf_nLostOuterHits[i] = -1;
     gsf_fBrem[i] = -1.;
     //gsf_e1OVERe9[i] = -1.;
     gsf_eMax[i] = -1.;
@@ -1535,7 +1538,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   iEvent.getByLabel("reducedEcalRecHitsEE",EEReducedRecHits);
   eeRecHits_ = EEReducedRecHits.product();
   EcalClusterLazyTools lazytool(iEvent,iSetup,InputTag("reducedEcalRecHitsEB"),InputTag("reducedEcalRecHitsEE"));
-  EcalSeverityLevelAlgo ecalalgo;
+  //EcalSeverityLevelAlgo ecalalgo;
 
   float gsfPtMax = 0.;
 
@@ -1690,6 +1693,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       gsf_dxy[e] = gsfiter->gsfTrack()->dxy();
       gsf_vz[e] = gsfiter->gsfTrack()->vz();
       gsf_nHits[e] = gsfiter->gsfTrack()->numberOfValidHits();   
+      gsf_nLostInnerHits[e] = gsfiter->gsfTrack()->trackerExpectedHitsInner().numberOfLostHits();   
+      gsf_nLostOuterHits[e] = gsfiter->gsfTrack()->trackerExpectedHitsOuter().numberOfLostHits();   
       gsf_fBrem[e] = gsfiter->fbrem();
       gsf_e1x5[e] =gsfiter->e1x5() ;
       gsf_e2x5[e] =gsfiter->e2x5Max() ;
@@ -1781,6 +1786,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       bool trackisobarrel  = gsf_trackiso[e] < 7.5;
       bool trackisoendcap  = gsf_trackiso[e] < 15.;
 
+      bool noMissingHits = (gsf_nLostInnerHits[e] + gsf_nLostOuterHits[e]) == 0;
 
       //cout<<"ic3  "<<endl;
       //debugcounter++;
@@ -1801,6 +1807,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       gsfpass_ISOLPTTRKS[e] = (trackisobarrel && barrelsc) || (trackisoendcap && endcapsc); 
       gsfpass_ECALDRIVEN[e] = gsf_isecaldriven[e]; 
       gsfpass_INVALID[e] = true;
+      gsfpass_NOMISSINGHITS[e] = noMissingHits;
       
       gsfpass_ID[e] = (gsfpass_DETAIN[e] && gsfpass_DPHIIN[e] && gsfpass_HADEM[e] && gsfpass_SIGMAIETAIETA[e] && gsfpass_E2X5OVER5X5[e]);
       gsfpass_ISO[e] = (gsfpass_ISOLEMHADDEPTH1[e] && gsfpass_ISOLHADDEPTH2[e] && gsfpass_ISOLPTTRKS[e]);
@@ -2223,6 +2230,8 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gsf_dxy", gsf_dxy, "gsf_dxy[gsf_size]/F");
   mytree->Branch("gsf_vz", gsf_vz, "gsf_vz[gsf_size]/F");
   mytree->Branch("gsf_nHits", gsf_nHits, "gsf_nHits[gsf_size]/I");
+  mytree->Branch("gsf_nLostInnerHits", gsf_nLostInnerHits, "gsf_nLostInnerHits[gsf_size]/I");
+  mytree->Branch("gsf_nLostOuterHits", gsf_nLostOuterHits, "gsf_nLostOuterHits[gsf_size]/I");
   mytree->Branch("gsf_fBrem", gsf_fBrem, "gsf_fBrem[gsf_size]/F");
   mytree->Branch("gsf_e1x5", gsf_e1x5, "gsf_e1x5[gsf_size]/F");
   mytree->Branch("gsf_e2x5", gsf_e2x5, "gsf_e2x5[gsf_size]/F");
@@ -2308,6 +2317,7 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gsfpass_ISOLPTTRKS",&gsfpass_ISOLPTTRKS,"gsfpass_ISOLPTTRKS[gsf_size]/O");  
   mytree->Branch("gsfpass_ECALDRIVEN",&gsfpass_ECALDRIVEN,"gsfpass_ECALDRIVEN[gsf_size]/O");  
   mytree->Branch("gsfpass_INVALID",&gsfpass_INVALID,"gsfpass_INVALID[gsf_size]/O");  
+  mytree->Branch("gsfpass_NOMISSINGHITS",&gsfpass_NOMISSINGHITS,"gsfpass_NOMISSINGHITS[gsf_size]/O");  
 
   mytree->Branch("gsfpass_HEEP",&gsfpass_HEEP,"gsfpass_HEEP[gsf_size]/O");  
 
