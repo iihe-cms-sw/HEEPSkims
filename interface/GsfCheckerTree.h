@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.2 2011/05/02 09:53:10 agay Exp $
+// $Id: GsfCheckerTree.h,v 1.3 2011/05/05 13:07:58 vdero Exp $
 //
 //
 
@@ -481,6 +481,8 @@ private:
   float gsf_dxy[100];
   float gsf_vz[100];
   int gsf_nHits[100];
+  int gsf_nLostInnerHits[100];
+  int gsf_nLostOuterHits[100];
   float gsf_fBrem[100];
   //float gsf_e1OVERe9[100];
   float gsf_e1x5[100];
@@ -562,6 +564,7 @@ private:
   bool gsfpass_ISOLPTTRKS[100]; 
   bool gsfpass_ECALDRIVEN[100]; 
   bool gsfpass_INVALID[100];
+  bool gsfpass_NOMISSINGHITS[100];
 
   bool gsfpass_HEEP[100];
 
