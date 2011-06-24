@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.3 2011/05/05 13:06:40 vdero Exp $
+// $Id: GsfCheckerTree.cc,v 1.4 2011/06/24 09:00:57 treis Exp $
 //
 //
 
@@ -288,7 +288,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   //Run and event number
   runnumber = iEvent.id().run();
   eventnumber = iEvent.id().event();
-
+  luminosityBlock = iEvent.id().luminosityBlock(); 
 
   HLT_Photon20_CaloIdVL_IsoL_v1 = -10;
   HLT_DoublePhoton33_vx = -10;
@@ -319,6 +319,34 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   debugcounter++;
   //cout<<"debug "<<debugcounter<<endl;
+ 
+  //Skim Laurent 
+  //Final GSF Electron collection
+  edm::Handle<reco::GsfElectronCollection> pGsfElectrons;
+  bool gsfisvalid = iEvent.getByLabel("gsfElectrons","",pGsfElectrons);
+  reco::GsfElectronCollection gsfelectrons(pGsfElectrons->begin(),pGsfElectrons->end());
+
+  //sort all the GSF by transverse energy
+  //std::cout<<"sorting the elements by transverse energy"<<std::endl;
+  std::sort(gsfelectrons.begin(),gsfelectrons.end(),gsfEtGreater);
+
+
+  float gsfPtMax=0;
+  float gsfPtSecondMax=0; 
+  reco::GsfElectronCollection::const_iterator gsfiterbis = gsfelectrons.begin();
+  int counter =0; 
+  for(;gsfiterbis!=gsfelectrons.end();gsfiterbis++)
+    {
+      counter ++; 
+      if (counter ==1) {
+	gsfPtMax = gsfiterbis->caloEnergy()*sin(gsfiterbis->p4().theta());
+      }
+      if (counter ==2) {
+	gsfPtSecondMax = gsfiterbis->caloEnergy()*sin(gsfiterbis->p4().theta());
+      } 
+    
+    }
+    if (gsfPtMax>30 && gsfPtSecondMax >30){
 
   if(usegendata_) {
     edm::Handle<GenEventInfoProduct> GenInfoHandle;
@@ -573,18 +601,24 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   for (int i=0;i<300;i++) HLTriggers[i]  = -10;
 
   nJetsAKT_pt15 = -1;
-  nJetsIC5_pt15 = -1;
+  //  nJetsIC5_pt15 = -1;
   calomet = -1.;
   met = -1.;
 
   //IC5
-  for (unsigned int i = 0 ; i< 100 ; i++){   
-    jetIC5_pt[i] = -1;
-    jetIC5_eta[i] = -1;
-    jetIC5_phi[i] = -1;
-    jetIC5_em[i] = -1;
-  }
+//   for (unsigned int i = 0 ; i< 100 ; i++){   
+//     jetIC5_pt[i] = -1;
+//     jetIC5_eta[i] = -1;
+//     jetIC5_phi[i] = -1;
+//     jetIC5_em[i] = -1;
+//   }
 
+  for (unsigned int i = 0 ; i< 50 ; i++){   
+    jetAKT_pt[i] = -1;
+    jetAKT_eta[i] = -1;
+    jetAKT_phi[i] = -1;
+    jetAKT_em[i] = -1;
+  }
 
   //debugcounter++;
   //cout<<"debug "<<debugcounter<<endl;
@@ -879,8 +913,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   bool caloantiktjetisvalid = false;
   edm::Handle<CaloJetCollection> pCaloAntiKtJets;
-  //   caloantiktjetisvalid = iEvent.getByLabel("ak5CaloJets", pCaloAntiKtJets);
-  //   const CaloJetCollection *caloAntiKtJets  = pCaloAntiKtJets.product();
+  caloantiktjetisvalid = iEvent.getByLabel("ak5CaloJets", pCaloAntiKtJets);//Laurent
+     const CaloJetCollection *caloAntiKtJets  = pCaloAntiKtJets.product();//Laurent
   
 
   //debugcounter++;
@@ -1044,45 +1078,47 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   vector <float> VemJetsAKT_pt20;
 
   int index_jetAKT = 0;
-  // if(caloantiktjetisvalid){
-  //     FnJetsAKT = caloAntiKtJets->size();
-  //     for(CaloJetCollection::const_iterator antiktjetiter = caloAntiKtJets->begin();antiktjetiter != caloAntiKtJets->end();antiktjetiter++){
-  //       if(antiktjetiter->et() > 10. && fabs(antiktjetiter->eta()) < 3.) {
-  // 	FnJetsAKT_pt10++;
-  // 	VemJetsAKT_pt10.push_back(antiktjetiter->emEnergyFraction());
-  //       }
-  //       if(antiktjetiter->et() > 15. && fabs(antiktjetiter->eta()) < 3.) {
-  // 	FnJetsAKT_pt15++;
-  // 	VemJetsAKT_pt15.push_back(antiktjetiter->emEnergyFraction());
-  //       }
-  //       if(antiktjetiter->et() > 20. && fabs(antiktjetiter->eta()) < 3.) {
-  // 	FnJetsAKT_pt20++;
-  // 	VemJetsAKT_pt20.push_back(antiktjetiter->emEnergyFraction());
-  //       }
+  if(caloantiktjetisvalid){
+      FnJetsAKT = caloAntiKtJets->size();
+      for(CaloJetCollection::const_iterator antiktjetiter = caloAntiKtJets->begin();antiktjetiter != caloAntiKtJets->end();antiktjetiter++){
+        if(antiktjetiter->et() > 10. && fabs(antiktjetiter->eta()) < 3.) {
+  	FnJetsAKT_pt10++;
+  	VemJetsAKT_pt10.push_back(antiktjetiter->emEnergyFraction());
+        }
+        if(antiktjetiter->et() > 15. && fabs(antiktjetiter->eta()) < 3.) {
+  	FnJetsAKT_pt15++;
+  	VemJetsAKT_pt15.push_back(antiktjetiter->emEnergyFraction());
+        }
+        if(antiktjetiter->et() > 20. && fabs(antiktjetiter->eta()) < 3.) {
+  	FnJetsAKT_pt20++;
+  	VemJetsAKT_pt20.push_back(antiktjetiter->emEnergyFraction());
+        }
 
-  //       //FILL TREE
-  //       jetAKT_pt[index_jetAKT] = antiktjetiter->et();
-  //       jetAKT_eta[index_jetAKT] = antiktjetiter->eta();
-  //       jetAKT_phi[index_jetAKT] = antiktjetiter->phi();
-  //       jetAKT_em[index_jetAKT] = antiktjetiter->emEnergyFraction();
+        //FILL TREE
+	if(antiktjetiter->et() > 10. && fabs(antiktjetiter->eta()) < 3.) {
+        jetAKT_pt[index_jetAKT] = antiktjetiter->et();
+        jetAKT_eta[index_jetAKT] = antiktjetiter->eta();
+        jetAKT_phi[index_jetAKT] = antiktjetiter->phi();
+        jetAKT_em[index_jetAKT] = antiktjetiter->emEnergyFraction();
 
-  //       index_jetAKT++;
-  //     }
-  //   }
+        index_jetAKT++;
+	}
+      }
+    }
 
   // LOOP ON reconstructed iterative cone jets
 
   // RECO -> AOD
-//   int FnJetsIC5 = -1;
-//   int FnJetsIC5_pt10 = 0;
-//   int FnJetsIC5_pt15 = 0;
-//   int FnJetsIC5_pt20 = 0;
+  int FnJetsIC5 = -1;
+  int FnJetsIC5_pt10 = 0;
+  int FnJetsIC5_pt15 = 0;
+  int FnJetsIC5_pt20 = 0;
 
-//   vector <float> VemJetsIC5_pt10;
-//   vector <float> VemJetsIC5_pt15;
-//   vector <float> VemJetsIC5_pt20;
+  vector <float> VemJetsIC5_pt10;
+  vector <float> VemJetsIC5_pt15;
+  vector <float> VemJetsIC5_pt20;
 
-//   int index_jetIC5 = 0;
+  //  int index_jetIC5 = 0;
 //   if(caloiterconejetisvalid){
 //     FnJetsIC5 = caloIterConeJets->size();
 //     for(CaloJetCollection::const_iterator iterconejetiter = caloIterConeJets->begin();iterconejetiter != caloIterConeJets->end();iterconejetiter++){
@@ -1099,7 +1135,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 // 	VemJetsIC5_pt20.push_back(iterconejetiter->emEnergyFraction());
 //       }
 
-//       //FILL TREE
+//        //FILL TREE
 //       jetIC5_pt[index_jetIC5] = iterconejetiter->et();
 //       jetIC5_eta[index_jetIC5] = iterconejetiter->eta();
 //       jetIC5_phi[index_jetIC5] = iterconejetiter->phi();
@@ -1108,11 +1144,12 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 //       index_jetIC5++;
 //     }
 //   }
+  jetAKT_size = index_jetAKT;
+    //jetAKT_size = caloAntiKtJets->size();
+  //jetIC5_size = caloIterConeJets->size();
 
-//   jetIC5_size = caloIterConeJets->size();
-
-//   //nJetsAKT_pt15 = FnJetsAKT_pt15;
-//   nJetsIC5_pt15 = FnJetsIC5_pt15;
+   nJetsAKT_pt15 = FnJetsAKT_pt15;
+   //JetsIC5_pt15 = FnJetsIC5_pt15;
   
   //CALOMET
   if(calometisvalid){
@@ -1515,13 +1552,13 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
  
   //Final GSF Electron collection
-  edm::Handle<reco::GsfElectronCollection> pGsfElectrons;
-  bool gsfisvalid = iEvent.getByLabel("gsfElectrons","",pGsfElectrons);
-  reco::GsfElectronCollection gsfelectrons(pGsfElectrons->begin(),pGsfElectrons->end());
+ //  edm::Handle<reco::GsfElectronCollection> pGsfElectrons;
+//   bool gsfisvalid = iEvent.getByLabel("gsfElectrons","",pGsfElectrons);
+//   reco::GsfElectronCollection gsfelectrons(pGsfElectrons->begin(),pGsfElectrons->end());
 
-  //sort all the GSF by transverse energy
-  //std::cout<<"sorting the elements by transverse energy"<<std::endl;
-  std::sort(gsfelectrons.begin(),gsfelectrons.end(),gsfEtGreater);
+//   //sort all the GSF by transverse energy
+//   //std::cout<<"sorting the elements by transverse energy"<<std::endl;
+//   std::sort(gsfelectrons.begin(),gsfelectrons.end(),gsfEtGreater);
 
   //cout<<"size of gsf elec collection "<<gsfelectrons.size()<<endl;
   //cout<<"size of all sc collection "<<sclusters.size()<<endl;
@@ -1867,7 +1904,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   //mytree->Fill();
 
   //cout<<"ici 6  "<<endl;
-
+    }
    
 }//end of analyze method
 
@@ -2007,7 +2044,7 @@ GsfCheckerTree::beginJob()
   //ok
   //GLOBAL 
   mytree->Branch("nJetsAKT_pt15", &nJetsAKT_pt15, "nJetsAKT_pt15/I");
-  mytree->Branch("nJetsIC5_pt15", &nJetsIC5_pt15, "nJetsIC5_pt15/I");
+  //mytree->Branch("nJetsIC5_pt15", &nJetsIC5_pt15, "nJetsIC5_pt15/I");
   mytree->Branch("calomet", &calomet, "calomet/F");
   mytree->Branch("met", &met, "met/F");
 
@@ -2015,14 +2052,14 @@ GsfCheckerTree::beginJob()
   //JETS
 
   //  //AKT
-  //   mytree->Branch("jetAKT_size", &jetAKT_size, "jetAKT_size/I");
-  //   mytree->Branch("jetAKT_pt", jetAKT_pt, "jetAKT_pt[jetAKT_size]/F");
-  //   mytree->Branch("jetAKT_eta", jetAKT_eta, "jetAKT_eta[jetAKT_size]/F");
-  //   mytree->Branch("jetAKT_phi", jetAKT_phi, "jetAKT_phi[jetAKT_size]/F");
-  //   mytree->Branch("jetAKT_em", jetAKT_em, "jetAKT_em[jetAKT_size]/F");
+    mytree->Branch("jetAKT_size", &jetAKT_size, "jetAKT_size/I");
+    mytree->Branch("jetAKT_pt", jetAKT_pt, "jetAKT_pt[jetAKT_size]/F");
+    mytree->Branch("jetAKT_eta", jetAKT_eta, "jetAKT_eta[jetAKT_size]/F");
+    mytree->Branch("jetAKT_phi", jetAKT_phi, "jetAKT_phi[jetAKT_size]/F");
+    mytree->Branch("jetAKT_em", jetAKT_em, "jetAKT_em[jetAKT_size]/F");
 
   //IC5
-//   mytree->Branch("jetIC5_size", &jetIC5_size, "jetIC5_size/I");
+ //  mytree->Branch("jetIC5_size", &jetIC5_size, "jetIC5_size/I");
 //   mytree->Branch("jetIC5_pt", jetIC5_pt, "jetIC5_pt[jetIC5_size]/F");
 //   mytree->Branch("jetIC5_eta", jetIC5_eta, "jetIC5_eta[jetIC5_size]/F");
 //   mytree->Branch("jetIC5_phi", jetIC5_phi, "jetIC5_phi[jetIC5_size]/F");
@@ -2092,6 +2129,7 @@ GsfCheckerTree::beginJob()
   //Run and event number
   mytree->Branch("runnumber",&runnumber,"runnumber/I");
   mytree->Branch("eventnumber",&eventnumber,"eventnumber/I");
+  mytree->Branch("luminosityBlock",&luminosityBlock,"luminosityBlock/I"); //add Laurent
 
   mytree->Branch("eventcounter",&eventcounter,"eventcounter/I");
 
