@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.4 2011/06/24 09:00:57 treis Exp $
+// $Id: GsfCheckerTree.cc,v 1.5 2011/06/24 15:52:47 lathomas Exp $
 //
 //
 
@@ -498,6 +498,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     gsf_deltaeta[i]=-1000.;
     gsf_deltaphi[i]=-1000.;
     gsf_hovere[i]=-1000.;
+    gsf_hdepth1overe[i]=-1000.;
+    gsf_hdepth2overe[i]=-1000.;
 	  
     gsf_trackiso[i]=-1000.;
     gsf_ecaliso[i]=-1000.;
@@ -1688,6 +1690,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       gsf_deltaeta[e] = gsfiter->deltaEtaSuperClusterTrackAtVtx();
       gsf_deltaphi[e] = gsfiter->deltaPhiSuperClusterTrackAtVtx();
       gsf_hovere[e] = gsfiter->hadronicOverEm();
+      gsf_hdepth1overe[e] = gsfiter->hcalDepth1OverEcal();
+      gsf_hdepth2overe[e] = gsfiter->hcalDepth2OverEcal();
 
       gsf_trackiso[e] = gsfiter->dr03TkSumPt();
       gsf_ecaliso[e] = gsfiter->dr03EcalRecHitSumEt();
@@ -2311,6 +2315,8 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gsf_deltaeta",&gsf_deltaeta,"gsf_deltaeta[gsf_size]/F");
   mytree->Branch("gsf_deltaphi",&gsf_deltaphi,"gsf_deltaphi[gsf_size]/F");
   mytree->Branch("gsf_hovere",&gsf_hovere,"gsf_hovere[gsf_size]/F");
+  mytree->Branch("gsf_hdepth1overe",&gsf_hdepth1overe,"gsf_hdepth1overe[gsf_size]/F");
+  mytree->Branch("gsf_hdepth2overe",&gsf_hdepth2overe,"gsf_hdepth2overe[gsf_size]/F");
    
   mytree->Branch("gsf_trackiso",&gsf_trackiso,"gsf_trackiso[gsf_size]/F");
   mytree->Branch("gsf_ecaliso",&gsf_ecaliso,"gsf_ecaliso[gsf_size]/F");

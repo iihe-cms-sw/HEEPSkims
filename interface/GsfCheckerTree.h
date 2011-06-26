@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.4 2011/06/24 09:01:55 treis Exp $
+// $Id: GsfCheckerTree.h,v 1.5 2011/06/24 15:53:37 lathomas Exp $
 //
 //
 
@@ -518,6 +518,8 @@ private:
   float gsf_deltaeta[100];
   float gsf_deltaphi[100];
   float gsf_hovere[100];
+  float gsf_hdepth1overe[100];
+  float gsf_hdepth2overe[100];
 
   float gsf_trackiso[100];
   float gsf_ecaliso[100];
