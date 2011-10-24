@@ -9,7 +9,8 @@ process.load("RecoTracker.Configuration.RecoTracker_cff")
 
 
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
-process.GlobalTag.globaltag = 'START3X_V26::All'
+##process.GlobalTag.globaltag = 'START42_V13::All'
+process.GlobalTag.globaltag = 'GR_R_42_V18::All'
 
 readFiles = cms.untracked.vstring()
 secFiles = cms.untracked.vstring()
@@ -17,62 +18,39 @@ secFiles = cms.untracked.vstring()
 process.source = cms.Source("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
 
 readFiles.extend( [
-##     'dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/agay/Photon/Photon-Run2010B-PromptReco-v2-RECO-HEEPSkimTwoGSFEleEt20HoE10-NoCert/75e3d59fbd0f207e610c6308251433be/skim2eleRECOPAT_207_1_ARd.root',
-##     'dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/agay/Photon/Photon-Run2010B-PromptReco-v2-RECO-HEEPSkimTwoGSFEleEt20HoE10-NoCert/75e3d59fbd0f207e610c6308251433be/skim2eleRECOPAT_206_1_KTJ.root',
-##     'dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/agay/Photon/Photon-Run2010B-PromptReco-v2-RECO-HEEPSkimTwoGSFEleEt20HoE10-NoCert/75e3d59fbd0f207e610c6308251433be/skim2eleRECOPAT_205_1_Cwe.root',
-##     'dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/agay/Photon/Photon-Run2010B-PromptReco-v2-RECO-HEEPSkimTwoGSFEleEt20HoE10-NoCert/75e3d59fbd0f207e610c6308251433be/skim2eleRECOPAT_204_1_mBe.root',
-##     'dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/agay/Photon/Photon-Run2010B-PromptReco-v2-RECO-HEEPSkimTwoGSFEleEt20HoE10-NoCert/75e3d59fbd0f207e610c6308251433be/skim2eleRECOPAT_203_1_nPe.root',
+##        '/store/data/Run2011A/DoubleMu/AOD/May10ReReco-v1/0000/06F51A88-807C-E011-AC86-001A92971ACE.root',
+##        '/store/data/Run2011A/DoubleMu/AOD/May10ReReco-v1/0000/06CBB6AF-D28B-E011-B5EE-00248C0BE013.root',
+##        '/store/data/Run2011A/DoubleMu/AOD/May10ReReco-v1/0000/0662A4B8-687C-E011-B2C4-003048678C3A.root',
+##        '/store/data/Run2011A/DoubleMu/AOD/May10ReReco-v1/0000/063975F5-B17B-E011-AAB2-003048678BAA.root',
+##        '/store/data/Run2011A/DoubleMu/AOD/May10ReReco-v1/0000/060CAB29-B17B-E011-BCE6-002618943877.root',
+##        '/store/data/Run2011A/DoubleMu/AOD/May10ReReco-v1/0000/046174B6-C17B-E011-A76D-00248C55CC3C.root',
 
-## 'dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/agay/Electron/Electron-Run2010B-PromptReco-v2-RECO-HEEPSkimTwoGSFEleEt20HoE10-NoCert/75e3d59fbd0f207e610c6308251433be/skim2eleRECOPAT_209_1_gia.root',
-## 'dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/agay/Electron/Electron-Run2010B-PromptReco-v2-RECO-HEEPSkimTwoGSFEleEt20HoE10-NoCert/75e3d59fbd0f207e610c6308251433be/skim2eleRECOPAT_208_1_7hA.root',
-## 'dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/agay/Electron/Electron-Run2010B-PromptReco-v2-RECO-HEEPSkimTwoGSFEleEt20HoE10-NoCert/75e3d59fbd0f207e610c6308251433be/skim2eleRECOPAT_207_1_CFX.root',
-## 'dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/agay/Electron/Electron-Run2010B-PromptReco-v2-RECO-HEEPSkimTwoGSFEleEt20HoE10-NoCert/75e3d59fbd0f207e610c6308251433be/skim2eleRECOPAT_206_1_q2u.root',
-## 'dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/agay/Electron/Electron-Run2010B-PromptReco-v2-RECO-HEEPSkimTwoGSFEleEt20HoE10-NoCert/75e3d59fbd0f207e610c6308251433be/skim2eleRECOPAT_205_1_Nfo.root',
+        '/store/data/Run2011B/DoubleMu/AOD/PromptReco-v1/000/175/875/24DC5B25-06DC-E011-9F25-003048D2C020.root',
+        '/store/data/Run2011B/DoubleMu/AOD/PromptReco-v1/000/175/874/582F2395-1FDC-E011-964A-003048F0258C.root',
+        '/store/data/Run2011B/DoubleMu/AOD/PromptReco-v1/000/175/874/40616F63-F9DC-E011-89B5-001D09F23F2A.root',
+        '/store/data/Run2011B/DoubleMu/AOD/PromptReco-v1/000/175/873/80730A1C-85DD-E011-A7B2-BCAEC53296F9.root',
+        '/store/data/Run2011B/DoubleMu/AOD/PromptReco-v1/000/175/872/6E90F149-37DE-E011-886B-003048D2C0F2.root',
+        '/store/data/Run2011B/DoubleMu/AOD/PromptReco-v1/000/175/866/FCC1BADC-D7DB-E011-B711-001D09F244BB.root',
+        '/store/data/Run2011B/DoubleMu/AOD/PromptReco-v1/000/175/866/D6DDD0A9-C2DB-E011-A408-001D09F2512C.root',
+        '/store/data/Run2011B/DoubleMu/AOD/PromptReco-v1/000/175/866/501F8B60-C8DB-E011-A823-003048D2C0F4.root',
 
-#Photon2011 AOD
+##        '/store/data/Run2011B/SingleMu/AOD/PromptReco-v1/000/175/860/1EECB4B6-6BDC-E011-AA4D-E0CB4E4408C4.root',
+##        '/store/data/Run2011B/SingleMu/AOD/PromptReco-v1/000/175/858/F2547E16-6FDC-E011-A361-BCAEC518FF7A.root',
+##        '/store/data/Run2011B/SingleMu/AOD/PromptReco-v1/000/175/857/4676663E-44DC-E011-83E8-003048D2C020.root',
+##        '/store/data/Run2011B/SingleMu/AOD/PromptReco-v1/000/175/837/C825E183-A8DB-E011-A133-BCAEC53296FF.root',
+##        '/store/data/Run2011B/SingleMu/AOD/PromptReco-v1/000/175/837/C4408E75-CADB-E011-BF0E-001D09F24303.root',
+##        '/store/data/Run2011B/SingleMu/AOD/PromptReco-v1/000/175/837/A2003FE6-B0DB-E011-AEFD-BCAEC518FF8E.root',
 
-###'dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/994/386ED4FB-6F55-E011-8517-003048D2C01A.root'
+##        '/store/mc/Summer11/DYToEE_M-200_TuneZ2_7TeV-pythia6-tauola/AODSIM/PU_S3_START42_V11-v2/0000/F41C0BF0-C988-E011-9D24-0017A477102C.root',
+##        '/store/mc/Summer11/DYToEE_M-200_TuneZ2_7TeV-pythia6-tauola/AODSIM/PU_S3_START42_V11-v2/0000/BE0BA381-B088-E011-919A-001E0B5FE542.root',
+##        '/store/mc/Summer11/DYToEE_M-200_TuneZ2_7TeV-pythia6-tauola/AODSIM/PU_S3_START42_V11-v2/0000/66FE9A12-AB88-E011-906E-D8D3855BBDC4.root',
+##        '/store/mc/Summer11/DYToEE_M-200_TuneZ2_7TeV-pythia6-tauola/AODSIM/PU_S3_START42_V11-v2/0000/12228F90-9B88-E011-B2F5-0017A477102C.root',
 
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/994/386ED4FB-6F55-E011-8517-003048D2C01A.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/956/7C4706C9-7155-E011-AF5B-003048D37456.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/955/FC17319C-DC55-E011-BA49-003048F1C424.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/955/848E2E62-3E55-E011-B1D7-001617C3B76E.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/954/A4EBB80B-2455-E011-BA11-0019B9F709A4.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/943/02257F10-FE54-E011-A8E8-0016177CA7A0.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/942/188031CD-F054-E011-A2C7-003048F118C6.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/940/185B0B39-0C55-E011-A949-001617C3B5D8.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/939/54C71398-1555-E011-AF89-000423D98B6C.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/938/1E35CB0E-1455-E011-B359-0030487D1BCC.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/937/BA8D1BAA-1A55-E011-8698-0030487C8CB6.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/936/206466F0-ED54-E011-A935-001617E30CC2.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/935/50691794-0955-E011-B5B1-000423D987E0.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/916/D033E56D-A954-E011-8133-001D09F24934.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/915/7052855B-7B54-E011-8200-003048F024E0.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/914/FADBFB7B-9454-E011-A9EC-001617C3B706.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/913/62F5C5EA-9854-E011-BB00-001617C3B77C.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/911/7AD46E20-C354-E011-B77E-003048F1C832.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/911/52EC45A4-7354-E011-A09C-003048F024E0.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/907/BC213A56-8D54-E011-B72B-0030487C90D4.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/898/4E78CEA5-F853-E011-A940-001D09F24353.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/894/A4FF7DC6-5E54-E011-AFE2-000423D94908.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/890/888230D4-3254-E011-A55B-001D09F28D54.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/890/504A6CAF-6854-E011-A898-003048F024F6.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/888/B433199F-2E54-E011-860D-0016177CA778.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/888/7AB9DB70-6754-E011-A099-003048D37538.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/877/A616636B-E453-E011-8488-00304879BAB2.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/876/DAF405AD-D453-E011-B905-003048F117B4.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/875/98507C6F-1854-E011-ACD0-003048D2BB90.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/874/525BC22F-0C54-E011-B0FB-00304879EE3E.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/873/0ED09777-0454-E011-8247-0030487CD6B4.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/872/98EE27F3-EB53-E011-9B9C-0030487CD76A.root',
-        '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/871/1EB150FD-1554-E011-A7FF-0030487C90EE.root'
+##        '/store/mc/Summer11/DYToEE_M-200_TuneZ2_7TeV-powheg-pythia/GEN-SIM-RECO/PU_S4_START42_V11-v2/0000/EE1827DC-FC9D-E011-A5C4-0025B3E05CDE.root',
+##        '/store/mc/Summer11/DYToEE_M-200_TuneZ2_7TeV-powheg-pythia/GEN-SIM-RECO/PU_S4_START42_V11-v2/0000/DE7B3F74-719E-E011-9C77-002590200934.root',
+##        '/store/mc/Summer11/DYToEE_M-200_TuneZ2_7TeV-powheg-pythia/GEN-SIM-RECO/PU_S4_START42_V11-v2/0000/C81695E4-B29E-E011-8277-002481E14E2C.root',
+##        '/store/mc/Summer11/DYToEE_M-200_TuneZ2_7TeV-powheg-pythia/GEN-SIM-RECO/PU_S4_START42_V11-v2/0000/B870F4BB-009E-E011-BE41-00E08178C0CD.root',
 ])
-
-## replace PoolSource.fileNames = {
-##         '/store/data/Run2011A/Photon/AOD/PromptReco-v1/000/160/994/386ED4FB-6F55-E011-8517-003048D2C01A.root'
-
-##         }
-
 
 ##process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
 
@@ -93,7 +71,6 @@ process.maxEvents = cms.untracked.PSet(
 process.TFileService = cms.Service("TFileService",
     fileName = cms.string('gsfcheckertree_Test.root')
 )
-
 
 process.load("UserCode.HEEPSkims.gsfcheckertree_cfi")
 process.p1 = cms.Path(process.gsfcheckerjob)
