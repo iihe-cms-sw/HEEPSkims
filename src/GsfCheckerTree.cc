@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.5 2011/06/24 15:52:47 lathomas Exp $
+// $Id: GsfCheckerTree.cc,v 1.6 2011/06/26 10:07:18 treis Exp $
 //
 //
 
@@ -239,6 +239,8 @@ GsfCheckerTree::GsfCheckerTree(const edm::ParameterSet& iConfig)
   src_ = iConfig.getParameter<edm::InputTag>( "src"  );
   hlTriggerResults_ = iConfig.getParameter<edm::InputTag> ("TriggerResultsTag");
   usegendata_ = iConfig.getParameter<bool> ("usegendata");
+  eleEtCut_ = iConfig.getUntrackedParameter<double>("electronEtCut", 0.);
+  muPtCut_ = iConfig.getUntrackedParameter<double>("muonPtCut", 0.);
 }
 
 
@@ -296,19 +298,32 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2 = -10;
   HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2 = -10;
 
-  HLT_Ele10_SW_EleId_L1R = -10;
-  HLT_Ele10_SW_L1R = -10;
-  HLT_Ele15_LW_L1R = -10;
-  HLT_Ele15_SW_L1R = -10;
-  HLT_Ele15_SW_EleId_L1R = -10;
-  HLT_Ele15_SW_CaloEleId_L1R  = -10;
-  HLT_Ele15_SiStrip_L1R = -10;
-  HLT_Ele20_SW_L1R = -10;
-  HLT_Ele20_SiStrip_L1R = -10;
-  HLT_Ele25_SW_L1R = -10;
-  HLT_DoubleEle4_SW_eeRes_L1R = -10;
-  HLT_DoubleEle10_SW_L1R = -10;
   HLT_Mu15_Photon20_CaloIdL = -10; //VINCENT
+  HLT_Mu8_Ele17_CaloIdT_CaloIsoVL = -10;
+  HLT_Mu17_Ele8_CaloIdT_CaloIsoVL = -10;
+  HLT_DoubleEle33_CaloIdL = -10;
+  HLT_DoubleEle33_CaloIdT = -10;
+  HLT_DoubleEle45_CaloIdL = -10;
+  HLT_Photon225_NoHE = -10;
+  HLT_Photon125 = -10;
+  HLT_Photon135 = -10;
+  HLT_DoublePhoton70 = -10;
+  HLT_DoublePhoton80 = -10;
+  HLT_Photon26_Photon18 = -10;
+
+  prescale_HLT_Mu15_Photon20_CaloIdL = -10;
+  prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL = -10;
+  prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL = -10;
+  prescale_HLT_DoubleEle33_CaloIdL = -10;
+  prescale_HLT_DoubleEle33_CaloIdT = -10;
+  prescale_HLT_DoubleEle45_CaloIdL = -10;
+  prescale_HLT_Photon225_NoHE = -10;
+  prescale_HLT_Photon125 = -10;
+  prescale_HLT_Photon135 = -10;
+  prescale_HLT_DoublePhoton70 = -10;
+  prescale_HLT_DoublePhoton80 = -10;
+  prescale_HLT_Photon26_Photon18 = -10;
+
 
   pthat = -5000.;
   alphaqcd = -5000.;
@@ -320,7 +335,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   debugcounter++;
   //cout<<"debug "<<debugcounter<<endl;
  
-  //Skim Laurent 
+  // for skim on pt 
   //Final GSF Electron collection
   edm::Handle<reco::GsfElectronCollection> pGsfElectrons;
   bool gsfisvalid = iEvent.getByLabel("gsfElectrons","",pGsfElectrons);
@@ -330,23 +345,44 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   //std::cout<<"sorting the elements by transverse energy"<<std::endl;
   std::sort(gsfelectrons.begin(),gsfelectrons.end(),gsfEtGreater);
 
-
-  float gsfPtMax=0;
-  float gsfPtSecondMax=0; 
+  float gsfPtMax = 0.;
+  float gsfPtSecondMax = 0.; 
   reco::GsfElectronCollection::const_iterator gsfiterbis = gsfelectrons.begin();
-  int counter =0; 
-  for(;gsfiterbis!=gsfelectrons.end();gsfiterbis++)
-    {
-      counter ++; 
-      if (counter ==1) {
-	gsfPtMax = gsfiterbis->caloEnergy()*sin(gsfiterbis->p4().theta());
-      }
-      if (counter ==2) {
-	gsfPtSecondMax = gsfiterbis->caloEnergy()*sin(gsfiterbis->p4().theta());
-      } 
-    
+  int cntr = 0; 
+  for(; gsfiterbis != gsfelectrons.end(); ++gsfiterbis) {
+    cntr++; 
+    if (cntr == 1) {
+      gsfPtMax = gsfiterbis->caloEnergy()*sin(gsfiterbis->p4().theta());
     }
-    if (gsfPtMax>30 && gsfPtSecondMax >30){
+    if (cntr == 2) {
+      gsfPtSecondMax = gsfiterbis->caloEnergy()*sin(gsfiterbis->p4().theta());
+    }
+  }
+
+  // Get MUONS
+  edm::Handle<reco::MuonCollection> muonCollection;
+  iEvent.getByLabel("muons",muonCollection);
+  const reco::MuonCollection* muons = muonCollection.product();
+
+  float muonPtMax = 0.;
+  float muonPtSecondMax = 0.;
+  // get the two highes pt muons
+  for(reco::MuonCollection::const_iterator muIt = muons->begin(); muIt < muons->end(); ++muIt){
+    if (muIt->isGlobalMuon()) {
+      if (muIt->globalTrack()->pt() > muonPtMax) {
+        muonPtSecondMax = muonPtMax;
+        muonPtMax = muIt->globalTrack()->pt();
+      }
+      else if (muIt->globalTrack()->pt() > muonPtSecondMax) 
+        muonPtSecondMax = muIt->globalTrack()->pt();
+    }
+  }
+
+  // SKIMMING
+  if (!(gsfPtMax > eleEtCut_ && gsfPtSecondMax > eleEtCut_)
+      && !(gsfPtMax > eleEtCut_ && muonPtMax > muPtCut_)
+      && !(muonPtMax > muPtCut_ && muonPtSecondMax > muPtCut_)
+     ) return;
 
   if(usegendata_) {
     edm::Handle<GenEventInfoProduct> GenInfoHandle;
@@ -553,6 +589,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     gsf_ecalEnergy[i] = -1.;
     gsf_eOVERp[i] = -1.;
     gsf_dxy[i] = -1.;
+    gsf_dz[i] = -1.;
     gsf_vz[i] = -1.;
     gsf_nHits[i] = -1;
     gsf_nLostInnerHits[i] = -1;
@@ -905,11 +942,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   //   const reco::TrackCollection* muons = muonCollection.product();
   //   //const reco::MuonCollection recoMu = dynamic_cast < const reco::MuonCollection * >(muons);
 
-  // //Get MUON
-  edm::Handle<reco::MuonCollection> muonCollection;
-  iEvent.getByLabel("muons",muonCollection);
-  const reco::MuonCollection* muons = muonCollection.product();
-
   //debugcounter++;
   //cout<<"debug "<<debugcounter<<endl;
 
@@ -998,43 +1030,61 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     //hlNamesTab[i] = hlNames_.at(i)+"\0";
     //hlNamesTab[i] = (hlNames_.at(i)).c_str();
     //cout<<"hlNamesTab[i] = "<<hlNamesTab[i]<<endl;
-    if ((hlNames_.at(i)== "HLT_Ele10_SW_EleId_L1R") && (HLTR->accept(i) == 0)) HLT_Ele10_SW_EleId_L1R = 0;
-    if ((hlNames_.at(i)== "HLT_Ele10_SW_EleId_L1R") && (HLTR->accept(i) == 1)) HLT_Ele10_SW_EleId_L1R = 1;
-    if ((hlNames_.at(i)== "HLT_Ele10_SW_L1R") && (HLTR->accept(i) == 0)) HLT_Ele10_SW_L1R = 0;
-    if ((hlNames_.at(i)== "HLT_Ele10_SW_L1R") && (HLTR->accept(i) == 1)) HLT_Ele10_SW_L1R = 1;
-    if ((hlNames_.at(i)== "HLT_Ele15_LW_L1R") && (HLTR->accept(i) == 0)) HLT_Ele15_LW_L1R = 0;
-    if ((hlNames_.at(i)== "HLT_Ele15_LW_L1R") && (HLTR->accept(i) == 1)) HLT_Ele15_LW_L1R = 1;
-    if ((hlNames_.at(i)== "HLT_Ele15_SW_L1R") && (HLTR->accept(i) == 0)) HLT_Ele15_SW_L1R = 0;
-    if ((hlNames_.at(i)== "HLT_Ele15_SW_L1R") && (HLTR->accept(i) == 1)) HLT_Ele15_SW_L1R  = 1;
-    if ((hlNames_.at(i)== "HLT_Ele15_SW_EleId_L1R") && (HLTR->accept(i) == 0)) HLT_Ele15_SW_EleId_L1R  = 0;
-    if ((hlNames_.at(i)== "HLT_Ele15_SW_EleId_L1R") && (HLTR->accept(i) == 1)) HLT_Ele15_SW_EleId_L1R  = 1;
-    if ((hlNames_.at(i)== "HLT_Ele15_SW_CaloEleId_L1R") && (HLTR->accept(i) == 0))  HLT_Ele15_SW_CaloEleId_L1R  = 0;
-    if ((hlNames_.at(i)== "HLT_Ele15_SW_CaloEleId_L1R") && (HLTR->accept(i) == 1)) HLT_Ele15_SW_CaloEleId_L1R = 1;
-    if ((hlNames_.at(i)== "HLT_Ele15_SiStrip_L1R") && (HLTR->accept(i) == 0)) HLT_Ele15_SiStrip_L1R = 0;
-    if ((hlNames_.at(i)== "HLT_Ele15_SiStrip_L1R") && (HLTR->accept(i) == 1)) HLT_Ele15_SiStrip_L1R = 1;
-    if ((hlNames_.at(i)== "HLT_Ele20_SW_L1R") && (HLTR->accept(i) == 0)) HLT_Ele20_SW_L1R  = 0;
-    if ((hlNames_.at(i)== "HLT_Ele20_SW_L1R") && (HLTR->accept(i) == 1)) HLT_Ele20_SW_L1R = 1;
-    if ((hlNames_.at(i)== "HLT_Ele20_SiStrip_L1R") && (HLTR->accept(i) == 0)) HLT_Ele20_SiStrip_L1R = 0;
-    if ((hlNames_.at(i)== "HLT_Ele20_SiStrip_L1R") && (HLTR->accept(i) == 1)) HLT_Ele20_SiStrip_L1R = 1;
-    if ((hlNames_.at(i)== "HLT_Ele25_SW_L1R") && (HLTR->accept(i) == 0)) HLT_Ele25_SW_L1R = 0;
-    if ((hlNames_.at(i)== "HLT_Ele25_SW_L1R") && (HLTR->accept(i) == 1)) HLT_Ele25_SW_L1R  = 1;
-    if ((hlNames_.at(i)== "HLT_DoubleEle4_SW_eeRes_L1R") && (HLTR->accept(i) == 0)) HLT_DoubleEle4_SW_eeRes_L1R = 0;
-    if ((hlNames_.at(i)== "HLT_DoubleEle4_SW_eeRes_L1R") && (HLTR->accept(i) == 1)) HLT_DoubleEle4_SW_eeRes_L1R = 1;
-    if ((hlNames_.at(i)== "HLT_DoubleEle10_SW_L1R") && (HLTR->accept(i) == 0)) HLT_DoubleEle10_SW_L1R = 0;
-    if ((hlNames_.at(i)== "HLT_DoubleEle10_SW_L1R") && (HLTR->accept(i) == 1)) HLT_DoubleEle10_SW_L1R  = 1;
-
     if ((hlNames_.at(i)== "HLT_Photon20_CaloIdVL_IsoL_v1") && (HLTR->accept(i) == 1)) HLT_Photon20_CaloIdVL_IsoL_v1  = 1;
     if (((hlNames_.at(i)== "HLT_DoublePhoton33_v1") || (hlNames_.at(i)== "HLT_DoublePhoton33_v2")) && (HLTR->accept(i) == 1))  HLT_DoublePhoton33_vx = 1;
     if ((hlNames_.at(i)== "HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2") && (HLTR->accept(i) == 1)) HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2  = 1;
     if ((hlNames_.at(i)== "HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2") && (HLTR->accept(i) == 1)) HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2  = 1;
     if ((hlNames_.at(i)== "HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2") && (HLTR->accept(i) == 1)) HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2  = 1;
 
-    //FROM VINCENT
-    if (((hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v1") || (hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v2") || (hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v3") || (hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v4")  
-	 || (hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v5")  || (hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v6"))&& (HLTR->accept(i) == 0)) HLT_Mu15_Photon20_CaloIdL = 0;
-    if (((hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v1") || (hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v2") || (hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v3") || (hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v4")  
-	 || (hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v5")  || (hlNames_.at(i)== "HLT_Mu15_Photon20_CaloIdL_v6"))&& (HLTR->accept(i) == 1)) HLT_Mu15_Photon20_CaloIdL = 1;
-
+    // from Thomas
+    if (hlNames_.at(i).find("HLT_Mu15_Photon20_CaloIdL_v") == 0) {
+      HLTR->accept(i) ? HLT_Mu15_Photon20_CaloIdL = 1 : HLT_Mu15_Photon20_CaloIdL = 0;
+      prescale_HLT_Mu15_Photon20_CaloIdL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_v") == 0) {
+      HLTR->accept(i) ? HLT_Mu8_Ele17_CaloIdT_CaloIsoVL = 1 : HLT_Mu8_Ele17_CaloIdT_CaloIsoVL = 0;
+      prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_v") == 0) {
+      HLTR->accept(i) ? HLT_Mu17_Ele8_CaloIdT_CaloIsoVL = 1 : HLT_Mu17_Ele8_CaloIdT_CaloIsoVL = 0;
+      prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_DoubleEle33_CaloIdL_v") == 0) {
+      HLTR->accept(i) ? HLT_DoubleEle33_CaloIdL = 1 : HLT_DoubleEle33_CaloIdL = 0;
+      prescale_HLT_DoubleEle33_CaloIdL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_DoubleEle33_CaloIdT_v") == 0) {
+      HLTR->accept(i) ? HLT_DoubleEle33_CaloIdT = 1 : HLT_DoubleEle33_CaloIdT = 0;
+      prescale_HLT_DoubleEle33_CaloIdT = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_DoubleEle45_CaloIdL_v") == 0) {
+      HLTR->accept(i) ? HLT_DoubleEle45_CaloIdL = 1 : HLT_DoubleEle45_CaloIdL = 0;
+      prescale_HLT_DoubleEle45_CaloIdL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Photon225_NoHE_v") == 0) {
+      HLTR->accept(i) ? HLT_Photon225_NoHE = 1 : HLT_Photon225_NoHE = 0;
+      prescale_HLT_Photon225_NoHE = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Photon125_v") == 0) {
+      HLTR->accept(i) ? HLT_Photon125 = 1 : HLT_Photon125 = 0;
+      prescale_HLT_Photon125 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Photon135_v") == 0) {
+      HLTR->accept(i) ? HLT_Photon135 = 1 : HLT_Photon135 = 0;
+      prescale_HLT_Photon135 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_DoublePhoton70_v") == 0) {
+      HLTR->accept(i) ? HLT_DoublePhoton70 = 1 : HLT_DoublePhoton70 = 0;
+      prescale_HLT_DoublePhoton70 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_DoublePhoton80_v") == 0) {
+      HLTR->accept(i) ? HLT_DoublePhoton80 = 1 : HLT_DoublePhoton80 = 0;
+      prescale_HLT_DoublePhoton80 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Photon26_Photon18_v") == 0) {
+      HLTR->accept(i) ? HLT_Photon26_Photon18 = 1 : HLT_Photon26_Photon18 = 0;
+      prescale_HLT_Photon26_Photon18 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
 
   }
   //hlNamesTab = (hlNames_.at(2)+"\0").c_str();
@@ -1218,16 +1268,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
 
   int index_mu = 0;
-
-  for(reco::MuonCollection::const_iterator muIt = muons->begin();muIt != muons->end(); muIt++){
-    if (muIt->isGlobalMuon()) index_mu++; 
-  }
-  
-  muon_size = index_mu;
-
-  float muonPtMax=0.;
-  
-  index_mu = 0;
   //LOOP OVER MUONS
   for(reco::MuonCollection::const_iterator muIt = muons->begin();muIt != muons->end(); muIt++){
     
@@ -1301,6 +1341,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       index_mu++;
     }
   }
+
+  muon_size = index_mu;
 
   //--------------------------------
 
@@ -1469,11 +1511,11 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   //Get the MC Truth (hallelujah)
   //already retrieved in datagenerated
-  if(usegendata_)  
-    {
-      edm::Handle<HepMCProduct> hepMC;
-      iEvent.getByLabel("generator","",hepMC);
-    } 
+  //if(usegendata_)  
+  //  {
+  //    edm::Handle<HepMCProduct> hepMC;
+  //    iEvent.getByLabel("generator","",hepMC);
+  //  } 
 
 
   //cout<<"to debug seg violation "<<hybridSuperClusters->size()<<endl;
@@ -1551,17 +1593,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       v++;
     }//end of loop on gsf tracks
 
-
- 
-  //Final GSF Electron collection
- //  edm::Handle<reco::GsfElectronCollection> pGsfElectrons;
-//   bool gsfisvalid = iEvent.getByLabel("gsfElectrons","",pGsfElectrons);
-//   reco::GsfElectronCollection gsfelectrons(pGsfElectrons->begin(),pGsfElectrons->end());
-
-//   //sort all the GSF by transverse energy
-//   //std::cout<<"sorting the elements by transverse energy"<<std::endl;
-//   std::sort(gsfelectrons.begin(),gsfelectrons.end(),gsfEtGreater);
-
   //cout<<"size of gsf elec collection "<<gsfelectrons.size()<<endl;
   //cout<<"size of all sc collection "<<sclusters.size()<<endl;
 
@@ -1578,8 +1609,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   eeRecHits_ = EEReducedRecHits.product();
   EcalClusterLazyTools lazytool(iEvent,iSetup,InputTag("reducedEcalRecHitsEB"),InputTag("reducedEcalRecHitsEE"));
   //EcalSeverityLevelAlgo ecalalgo;
-
-  float gsfPtMax = 0.;
 
   gsf_size = gsfelectrons.size();
   int e=0;
@@ -1721,9 +1750,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
       gsf_gsfet[e] = gsfiter->caloEnergy()*sin(gsfiter->p4().theta());
 
-      //HOMEMADE SKIMMING!!!
-      if (gsfiter->caloEnergy()*sin(gsfiter->p4().theta()) > gsfPtMax) gsfPtMax = gsfiter->caloEnergy()*sin(gsfiter->p4().theta());
-
       gsf_theta[e] = gsfiter->theta();
       gsf_isEB[e] = gsfiter->isEB();
       gsf_isEE[e] = gsfiter->isEE();
@@ -1732,6 +1758,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       gsf_ecalEnergy[e] = gsfiter->ecalEnergy();
       gsf_eOVERp[e] = gsfiter->eSuperClusterOverP();
       gsf_dxy[e] = gsfiter->gsfTrack()->dxy();
+      gsf_dz[e] = gsfiter->gsfTrack()->dz(); 
       gsf_vz[e] = gsfiter->gsfTrack()->vz();
       gsf_nHits[e] = gsfiter->gsfTrack()->numberOfValidHits();   
       gsf_nLostInnerHits[e] = gsfiter->gsfTrack()->trackerExpectedHitsInner().numberOfLostHits();   
@@ -1791,8 +1818,10 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       //debugcounter++;
       //cout<<"debug "<<debugcounter<<endl;
 
-      bool gsfetbarrel = gsf_gsfet[e] > 25.;
-      bool gsfetendcap = gsf_gsfet[e] > 25.;
+
+      // HEEP selection v3.2  - 24/10/2011 Thomas
+      bool gsfetbarrel = gsf_gsfet[e] > 35.;
+      bool gsfetendcap = gsf_gsfet[e] > 40.;
 
       bool barrelsc = fabs(gsfsc_eta[e]) < 1.442;
       bool endcapsc = (fabs(gsfsc_eta[e]) > 1.56) && (fabs(gsfsc_eta[e]) < 2.5);
@@ -1800,8 +1829,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       bool deltaetabarrel = fabs(gsf_deltaeta[e]) < 0.005;
       bool deltaetaendcap = fabs(gsf_deltaeta[e]) < 0.007;
 
-      bool deltaphibarrel = fabs(gsf_deltaphi[e]) < 0.09;
-      bool deltaphiendcap = fabs(gsf_deltaphi[e]) < 0.09;
+      bool deltaphibarrel = fabs(gsf_deltaphi[e]) < 0.06;
+      bool deltaphiendcap = fabs(gsf_deltaphi[e]) < 0.06;
 
       bool hoverebarrel  = gsf_hovere[e] < 0.05;
       bool hovereendcap  = gsf_hovere[e] < 0.05;
@@ -1822,16 +1851,12 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       }
 
       bool hcaliso2barrel  = true;
-      bool hcaliso2endcap  = gsf_hcaliso2[e] < 0.5;
+      bool hcaliso2endcap  = true;
 
-      bool trackisobarrel  = gsf_trackiso[e] < 7.5;
-      bool trackisoendcap  = gsf_trackiso[e] < 15.;
+      bool trackisobarrel  = gsf_trackiso[e] < 5.;
+      bool trackisoendcap  = gsf_trackiso[e] < 5.;
 
-      bool noMissingHits = (gsf_nLostInnerHits[e] + gsf_nLostOuterHits[e]) == 0;
-
-      //cout<<"ic3  "<<endl;
-      //debugcounter++;
-      //cout<<"debug "<<debugcounter<<endl;
+      bool noMissingHits = gsf_nLostInnerHits[e] == 0;
 
       //Boolean HEEP cuts
       gsfpass_ET[e] = (gsfetbarrel && barrelsc) || (gsfetendcap && endcapsc); 
@@ -1853,11 +1878,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       gsfpass_ID[e] = (gsfpass_DETAIN[e] && gsfpass_DPHIIN[e] && gsfpass_HADEM[e] && gsfpass_SIGMAIETAIETA[e] && gsfpass_E2X5OVER5X5[e]);
       gsfpass_ISO[e] = (gsfpass_ISOLEMHADDEPTH1[e] && gsfpass_ISOLHADDEPTH2[e] && gsfpass_ISOLPTTRKS[e]);
 
-
-      //debugcounter++;
-      //cout<<"debug "<<debugcounter<<endl;
-
-      gsfpass_HEEP[e] = gsfpass_ET[e] && gsfpass_DETAIN[e] && gsfpass_DPHIIN[e] && gsfpass_HADEM[e] && gsfpass_SIGMAIETAIETA[e] && gsfpass_E2X5OVER5X5[e] && gsfpass_ISOLEMHADDEPTH1[e] && gsfpass_ISOLHADDEPTH2[e] && gsfpass_ISOLPTTRKS[e] && gsfpass_ECALDRIVEN[e];
+      gsfpass_HEEP[e] = gsfpass_ET[e] && gsfpass_DETAIN[e] && gsfpass_DPHIIN[e] && gsfpass_HADEM[e] && gsfpass_SIGMAIETAIETA[e] && gsfpass_E2X5OVER5X5[e] && gsfpass_ISOLEMHADDEPTH1[e] && gsfpass_ISOLHADDEPTH2[e] && gsfpass_ISOLPTTRKS[e] && gsfpass_NOMISSINGHITS[e];
       
 
       //debugcounter++;
@@ -1900,15 +1921,9 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   //debugcounter++;
   //cout<<"outdebug "<<debugcounter<<endl;
 
-  
-  //HOMEMADE SKIMMING!!!
-  if (gsfPtMax>25.) mytree->Fill();
-
-  //if (gsfPtMax>25. && muonPtMax>25.) mytree->Fill(); // SKIM 1ele1muon
-  //mytree->Fill();
+  mytree->Fill();
 
   //cout<<"ici 6  "<<endl;
-    }
    
 }//end of analyze method
 
@@ -1919,7 +1934,7 @@ void GsfCheckerTree::beginRun(edm::Run const& iRun, edm::EventSetup const& iSetu
 {
   using namespace std;
   using namespace edm;
-  
+ 
   cout<<"dans beginrun run number"<<iRun.id()<<" and n = "<<hlNames_.size()<<endl;
 
   bool changed (true);
@@ -1941,30 +1956,29 @@ void GsfCheckerTree::beginRun(edm::Run const& iRun, edm::EventSetup const& iSetu
       hlErrors_.resize(n);
       posL1s_.resize(n);
       posPre_.resize(n);
-      for (unsigned int i=0; i<200; i++) {
+      cout << "HLT menu: " << hltConfig_.tableName() << endl;
+      for (unsigned int i = 0; i < n; ++i) {
  	hlWasRunTab[i]=0;
 	hlAcceptTab[i]=0;
 	hlErrorTab[i]=0;
+        cout << "hlNames(" << i << ") = " << hlNames_.at(i) << endl;
+        hlWasRun_[i]=0;
+        hltL1s_[i]=0;
+        hltPre_[i]=0;
+        hlAccept_[i]=0;
+        hlErrors_[i]=0;
+        posL1s_[i]=-1;
+        posPre_[i]=-1;
+        const std::vector<std::string>& moduleLabels(hltConfig_.moduleLabels(i));
+        for (unsigned int j=0; j<moduleLabels.size(); ++j) {
+          if (hltConfig_.moduleType(moduleLabels[j])=="HLTLevel1GTSeed") {
+            posL1s_[i]=j;
+          }
+          if (hltConfig_.moduleType(moduleLabels[j])=="HLTPrescaler"   ) {
+            posPre_[i]=j;
+          }
+        }
       }
-     for (unsigned int i=0; i!=n; ++i) {
-       cout<<"hlNames("<<i<<") = "<<hlNames_.at(i)<<endl;
-       hlWasRun_[i]=0;
-	hltL1s_[i]=0;
-	hltPre_[i]=0;
-	hlAccept_[i]=0;
-	hlErrors_[i]=0;
-	posL1s_[i]=-1;
-	posPre_[i]=-1;
-	const std::vector<std::string>& moduleLabels(hltConfig_.moduleLabels(i));
-	for (unsigned int j=0; j<moduleLabels.size(); ++j) {
-	  if (hltConfig_.moduleType(moduleLabels[j])=="HLTLevel1GTSeed") {
-	    posL1s_[i]=j;
-	  }
-	  if (hltConfig_.moduleType(moduleLabels[j])=="HLTPrescaler"   ) {
-	    posPre_[i]=j;
-	  }
-	}
-     }
     }
   } else {
     // dump previous
@@ -2024,26 +2038,39 @@ GsfCheckerTree::beginJob()
   mytree->Branch("hlNamesTab",&hlNamesTab,"hlNamesTab/C");
   mytree->Branch("hlNames_",&hlNames_);
 
-  mytree->Branch("HLT_Ele10_SW_EleId_L1R",&HLT_Ele10_SW_EleId_L1R,"HLT_Ele10_SW_EleId_L1R/I");
-  mytree->Branch("HLT_Ele10_SW_L1R",&HLT_Ele10_SW_L1R,"HLT_Ele10_SW_L1R/I");
-  mytree->Branch("HLT_Ele15_LW_L1R",&HLT_Ele15_LW_L1R,"HLT_Ele15_LW_L1R/I");
-  mytree->Branch("HLT_Ele15_SW_L1R",&HLT_Ele15_SW_L1R,"HLT_Ele15_SW_L1R/I");
-  mytree->Branch("HLT_Ele15_SW_EleId_L1R",&HLT_Ele15_SW_EleId_L1R,"HLT_Ele15_SW_EleId_L1R/I");
-  mytree->Branch("HLT_Ele15_SW_CaloEleId_L1R",&HLT_Ele15_SW_CaloEleId_L1R,"HLT_Ele15_SW_CaloEleId_L1R/I");
-  mytree->Branch("HLT_Ele15_SiStrip_L1R",&HLT_Ele15_SiStrip_L1R,"HLT_Ele15_SiStrip_L1R/I");
-  mytree->Branch("HLT_Ele20_SW_L1R",&HLT_Ele20_SW_L1R,"HLT_Ele20_SW_L1R/I");
-  mytree->Branch("HLT_Ele20_SiStrip_L1R",&HLT_Ele20_SiStrip_L1R,"HLT_Ele20_SiStrip_L1R/I");
-  mytree->Branch("HLT_Ele25_SW_L1R",&HLT_Ele25_SW_L1R,"HLT_Ele25_SW_L1R/I");
-  mytree->Branch("HLT_DoubleEle4_SW_eeRes_L1R",&HLT_DoubleEle4_SW_eeRes_L1R,"HLT_DoubleEle4_SW_eeRes_L1R/I");
-  mytree->Branch("HLT_DoubleEle10_SW_L1R",&HLT_DoubleEle10_SW_L1R,"HLT_DoubleEle10_SW_L1R/I");
-  mytree->Branch("HLT_Mu15_Photon20_CaloIdL",&HLT_Mu15_Photon20_CaloIdL,"HLT_Mu15_Photon20_CaloIdL/I"); //FROM VINCENT
-  //END FROM ARNAUD
-
   mytree->Branch("HLT_Photon20_CaloIdVL_IsoL_v1", &HLT_Photon20_CaloIdVL_IsoL_v1, "HLT_Photon20_CaloIdVL_IsoL_v1/I");
   mytree->Branch("HLT_DoublePhoton33_vx", & HLT_DoublePhoton33_vx, " HLT_DoublePhoton33_vx/I");
   mytree->Branch("HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2", &HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2, "HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2/I");
   mytree->Branch("HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2", &HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2, "HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2/I");
   mytree->Branch("HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2", &HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2, "HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2/I");
+  //END FROM ARNAUD
+
+  mytree->Branch("HLT_Mu15_Photon20_CaloIdL",&HLT_Mu15_Photon20_CaloIdL,"HLT_Mu15_Photon20_CaloIdL/I"); //FROM VINCENT
+  mytree->Branch("HLT_Mu8_Ele17_CaloIdT_CaloIsoVL",&HLT_Mu8_Ele17_CaloIdT_CaloIsoVL,"HLT_Mu8_Ele17_CaloIdT_CaloIsoVL/I");
+  mytree->Branch("HLT_Mu17_Ele8_CaloIdT_CaloIsoVL",&HLT_Mu17_Ele8_CaloIdT_CaloIsoVL,"HLT_Mu17_Ele8_CaloIdT_CaloIsoVL/I");
+  mytree->Branch("HLT_DoubleEle33_CaloIdL",&HLT_DoubleEle33_CaloIdL,"HLT_DoubleEle33_CaloIdL/I");
+  mytree->Branch("HLT_DoubleEle33_CaloIdT",&HLT_DoubleEle33_CaloIdT,"HLT_DoubleEle33_CaloIdT/I");
+  mytree->Branch("HLT_DoubleEle45_CaloIdL",&HLT_DoubleEle45_CaloIdL,"HLT_DoubleEle45_CaloIdL/I");
+  mytree->Branch("HLT_Photon225_NoHE",&HLT_Photon225_NoHE,"HLT_Photon225_NoHE/I");
+  mytree->Branch("HLT_Photon125",&HLT_Photon125,"HLT_Photon125/I");
+  mytree->Branch("HLT_Photon135",&HLT_Photon135,"HLT_Photon135/I");
+  mytree->Branch("HLT_DoublePhoton70",&HLT_DoublePhoton70,"HLT_DoublePhoton70/I");
+  mytree->Branch("HLT_DoublePhoton80",&HLT_DoublePhoton80,"HLT_DoublePhoton80/I");
+  mytree->Branch("HLT_Photon26_Photon18",&HLT_Photon26_Photon18,"HLT_Photon26_Photon18/I");
+
+  // prescale values for triggers
+  mytree->Branch("prescale_HLT_Mu15_Photon20_CaloIdL",&prescale_HLT_Mu15_Photon20_CaloIdL,"prescale_HLT_Mu15_Photon20_CaloIdL/I"); //FROM VINCENT
+  mytree->Branch("prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL",&prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL,"prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL/I");
+  mytree->Branch("prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL",&prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL,"prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL/I");
+  mytree->Branch("prescale_HLT_DoubleEle33_CaloIdL",&prescale_HLT_DoubleEle33_CaloIdL,"prescale_HLT_DoubleEle33_CaloIdL/I");
+  mytree->Branch("prescale_HLT_DoubleEle33_CaloIdT",&prescale_HLT_DoubleEle33_CaloIdT,"prescale_HLT_DoubleEle33_CaloIdT/I");
+  mytree->Branch("prescale_HLT_DoubleEle45_CaloIdL",&prescale_HLT_DoubleEle45_CaloIdL,"prescale_HLT_DoubleEle45_CaloIdL/I");
+  mytree->Branch("prescale_HLT_Photon225_NoHE",&prescale_HLT_Photon225_NoHE,"prescale_HLT_Photon225_NoHE/I");
+  mytree->Branch("prescale_HLT_Photon125",&prescale_HLT_Photon125,"prescale_HLT_Photon125/I");
+  mytree->Branch("prescale_HLT_Photon135",&prescale_HLT_Photon135,"prescale_HLT_Photon135/I");
+  mytree->Branch("prescale_HLT_DoublePhoton70",&prescale_HLT_DoublePhoton70,"prescale_HLT_DoublePhoton70/I");
+  mytree->Branch("prescale_HLT_DoublePhoton80",&prescale_HLT_DoublePhoton80,"prescale_HLT_DoublePhoton80/I");
+  mytree->Branch("prescale_HLT_Photon26_Photon18",&prescale_HLT_Photon26_Photon18,"prescale_HLT_Photon26_Photon18/I");
 
   //ok
   //GLOBAL 
@@ -2131,11 +2158,11 @@ GsfCheckerTree::beginJob()
 
 
   //Run and event number
-  mytree->Branch("runnumber",&runnumber,"runnumber/I");
-  mytree->Branch("eventnumber",&eventnumber,"eventnumber/I");
-  mytree->Branch("luminosityBlock",&luminosityBlock,"luminosityBlock/I"); //add Laurent
+  mytree->Branch("runnumber",&runnumber,"runnumber/i");
+  mytree->Branch("eventnumber",&eventnumber,"eventnumber/i");
+  mytree->Branch("luminosityBlock",&luminosityBlock,"luminosityBlock/i"); //add Laurent
 
-  mytree->Branch("eventcounter",&eventcounter,"eventcounter/I");
+  mytree->Branch("eventcounter",&eventcounter,"eventcounter/i");
 
   mytree->Branch("processid",&processid,"processid/I");
   mytree->Branch("pthat",&pthat,"pthat/F");
@@ -2270,6 +2297,7 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gsf_ecalEnergy", gsf_ecalEnergy, "gsf_ecalEnergy[gsf_size]/F");
   mytree->Branch("gsf_eOVERp", gsf_eOVERp, "gsf_eOVERp[gsf_size]/F");
   mytree->Branch("gsf_dxy", gsf_dxy, "gsf_dxy[gsf_size]/F");
+  mytree->Branch("gsf_dz", gsf_dz, "gsf_dz[gsf_size]/F");
   mytree->Branch("gsf_vz", gsf_vz, "gsf_vz[gsf_size]/F");
   mytree->Branch("gsf_nHits", gsf_nHits, "gsf_nHits[gsf_size]/I");
   mytree->Branch("gsf_nLostInnerHits", gsf_nLostInnerHits, "gsf_nLostInnerHits[gsf_size]/I");
@@ -2406,13 +2434,6 @@ GsfCheckerTree::endJob() {
 }
 
 
-
-
-
-
-
-
-
 //
 // -----------------------------------------------------------
 // -----------------------------------------------------------
@@ -2455,7 +2476,7 @@ void GsfCheckerTree::datagenerated(const edm::Event& e) {
 	    if ( (*pout)->end_vertex() != 0 )
 	      {
 		GravitonDecVtx = (*pout)->end_vertex() ;
-		HepMC::FourVector truc = (*pout)->momentum();
+		//HepMC::FourVector truc = (*pout)->momentum();
 		momboson = (*pout)->momentum();
 		break ;
 	      }
@@ -2715,9 +2736,6 @@ void GsfCheckerTree::datagenerated(const edm::Event& e) {
 }//end of datagenerated
 
 
-
-
-
 const EcalRecHitCollection * GsfCheckerTree::getEcalRecHitCollection( const reco::BasicCluster &cluster )
 {
   if ( cluster.size() == 0 ) {
@@ -2734,18 +2752,4 @@ const EcalRecHitCollection * GsfCheckerTree::getEcalRecHitCollection( const reco
   }
   return recHits;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
