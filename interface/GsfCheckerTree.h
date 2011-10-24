@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.5 2011/06/24 15:53:37 lathomas Exp $
+// $Id: GsfCheckerTree.h,v 1.6 2011/06/26 10:07:44 treis Exp $
 //
 //
 
@@ -65,6 +65,7 @@ Implementation:
 #include "RecoTracker/MeasurementDet/interface/MeasurementTracker.h"
 #include "RecoCaloTools/MetaCollections/interface/CaloRecHitMetaCollections.h"
 
+#include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 
 #include "DataFormats/EgammaReco/interface/ElectronSeedFwd.h"
 #include "DataFormats/EgammaReco/interface/ElectronSeed.h"
@@ -181,6 +182,10 @@ private:
 
   bool usegendata_;
 
+  // parameter for SKIMMING
+  double eleEtCut_;
+  double muPtCut_;
+
   int NbGsf;
 
   //L1TRIGGER
@@ -276,10 +281,10 @@ private:
   //TFile* rootfile;
   TTree* mytree;
 
-  int runnumber;
-  int eventnumber;
-  int eventcounter;
-  int luminosityBlock;
+  unsigned int runnumber;
+  unsigned int eventnumber;
+  unsigned int eventcounter;
+  unsigned int luminosityBlock;
 
   float pthat;
   float alphaqcd;
@@ -480,6 +485,7 @@ private:
   float gsf_eOVERp[100];
   float gsf_ptOVERetsc[100];
   float gsf_dxy[100];
+  float gsf_dz[100];
   float gsf_vz[100];
   int gsf_nHits[100];
   int gsf_nLostInnerHits[100];
@@ -635,9 +641,9 @@ private:
   unsigned int  nErrors_;           // # where at least one HLT had error
 
   std::vector<unsigned int> hlWasRun_; // # where HLT[i] was run
-  int hlWasRunTab[300];
-  int hlAcceptTab[300];
-  int hlErrorTab[300];
+  int hlWasRunTab[450];
+  int hlAcceptTab[450];
+  int hlErrorTab[450];
   //TString hlNamesTab[200];
   const char* hlNamesTab;
   //std::vector<unsigned int> *phlWasRun_ = &hlWasRun_; // # where HLT[i] was run
@@ -654,26 +660,37 @@ private:
 
   //individual triggers
 
-  int HLT_Ele10_SW_EleId_L1R;
-  int HLT_Ele10_SW_L1R;
-  int HLT_Ele15_LW_L1R;
-  int HLT_Ele15_SW_L1R;
-  int HLT_Ele15_SW_EleId_L1R;
-  int HLT_Ele15_SW_CaloEleId_L1R ;
-  int HLT_Ele15_SiStrip_L1R;
-  int HLT_Ele20_SW_L1R;
-  int HLT_Ele20_SiStrip_L1R;
-  int HLT_Ele25_SW_L1R;
-  int HLT_DoubleEle4_SW_eeRes_L1R;
-  int HLT_DoubleEle10_SW_L1R;
-  int HLT_Mu15_Photon20_CaloIdL; //VINCENT
- 
   int HLT_Photon20_CaloIdVL_IsoL_v1;
   int HLT_DoublePhoton33_vx;
   int HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2;
   int HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2 ;
   int HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2 ;
 
+  int HLT_Mu15_Photon20_CaloIdL; //VINCENT
+  int HLT_Mu8_Ele17_CaloIdT_CaloIsoVL; // Thomas
+  int HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+  int HLT_DoubleEle33_CaloIdL;
+  int HLT_DoubleEle33_CaloIdT;
+  int HLT_DoubleEle45_CaloIdL;
+  int HLT_Photon225_NoHE;
+  int HLT_Photon125;
+  int HLT_Photon135;
+  int HLT_DoublePhoton70;
+  int HLT_DoublePhoton80;
+  int HLT_Photon26_Photon18;
+ 
+  int prescale_HLT_Mu15_Photon20_CaloIdL;
+  int prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
+  int prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+  int prescale_HLT_DoubleEle33_CaloIdL;
+  int prescale_HLT_DoubleEle33_CaloIdT;
+  int prescale_HLT_DoubleEle45_CaloIdL;
+  int prescale_HLT_Photon225_NoHE;
+  int prescale_HLT_Photon125;
+  int prescale_HLT_Photon135;
+  int prescale_HLT_DoublePhoton70;
+  int prescale_HLT_DoublePhoton80;
+  int prescale_HLT_Photon26_Photon18;
 
 
   //-------------From Claude Charlot--------------------
