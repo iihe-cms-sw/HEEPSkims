@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.6 2011/06/26 10:07:44 treis Exp $
+// $Id: GsfCheckerTree.h,v 1.7 2011/10/24 15:02:51 treis Exp $
 //
 //
 
@@ -660,37 +660,49 @@ private:
 
   //individual triggers
 
-  int HLT_Photon20_CaloIdVL_IsoL_v1;
-  int HLT_DoublePhoton33_vx;
-  int HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2;
-  int HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2 ;
-  int HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2 ;
-
-  int HLT_Mu15_Photon20_CaloIdL; //VINCENT
-  int HLT_Mu8_Ele17_CaloIdT_CaloIsoVL; // Thomas
+  int HLT_Mu15_Photon20_CaloIdL;
+  int HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
   int HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+  int HLT_Ele8;
+  int HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT;
+  int HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL;
+  int HLT_Ele32_CaloIdL_CaloIsoVL_SC17;
+  int HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17;
   int HLT_DoubleEle33_CaloIdL;
   int HLT_DoubleEle33_CaloIdT;
   int HLT_DoubleEle45_CaloIdL;
-  int HLT_Photon225_NoHE;
+  int HLT_Photon20_CaloIdVL_IsoL;
   int HLT_Photon125;
   int HLT_Photon135;
+  int HLT_Photon200_NoHE;
+  int HLT_Photon225_NoHE;
+  int HLT_Photon26_Photon18;
+  int HLT_DoublePhoton33;
+  int HLT_DoublePhoton60;
   int HLT_DoublePhoton70;
   int HLT_DoublePhoton80;
-  int HLT_Photon26_Photon18;
  
   int prescale_HLT_Mu15_Photon20_CaloIdL;
   int prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
   int prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+  int prescale_HLT_Ele8;
+  int prescale_HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT;
+  int prescale_HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL;
+  int prescale_HLT_Ele32_CaloIdL_CaloIsoVL_SC17;
+  int prescale_HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17;
   int prescale_HLT_DoubleEle33_CaloIdL;
   int prescale_HLT_DoubleEle33_CaloIdT;
   int prescale_HLT_DoubleEle45_CaloIdL;
-  int prescale_HLT_Photon225_NoHE;
+  int prescale_HLT_Photon20_CaloIdVL_IsoL;
   int prescale_HLT_Photon125;
   int prescale_HLT_Photon135;
+  int prescale_HLT_Photon200_NoHE;
+  int prescale_HLT_Photon225_NoHE;
+  int prescale_HLT_Photon26_Photon18;
+  int prescale_HLT_DoublePhoton33;
+  int prescale_HLT_DoublePhoton60;
   int prescale_HLT_DoublePhoton70;
   int prescale_HLT_DoublePhoton80;
-  int prescale_HLT_Photon26_Photon18;
 
 
   //-------------From Claude Charlot--------------------

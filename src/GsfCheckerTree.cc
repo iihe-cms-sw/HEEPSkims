@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.6 2011/06/26 10:07:18 treis Exp $
+// $Id: GsfCheckerTree.cc,v 1.7 2011/10/24 15:05:34 treis Exp $
 //
 //
 
@@ -292,37 +292,49 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   eventnumber = iEvent.id().event();
   luminosityBlock = iEvent.id().luminosityBlock(); 
 
-  HLT_Photon20_CaloIdVL_IsoL_v1 = -10;
-  HLT_DoublePhoton33_vx = -10;
-  HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2 = -10;
-  HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2 = -10;
-  HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2 = -10;
-
-  HLT_Mu15_Photon20_CaloIdL = -10; //VINCENT
+  HLT_Mu15_Photon20_CaloIdL = -10;
   HLT_Mu8_Ele17_CaloIdT_CaloIsoVL = -10;
   HLT_Mu17_Ele8_CaloIdT_CaloIsoVL = -10;
+  HLT_Ele8 = -10;
+  HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT = -10;
+  HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL = -10;
+  HLT_Ele32_CaloIdL_CaloIsoVL_SC17 = -10;
+  HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17 = -10;
   HLT_DoubleEle33_CaloIdL = -10;
   HLT_DoubleEle33_CaloIdT = -10;
   HLT_DoubleEle45_CaloIdL = -10;
-  HLT_Photon225_NoHE = -10;
+  HLT_Photon20_CaloIdVL_IsoL = -10;
   HLT_Photon125 = -10;
   HLT_Photon135 = -10;
+  HLT_Photon200_NoHE = -10;
+  HLT_Photon225_NoHE = -10;
+  HLT_Photon26_Photon18 = -10;
+  HLT_DoublePhoton33 = -10;
+  HLT_DoublePhoton60 = -10;
   HLT_DoublePhoton70 = -10;
   HLT_DoublePhoton80 = -10;
-  HLT_Photon26_Photon18 = -10;
 
   prescale_HLT_Mu15_Photon20_CaloIdL = -10;
   prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL = -10;
   prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL = -10;
+  prescale_HLT_Ele8 = -10;
+  prescale_HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT = -10;
+  prescale_HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL = -10;
+  prescale_HLT_Ele32_CaloIdL_CaloIsoVL_SC17 = -10;
+  prescale_HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17 = -10;
   prescale_HLT_DoubleEle33_CaloIdL = -10;
   prescale_HLT_DoubleEle33_CaloIdT = -10;
   prescale_HLT_DoubleEle45_CaloIdL = -10;
-  prescale_HLT_Photon225_NoHE = -10;
+  prescale_HLT_Photon20_CaloIdVL_IsoL = -10;
   prescale_HLT_Photon125 = -10;
   prescale_HLT_Photon135 = -10;
+  prescale_HLT_Photon200_NoHE = -10;
+  prescale_HLT_Photon225_NoHE = -10;
+  prescale_HLT_Photon26_Photon18 = -10;
+  prescale_HLT_DoublePhoton33 = -10;
+  prescale_HLT_DoublePhoton60 = -10;
   prescale_HLT_DoublePhoton70 = -10;
   prescale_HLT_DoublePhoton80 = -10;
-  prescale_HLT_Photon26_Photon18 = -10;
 
 
   pthat = -5000.;
@@ -1030,11 +1042,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     //hlNamesTab[i] = hlNames_.at(i)+"\0";
     //hlNamesTab[i] = (hlNames_.at(i)).c_str();
     //cout<<"hlNamesTab[i] = "<<hlNamesTab[i]<<endl;
-    if ((hlNames_.at(i)== "HLT_Photon20_CaloIdVL_IsoL_v1") && (HLTR->accept(i) == 1)) HLT_Photon20_CaloIdVL_IsoL_v1  = 1;
-    if (((hlNames_.at(i)== "HLT_DoublePhoton33_v1") || (hlNames_.at(i)== "HLT_DoublePhoton33_v2")) && (HLTR->accept(i) == 1))  HLT_DoublePhoton33_vx = 1;
-    if ((hlNames_.at(i)== "HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2") && (HLTR->accept(i) == 1)) HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2  = 1;
-    if ((hlNames_.at(i)== "HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2") && (HLTR->accept(i) == 1)) HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2  = 1;
-    if ((hlNames_.at(i)== "HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2") && (HLTR->accept(i) == 1)) HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2  = 1;
 
     // from Thomas
     if (hlNames_.at(i).find("HLT_Mu15_Photon20_CaloIdL_v") == 0) {
@@ -1049,6 +1056,26 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       HLTR->accept(i) ? HLT_Mu17_Ele8_CaloIdT_CaloIsoVL = 1 : HLT_Mu17_Ele8_CaloIdT_CaloIsoVL = 0;
       prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
     }
+    if (hlNames_.at(i).find("HLT_Ele8_v") == 0) {
+      HLTR->accept(i) ? HLT_Ele8 = 1 : HLT_Ele8 = 0;
+      prescale_HLT_Ele8 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v") == 0) {
+      HLTR->accept(i) ? HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT = 1 : HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT = 0;
+      prescale_HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v") == 0) {
+      HLTR->accept(i) ? HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL = 1 : HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL = 0;
+      prescale_HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v") == 0) {
+      HLTR->accept(i) ? HLT_Ele32_CaloIdL_CaloIsoVL_SC17 = 1 : HLT_Ele32_CaloIdL_CaloIsoVL_SC17 = 0;
+      prescale_HLT_Ele32_CaloIdL_CaloIsoVL_SC17 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17_v") == 0) {
+      HLTR->accept(i) ? HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17 = 1 : HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17 = 0;
+      prescale_HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
     if (hlNames_.at(i).find("HLT_DoubleEle33_CaloIdL_v") == 0) {
       HLTR->accept(i) ? HLT_DoubleEle33_CaloIdL = 1 : HLT_DoubleEle33_CaloIdL = 0;
       prescale_HLT_DoubleEle33_CaloIdL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
@@ -1061,9 +1088,9 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       HLTR->accept(i) ? HLT_DoubleEle45_CaloIdL = 1 : HLT_DoubleEle45_CaloIdL = 0;
       prescale_HLT_DoubleEle45_CaloIdL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
     }
-    if (hlNames_.at(i).find("HLT_Photon225_NoHE_v") == 0) {
-      HLTR->accept(i) ? HLT_Photon225_NoHE = 1 : HLT_Photon225_NoHE = 0;
-      prescale_HLT_Photon225_NoHE = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    if (hlNames_.at(i).find("HLT_Photon20_CaloIdVL_IsoL_v") == 0) {
+      HLTR->accept(i) ? HLT_Photon20_CaloIdVL_IsoL = 1 : HLT_Photon20_CaloIdVL_IsoL = 0;
+      prescale_HLT_Photon20_CaloIdVL_IsoL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
     }
     if (hlNames_.at(i).find("HLT_Photon125_v") == 0) {
       HLTR->accept(i) ? HLT_Photon125 = 1 : HLT_Photon125 = 0;
@@ -1073,6 +1100,26 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       HLTR->accept(i) ? HLT_Photon135 = 1 : HLT_Photon135 = 0;
       prescale_HLT_Photon135 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
     }
+    if (hlNames_.at(i).find("HLT_Photon200_NoHE_v") == 0) {
+      HLTR->accept(i) ? HLT_Photon200_NoHE = 1 : HLT_Photon200_NoHE = 0;
+      prescale_HLT_Photon200_NoHE = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Photon225_NoHE_v") == 0) {
+      HLTR->accept(i) ? HLT_Photon225_NoHE = 1 : HLT_Photon225_NoHE = 0;
+      prescale_HLT_Photon225_NoHE = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Photon26_Photon18_v") == 0) {
+      HLTR->accept(i) ? HLT_Photon26_Photon18 = 1 : HLT_Photon26_Photon18 = 0;
+      prescale_HLT_Photon26_Photon18 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_DoublePhoton33_v") == 0) {
+      HLTR->accept(i) ? HLT_DoublePhoton33 = 1 : HLT_DoublePhoton33 = 0;
+      prescale_HLT_DoublePhoton33 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_DoublePhoton60_v") == 0) {
+      HLTR->accept(i) ? HLT_DoublePhoton60 = 1 : HLT_DoublePhoton60 = 0;
+      prescale_HLT_DoublePhoton60 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
     if (hlNames_.at(i).find("HLT_DoublePhoton70_v") == 0) {
       HLTR->accept(i) ? HLT_DoublePhoton70 = 1 : HLT_DoublePhoton70 = 0;
       prescale_HLT_DoublePhoton70 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
@@ -1080,10 +1127,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     if (hlNames_.at(i).find("HLT_DoublePhoton80_v") == 0) {
       HLTR->accept(i) ? HLT_DoublePhoton80 = 1 : HLT_DoublePhoton80 = 0;
       prescale_HLT_DoublePhoton80 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Photon26_Photon18_v") == 0) {
-      HLTR->accept(i) ? HLT_Photon26_Photon18 = 1 : HLT_Photon26_Photon18 = 0;
-      prescale_HLT_Photon26_Photon18 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
     }
 
   }
@@ -2037,40 +2080,52 @@ GsfCheckerTree::beginJob()
   //mytree->Branch("hlNamesTab",hlNamesTab,"hlNamesTab[200]/C");
   mytree->Branch("hlNamesTab",&hlNamesTab,"hlNamesTab/C");
   mytree->Branch("hlNames_",&hlNames_);
-
-  mytree->Branch("HLT_Photon20_CaloIdVL_IsoL_v1", &HLT_Photon20_CaloIdVL_IsoL_v1, "HLT_Photon20_CaloIdVL_IsoL_v1/I");
-  mytree->Branch("HLT_DoublePhoton33_vx", & HLT_DoublePhoton33_vx, " HLT_DoublePhoton33_vx/I");
-  mytree->Branch("HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2", &HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2, "HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v2/I");
-  mytree->Branch("HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2", &HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2, "HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2/I");
-  mytree->Branch("HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2", &HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2, "HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2/I");
   //END FROM ARNAUD
 
-  mytree->Branch("HLT_Mu15_Photon20_CaloIdL",&HLT_Mu15_Photon20_CaloIdL,"HLT_Mu15_Photon20_CaloIdL/I"); //FROM VINCENT
+  mytree->Branch("HLT_Mu15_Photon20_CaloIdL",&HLT_Mu15_Photon20_CaloIdL,"HLT_Mu15_Photon20_CaloIdL/I");
   mytree->Branch("HLT_Mu8_Ele17_CaloIdT_CaloIsoVL",&HLT_Mu8_Ele17_CaloIdT_CaloIsoVL,"HLT_Mu8_Ele17_CaloIdT_CaloIsoVL/I");
   mytree->Branch("HLT_Mu17_Ele8_CaloIdT_CaloIsoVL",&HLT_Mu17_Ele8_CaloIdT_CaloIsoVL,"HLT_Mu17_Ele8_CaloIdT_CaloIsoVL/I");
+  mytree->Branch("HLT_Ele8", &HLT_Ele8, "HLT_Ele8/I");
+  mytree->Branch("HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT", &HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT, "HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT/I");
+  mytree->Branch("HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL", &HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL, "HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL/I");
+  mytree->Branch("HLT_Ele32_CaloIdL_CaloIsoVL_SC17", &HLT_Ele32_CaloIdL_CaloIsoVL_SC17, "HLT_Ele32_CaloIdL_CaloIsoVL_SC17/I");
+  mytree->Branch("HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17", &HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17, "HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17/I");
   mytree->Branch("HLT_DoubleEle33_CaloIdL",&HLT_DoubleEle33_CaloIdL,"HLT_DoubleEle33_CaloIdL/I");
   mytree->Branch("HLT_DoubleEle33_CaloIdT",&HLT_DoubleEle33_CaloIdT,"HLT_DoubleEle33_CaloIdT/I");
   mytree->Branch("HLT_DoubleEle45_CaloIdL",&HLT_DoubleEle45_CaloIdL,"HLT_DoubleEle45_CaloIdL/I");
-  mytree->Branch("HLT_Photon225_NoHE",&HLT_Photon225_NoHE,"HLT_Photon225_NoHE/I");
+  mytree->Branch("HLT_Photon20_CaloIdVL_IsoL", &HLT_Photon20_CaloIdVL_IsoL, "HLT_Photon20_CaloIdVL_IsoL/I");
   mytree->Branch("HLT_Photon125",&HLT_Photon125,"HLT_Photon125/I");
   mytree->Branch("HLT_Photon135",&HLT_Photon135,"HLT_Photon135/I");
+  mytree->Branch("HLT_Photon200_NoHE",&HLT_Photon200_NoHE,"HLT_Photon200_NoHE/I");
+  mytree->Branch("HLT_Photon225_NoHE",&HLT_Photon225_NoHE,"HLT_Photon225_NoHE/I");
+  mytree->Branch("HLT_Photon26_Photon18",&HLT_Photon26_Photon18,"HLT_Photon26_Photon18/I");
+  mytree->Branch("HLT_DoublePhoton33", & HLT_DoublePhoton33, " HLT_DoublePhoton33/I");
+  mytree->Branch("HLT_DoublePhoton60",&HLT_DoublePhoton60,"HLT_DoublePhoton60/I");
   mytree->Branch("HLT_DoublePhoton70",&HLT_DoublePhoton70,"HLT_DoublePhoton70/I");
   mytree->Branch("HLT_DoublePhoton80",&HLT_DoublePhoton80,"HLT_DoublePhoton80/I");
-  mytree->Branch("HLT_Photon26_Photon18",&HLT_Photon26_Photon18,"HLT_Photon26_Photon18/I");
 
   // prescale values for triggers
-  mytree->Branch("prescale_HLT_Mu15_Photon20_CaloIdL",&prescale_HLT_Mu15_Photon20_CaloIdL,"prescale_HLT_Mu15_Photon20_CaloIdL/I"); //FROM VINCENT
+  mytree->Branch("prescale_HLT_Mu15_Photon20_CaloIdL",&prescale_HLT_Mu15_Photon20_CaloIdL,"prescale_HLT_Mu15_Photon20_CaloIdL/I");
   mytree->Branch("prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL",&prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL,"prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL/I");
   mytree->Branch("prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL",&prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL,"prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL/I");
+  mytree->Branch("prescale_HLT_Ele8",&prescale_HLT_Ele8,"prescale_HLT_Ele8/I");
+  mytree->Branch("prescale_HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT",&prescale_HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT,"prescale_HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT/I");
+  mytree->Branch("prescale_HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL",&prescale_HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL,"prescale_HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL/I");
+  mytree->Branch("prescale_HLT_Ele32_CaloIdL_CaloIsoVL_SC17",&prescale_HLT_Ele32_CaloIdL_CaloIsoVL_SC17,"prescale_HLT_Ele32_CaloIdL_CaloIsoVL_SC17/I");
+  mytree->Branch("prescale_HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17",&prescale_HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17,"prescale_HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17/I");
   mytree->Branch("prescale_HLT_DoubleEle33_CaloIdL",&prescale_HLT_DoubleEle33_CaloIdL,"prescale_HLT_DoubleEle33_CaloIdL/I");
   mytree->Branch("prescale_HLT_DoubleEle33_CaloIdT",&prescale_HLT_DoubleEle33_CaloIdT,"prescale_HLT_DoubleEle33_CaloIdT/I");
   mytree->Branch("prescale_HLT_DoubleEle45_CaloIdL",&prescale_HLT_DoubleEle45_CaloIdL,"prescale_HLT_DoubleEle45_CaloIdL/I");
-  mytree->Branch("prescale_HLT_Photon225_NoHE",&prescale_HLT_Photon225_NoHE,"prescale_HLT_Photon225_NoHE/I");
+  mytree->Branch("prescale_HLT_Photon20_CaloIdVL_IsoL",&prescale_HLT_Photon20_CaloIdVL_IsoL,"prescale_HLT_Photon20_CaloIdVL_IsoL/I");
   mytree->Branch("prescale_HLT_Photon125",&prescale_HLT_Photon125,"prescale_HLT_Photon125/I");
   mytree->Branch("prescale_HLT_Photon135",&prescale_HLT_Photon135,"prescale_HLT_Photon135/I");
+  mytree->Branch("prescale_HLT_Photon200_NoHE",&prescale_HLT_Photon200_NoHE,"prescale_HLT_Photon200_NoHE/I");
+  mytree->Branch("prescale_HLT_Photon225_NoHE",&prescale_HLT_Photon225_NoHE,"prescale_HLT_Photon225_NoHE/I");
+  mytree->Branch("prescale_HLT_Photon26_Photon18",&prescale_HLT_Photon26_Photon18,"prescale_HLT_Photon26_Photon18/I");
+  mytree->Branch("prescale_HLT_DoublePhoton33",&prescale_HLT_DoublePhoton33,"prescale_HLT_DoublePhoton33/I");
+  mytree->Branch("prescale_HLT_DoublePhoton60",&prescale_HLT_DoublePhoton60,"prescale_HLT_DoublePhoton60/I");
   mytree->Branch("prescale_HLT_DoublePhoton70",&prescale_HLT_DoublePhoton70,"prescale_HLT_DoublePhoton70/I");
   mytree->Branch("prescale_HLT_DoublePhoton80",&prescale_HLT_DoublePhoton80,"prescale_HLT_DoublePhoton80/I");
-  mytree->Branch("prescale_HLT_Photon26_Photon18",&prescale_HLT_Photon26_Photon18,"prescale_HLT_Photon26_Photon18/I");
 
   //ok
   //GLOBAL 
