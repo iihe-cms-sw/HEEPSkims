@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.8 2011/11/02 17:51:01 treis Exp $
+// $Id: GsfCheckerTree.cc,v 1.9 2011/11/03 11:23:37 treis Exp $
 //
 //
 
@@ -304,6 +304,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   HLT_Ele32_CaloIdL_CaloIsoVL_SC17 = -10;
   HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17 = -10;
   HLT_DoubleEle33_CaloIdL = -10;
+  HLT_DoubleEle33_CaloIdL_CaloIsoT = -10;
   HLT_DoubleEle33_CaloIdT = -10;
   HLT_DoubleEle45_CaloIdL = -10;
   HLT_Photon20_CaloIdVL_IsoL = -10;
@@ -335,6 +336,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   prescale_HLT_Ele32_CaloIdL_CaloIsoVL_SC17 = -10;
   prescale_HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17 = -10;
   prescale_HLT_DoubleEle33_CaloIdL = -10;
+  prescale_HLT_DoubleEle33_CaloIdL_CaloIsoT = -10;
   prescale_HLT_DoubleEle33_CaloIdT = -10;
   prescale_HLT_DoubleEle45_CaloIdL = -10;
   prescale_HLT_Photon20_CaloIdVL_IsoL = -10;
@@ -1109,6 +1111,10 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     if (hlNames_.at(i).find("HLT_DoubleEle33_CaloIdL_v") == 0) {
       HLTR->accept(i) ? HLT_DoubleEle33_CaloIdL = 1 : HLT_DoubleEle33_CaloIdL = 0;
       prescale_HLT_DoubleEle33_CaloIdL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_DoubleEle33_CaloIdL_CaloIsoT_v") == 0) {
+      HLTR->accept(i) ? HLT_DoubleEle33_CaloIdL_CaloIsoT = 1 : HLT_DoubleEle33_CaloIdL_CaloIsoT = 0;
+      prescale_HLT_DoubleEle33_CaloIdL_CaloIsoT = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
     }
     if (hlNames_.at(i).find("HLT_DoubleEle33_CaloIdT_v") == 0) {
       HLTR->accept(i) ? HLT_DoubleEle33_CaloIdT = 1 : HLT_DoubleEle33_CaloIdT = 0;
@@ -2148,6 +2154,7 @@ GsfCheckerTree::beginJob()
   mytree->Branch("HLT_Ele32_CaloIdL_CaloIsoVL_SC17", &HLT_Ele32_CaloIdL_CaloIsoVL_SC17, "HLT_Ele32_CaloIdL_CaloIsoVL_SC17/I");
   mytree->Branch("HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17", &HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17, "HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17/I");
   mytree->Branch("HLT_DoubleEle33_CaloIdL",&HLT_DoubleEle33_CaloIdL,"HLT_DoubleEle33_CaloIdL/I");
+  mytree->Branch("HLT_DoubleEle33_CaloIdL_CaloIsoT",&HLT_DoubleEle33_CaloIdL_CaloIsoT,"HLT_DoubleEle33_CaloIdL_CaloIsoT/I");
   mytree->Branch("HLT_DoubleEle33_CaloIdT",&HLT_DoubleEle33_CaloIdT,"HLT_DoubleEle33_CaloIdT/I");
   mytree->Branch("HLT_DoubleEle45_CaloIdL",&HLT_DoubleEle45_CaloIdL,"HLT_DoubleEle45_CaloIdL/I");
   mytree->Branch("HLT_Photon20_CaloIdVL_IsoL", &HLT_Photon20_CaloIdVL_IsoL, "HLT_Photon20_CaloIdVL_IsoL/I");
@@ -2180,6 +2187,7 @@ GsfCheckerTree::beginJob()
   mytree->Branch("prescale_HLT_Ele32_CaloIdL_CaloIsoVL_SC17",&prescale_HLT_Ele32_CaloIdL_CaloIsoVL_SC17,"prescale_HLT_Ele32_CaloIdL_CaloIsoVL_SC17/I");
   mytree->Branch("prescale_HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17",&prescale_HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17,"prescale_HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17/I");
   mytree->Branch("prescale_HLT_DoubleEle33_CaloIdL",&prescale_HLT_DoubleEle33_CaloIdL,"prescale_HLT_DoubleEle33_CaloIdL/I");
+  mytree->Branch("prescale_HLT_DoubleEle33_CaloIdL_CaloIsoT",&prescale_HLT_DoubleEle33_CaloIdL_CaloIsoT,"prescale_HLT_DoubleEle33_CaloIdL_CaloIsoT/I");
   mytree->Branch("prescale_HLT_DoubleEle33_CaloIdT",&prescale_HLT_DoubleEle33_CaloIdT,"prescale_HLT_DoubleEle33_CaloIdT/I");
   mytree->Branch("prescale_HLT_DoubleEle45_CaloIdL",&prescale_HLT_DoubleEle45_CaloIdL,"prescale_HLT_DoubleEle45_CaloIdL/I");
   mytree->Branch("prescale_HLT_Photon20_CaloIdVL_IsoL",&prescale_HLT_Photon20_CaloIdVL_IsoL,"prescale_HLT_Photon20_CaloIdVL_IsoL/I");

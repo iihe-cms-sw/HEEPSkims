@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.8 2011/11/02 17:51:40 treis Exp $
+// $Id: GsfCheckerTree.h,v 1.9 2011/11/03 11:24:00 treis Exp $
 //
 //
 
@@ -672,6 +672,7 @@ private:
   int HLT_Ele32_CaloIdL_CaloIsoVL_SC17;
   int HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17;
   int HLT_DoubleEle33_CaloIdL;
+  int HLT_DoubleEle33_CaloIdL_CaloIsoT;
   int HLT_DoubleEle33_CaloIdT;
   int HLT_DoubleEle45_CaloIdL;
 
@@ -705,6 +706,7 @@ private:
   int prescale_HLT_Ele32_CaloIdL_CaloIsoVL_SC17;
   int prescale_HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17;
   int prescale_HLT_DoubleEle33_CaloIdL;
+  int prescale_HLT_DoubleEle33_CaloIdL_CaloIsoT;
   int prescale_HLT_DoubleEle33_CaloIdT;
   int prescale_HLT_DoubleEle45_CaloIdL;
 
