@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.7 2011/10/24 15:02:51 treis Exp $
+// $Id: GsfCheckerTree.h,v 1.8 2011/11/02 17:51:40 treis Exp $
 //
 //
 
@@ -659,10 +659,13 @@ private:
   HLTConfigProvider hltConfig_;        // to get configuration for L1s/Pre
 
   //individual triggers
-
+  int HLT_Mu15;
+  int HLT_Mu30;
+  int HLT_Mu40_eta2p1;
   int HLT_Mu15_Photon20_CaloIdL;
   int HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
   int HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+
   int HLT_Ele8;
   int HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT;
   int HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL;
@@ -671,20 +674,31 @@ private:
   int HLT_DoubleEle33_CaloIdL;
   int HLT_DoubleEle33_CaloIdT;
   int HLT_DoubleEle45_CaloIdL;
+
   int HLT_Photon20_CaloIdVL_IsoL;
+  int HLT_Photon30_CaloIdVL;
+  int HLT_Photon50_CaloIdVL;
+  int HLT_Photon50_CaloIdVL_IsoL;
+  int HLT_Photon75_CaloIdVL;
+  int HLT_Photon90_CaloIdVL;
   int HLT_Photon125;
   int HLT_Photon135;
   int HLT_Photon200_NoHE;
   int HLT_Photon225_NoHE;
   int HLT_Photon26_Photon18;
+  int HLT_Photon36_Photon22;
   int HLT_DoublePhoton33;
   int HLT_DoublePhoton60;
   int HLT_DoublePhoton70;
   int HLT_DoublePhoton80;
  
+  int prescale_HLT_Mu15;
+  int prescale_HLT_Mu30;
+  int prescale_HLT_Mu40_eta2p1;
   int prescale_HLT_Mu15_Photon20_CaloIdL;
   int prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
   int prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+
   int prescale_HLT_Ele8;
   int prescale_HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT;
   int prescale_HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL;
@@ -693,12 +707,19 @@ private:
   int prescale_HLT_DoubleEle33_CaloIdL;
   int prescale_HLT_DoubleEle33_CaloIdT;
   int prescale_HLT_DoubleEle45_CaloIdL;
+
   int prescale_HLT_Photon20_CaloIdVL_IsoL;
+  int prescale_HLT_Photon30_CaloIdVL;
+  int prescale_HLT_Photon50_CaloIdVL;
+  int prescale_HLT_Photon50_CaloIdVL_IsoL;
+  int prescale_HLT_Photon75_CaloIdVL;
+  int prescale_HLT_Photon90_CaloIdVL;
   int prescale_HLT_Photon125;
   int prescale_HLT_Photon135;
   int prescale_HLT_Photon200_NoHE;
   int prescale_HLT_Photon225_NoHE;
   int prescale_HLT_Photon26_Photon18;
+  int prescale_HLT_Photon36_Photon22;
   int prescale_HLT_DoublePhoton33;
   int prescale_HLT_DoublePhoton60;
   int prescale_HLT_DoublePhoton70;
