@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.10 2011/11/03 13:40:20 treis Exp $
+// $Id: GsfCheckerTree.h,v 1.11 2011/11/10 13:42:42 lathomas Exp $
 //
 //
 
@@ -32,13 +32,6 @@ Implementation:
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 
-// #include "DataFormats/CaloRecHit/interface/CaloCluster.h"
-// #include "DataFormats/CaloRecHit/interface/CaloClusterFwd.h"
-
-
-// #include "DataFormats/EgammaReco/interface/SuperCluster.h"
-// #include "DataFormats/EgammaReco/interface/SuperClusterFwd.h"
-//#include "DataFormats/EgammaReco/interface/SeedSuperClusterAssociation.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectronFwd.h"
 #include "DataFormats/GsfTrackReco/interface/GsfTrackFwd.h"
@@ -51,12 +44,7 @@ Implementation:
 #include "DataFormats/MuonReco/interface/MuonQuality.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/TrajectorySeed/interface/TrajectorySeedCollection.h"
-//#include "DataFormats/PixelMatchTrackReco/interface/GsfTrackSeedAssociation.h"
-
 #include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
-
-//#include "DataFormats/TrackCandidate/interface/TrackCandidateSeedAssociation.h"
-//#include "DataFormats/TrackCandidate/interface/TrackCandidateCollection.h"
 
 #include "MagneticField/Engine/interface/MagneticField.h"
 #include "TrackingTools/MaterialEffects/interface/PropagatorWithMaterial.h"
@@ -108,17 +96,11 @@ Implementation:
 
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-
 #include "FWCore/Framework/interface/Event.h"
-//#include "FWCore/ParameterSet/interface/InputTag.h"
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
-
-//#include "DQMServices/Core/interface/DQMStore.h"
-//#include "DQMServices/Core/interface/MonitorElement.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
 
@@ -135,7 +117,6 @@ class MultiTrajectoryStateTransform ;
 class MultiTrajectoryStateMode ;
 class TFile;
 class CaloCluster;
-//class GsfTrack;
 
 class GsfCheckerTree : public edm::EDAnalyzer {
 
@@ -144,26 +125,20 @@ public:
   ~GsfCheckerTree();
   void datagenerated(const edm::Event& e);
 
-
-  //typedef edm::RefToBase<CaloCluster> CaloClusterRef;
-
 private:
   virtual void beginJob() ;
   virtual void analyze(const edm::Event&, const edm::EventSetup&);
   virtual void endJob() ;
   virtual void beginRun(edm::Run const&, edm::EventSetup const&);
-  //GlobalVector getTSOS(const GsfTrack &t);
   void setupES(const edm::EventSetup& es);
 
   typedef std::list<reco::GsfElectron *> GsfElectronPtrCollection ;
-  const EcalRecHitCollection * getEcalRecHitCollection( const reco::BasicCluster &cluster );
+ 
  
 
 
   // ----------member data ---------------------------
 
-  //Added from Vincent
-  //------------------------------------
   /// this will be the name of the output file 
   std::string outputFileName_;
   /// number of events for which to print the 
@@ -199,8 +174,8 @@ private:
   int PhysDecl_bool;
   
   //GLOBAL
-  int nJetsAKT_pt15;
-  //  int nJetsIC5_pt15;
+
+
   float calomet;
   float calomet_eta;
   float calomet_phi;
@@ -210,16 +185,15 @@ private:
   float pfmet_phi;
   float mass;
 
-  //JETS
+  //JETS 
+  int nJetsAKT_pt15;
   int jetAKT_size;
-
   float jetAKT_pt[50];
   float jetAKT_eta[50];
   float jetAKT_phi[50];
   float jetAKT_em[50];
-  
+   //  int nJetsIC5_pt15; 
 //   int jetIC5_size;
-
 //   float jetIC5_pt[100];
 //   float jetIC5_eta[100];
 //   float jetIC5_phi[100];
@@ -228,7 +202,6 @@ private:
 
   //MUON
   int muon_size;
-
   float muon_pt[100];
   float muon_ptError[100];
   float muon_eta[100];
@@ -282,8 +255,6 @@ private:
   float muon_innerPosz[100];
   //--------------------------------
 
-
-  //TFile* rootfile;
   TTree* mytree;
 
   unsigned int runnumber;
@@ -388,11 +359,6 @@ private:
   int pv_nTracks[20];
   float pv_normChi2[20];
   int pv_totTrackSize[20];
-
-  //Superclusters matching gen electrons
-  //In case of several SC matching a gen elec
-  //we take the one with higher energy
-  //i.e. sorting SC first before matching
 
   float scelecenergy;
   float sceleceta;
@@ -506,7 +472,6 @@ private:
   float gsf_e5x5[100];
 
   float gsf_eMax[100];
-  float gsf_SwissCross[100];
   float gsf_e1x3[100];
   float gsf_e3x1[100];
   //float gsf_e1x5[100];
@@ -639,9 +604,6 @@ private:
   bool gsftrackhasgsfcore[100];
 
   
-  // triggers from Arnaud
-
-  //edm::InputTag hlTriggerResults_;  // Input tag for TriggerResults
 
   unsigned int  nEvents_;           // number of events processed
 
@@ -653,9 +615,7 @@ private:
   int hlWasRunTab[450];
   int hlAcceptTab[450];
   int hlErrorTab[450];
-  //TString hlNamesTab[200];
   const char* hlNamesTab;
-  //std::vector<unsigned int> *phlWasRun_ = &hlWasRun_; // # where HLT[i] was run
   std::vector<unsigned int> hltL1s_;   // # of events after L1 seed
   std::vector<unsigned int> hltPre_;   // # of events after HLT prescale
   std::vector<unsigned int> hlAccept_; // # of events accepted by HLT[i]
