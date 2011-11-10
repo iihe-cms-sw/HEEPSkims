@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.9 2011/11/03 11:24:00 treis Exp $
+// $Id: GsfCheckerTree.h,v 1.10 2011/11/03 13:40:20 treis Exp $
 //
 //
 
@@ -202,7 +202,12 @@ private:
   int nJetsAKT_pt15;
   //  int nJetsIC5_pt15;
   float calomet;
+  float calomet_eta;
+  float calomet_phi;
   float met;
+  float pfmet; 
+  float pfmet_eta;
+  float pfmet_phi;
   float mass;
 
   //JETS
@@ -490,6 +495,10 @@ private:
   int gsf_nHits[100];
   int gsf_nLostInnerHits[100];
   int gsf_nLostOuterHits[100];
+  int gsf_convFlags[100];
+  float gsf_convDist[100];
+  float gsf_convDcot[100];
+  float gsf_convRadius[100];
   float gsf_fBrem[100];
   //float gsf_e1OVERe9[100];
   float gsf_e1x5[100];
@@ -533,8 +542,8 @@ private:
   float gsf_hcaliso2[100];
 
   float gsf_class[100];
-  float gsf_isecaldriven[100];
-  float gsf_istrackerdriven[100];
+  int gsf_isecaldriven[100];
+  int gsf_istrackerdriven[100];
 
 
   float gsfsc_e[100];
@@ -574,7 +583,7 @@ private:
   bool gsfpass_ECALDRIVEN[100]; 
   bool gsfpass_INVALID[100];
   bool gsfpass_NOMISSINGHITS[100];
-
+  bool gsfpass_NOCONVERSION[100];
   bool gsfpass_HEEP[100];
 
   bool gsfpass_ID[100];

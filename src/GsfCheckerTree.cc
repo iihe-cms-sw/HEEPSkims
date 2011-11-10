@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.9 2011/11/03 11:23:37 treis Exp $
+// $Id: GsfCheckerTree.cc,v 1.10 2011/11/03 13:39:52 treis Exp $
 //
 //
 
@@ -133,6 +133,10 @@ using namespace reco;
 #include "DataFormats/METReco/interface/MET.h"
 #include "DataFormats/METReco/interface/METFwd.h"
 #include "DataFormats/METReco/interface/METCollection.h"
+
+#include "DataFormats/METReco/interface/PFMET.h"
+#include "DataFormats/METReco/interface/PFMETFwd.h"
+#include "DataFormats/METReco/interface/PFMETCollection.h"
 
 #include "DataFormats/JetReco/interface/CaloJet.h"
 //#include "DataFormats/JetReco/interface/CaloJetfwd.h"
@@ -577,8 +581,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     gsf_charge[i]=-1000;
     gsf_sigmaetaeta[i]=-1000.;
     gsf_sigmaIetaIeta[i]=-1000.;
-    gsf_isecaldriven[i]=-1000.;
-    gsf_istrackerdriven[i]=-1000.;
+    gsf_isecaldriven[i]=-1000;
+    gsf_istrackerdriven[i]=-1000;
 
     gsfsc_e[i]=-1000;
     gsfsc_pt[i]=-1000;
@@ -624,6 +628,10 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     gsf_dz[i] = -1.;
     gsf_vz[i] = -1.;
     gsf_nHits[i] = -1;
+    gsf_convFlags[i]= -1;
+    gsf_convDist[i]= -1;
+    gsf_convDcot[i]= -1;
+    gsf_convRadius[i] = -1;
     gsf_nLostInnerHits[i] = -1;
     gsf_nLostOuterHits[i] = -1;
     gsf_fBrem[i] = -1.;
@@ -674,7 +682,12 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   nJetsAKT_pt15 = -1;
   //  nJetsIC5_pt15 = -1;
   calomet = -1.;
+  calomet_eta = -1000; 
+  calomet_phi = -1000;
   met = -1.;
+  pfmet = -1;
+  pfmet_eta = -1000; 
+  pfmet_phi = -1000;
 
   //IC5
 //   for (unsigned int i = 0 ; i< 100 ; i++){   
@@ -1008,6 +1021,12 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   bool metisvalid = iEvent.getByLabel("htMetKT4", pMET);
   const METCollection *MET  = pMET.product();
 
+
+  edm::Handle<PFMETCollection> pPFMET;
+  bool pfmetisvalid = iEvent.getByLabel("pfMet", pPFMET);
+  const PFMETCollection *PFMET  = pPFMET.product();
+
+
 // RECO -> AOD
 //   //RECHITS
 //   //BARREL
@@ -1310,15 +1329,29 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   if(calometisvalid){
     for(CaloMETCollection::const_iterator calometiter = caloMET->begin();calometiter != caloMET->end();calometiter++){
       calomet = calometiter->et();
+      calomet_eta = calometiter->eta(); 
+      calomet_phi = calometiter->phi();
     }
   }  
   //MET
   if(metisvalid){
     for(METCollection::const_iterator metiter = MET->begin();metiter != MET->end();metiter++){
-      met = metiter->sumEt();    
+      met = metiter->sumEt();   
+
+    }
+  } 
+  //PFMET
+  if(pfmetisvalid){
+    for(PFMETCollection::const_iterator pfmetiter = PFMET->begin();pfmetiter != PFMET->end();pfmetiter++){
+      pfmet = pfmetiter->et();  
+      pfmet_eta = pfmetiter->eta(); 
+      pfmet_phi = pfmetiter->phi();
+
     }
   } 
   
+
+
   //--------------------------------
 
   //get calo towers
@@ -1835,9 +1868,10 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       gsf_sigmaIetaIeta[e] = gsfiter->sigmaIetaIeta();
       //gsf_isecaldriven[e] = gsfiter->isEcalDriven();
       //gsf_istrackerdriven[e] = gsfiter->isTrackerDriven();
-      gsf_isecaldriven[e] = gsfiter->ecalDrivenSeed();
-      gsf_istrackerdriven[e] = gsfiter->trackerDrivenSeed();
-
+      if(gsfiter->ecalDrivenSeed())  gsf_isecaldriven[e] = 1; 
+      else{gsf_isecaldriven[e] = 0;}
+      if(gsfiter->trackerDrivenSeed()) gsf_istrackerdriven[e] = 1;
+      else{gsf_istrackerdriven[e] = 0;}
 
       debugcounter++;
       //cout<<"debug "<<debugcounter<<endl;
@@ -1865,7 +1899,11 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       gsf_vz[e] = gsfiter->gsfTrack()->vz();
       gsf_nHits[e] = gsfiter->gsfTrack()->numberOfValidHits();   
       gsf_nLostInnerHits[e] = gsfiter->gsfTrack()->trackerExpectedHitsInner().numberOfLostHits();   
-      gsf_nLostOuterHits[e] = gsfiter->gsfTrack()->trackerExpectedHitsOuter().numberOfLostHits();   
+      gsf_nLostOuterHits[e] = gsfiter->gsfTrack()->trackerExpectedHitsOuter().numberOfLostHits();
+      gsf_convFlags[e] = gsfiter->convFlags();
+      gsf_convDist[e] = gsfiter->convDist();
+      gsf_convDcot[e] = gsfiter->convDcot(); 
+      gsf_convRadius[e] = gsfiter->convRadius();
       gsf_fBrem[e] = gsfiter->fbrem();
       gsf_e1x5[e] =gsfiter->e1x5() ;
       gsf_e2x5[e] =gsfiter->e2x5Max() ;
@@ -1960,6 +1998,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       bool trackisoendcap  = gsf_trackiso[e] < 5.;
 
       bool noMissingHits = gsf_nLostInnerHits[e] == 0;
+      bool noConversion = gsf_convFlags[e] != 3; 
+
 
       //Boolean HEEP cuts
       gsfpass_ET[e] = (gsfetbarrel && barrelsc) || (gsfetendcap && endcapsc); 
@@ -1977,7 +2017,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       gsfpass_ECALDRIVEN[e] = gsf_isecaldriven[e]; 
       gsfpass_INVALID[e] = true;
       gsfpass_NOMISSINGHITS[e] = noMissingHits;
-      
+      gsfpass_NOCONVERSION[e] = noConversion;
       gsfpass_ID[e] = (gsfpass_DETAIN[e] && gsfpass_DPHIIN[e] && gsfpass_HADEM[e] && gsfpass_SIGMAIETAIETA[e] && gsfpass_E2X5OVER5X5[e]);
       gsfpass_ISO[e] = (gsfpass_ISOLEMHADDEPTH1[e] && gsfpass_ISOLHADDEPTH2[e] && gsfpass_ISOLPTTRKS[e]);
 
@@ -2212,8 +2252,12 @@ GsfCheckerTree::beginJob()
   mytree->Branch("nJetsAKT_pt15", &nJetsAKT_pt15, "nJetsAKT_pt15/I");
   //mytree->Branch("nJetsIC5_pt15", &nJetsIC5_pt15, "nJetsIC5_pt15/I");
   mytree->Branch("calomet", &calomet, "calomet/F");
+  mytree->Branch("calomet_eta", &calomet_eta, "calomet_eta/F");
+  mytree->Branch("calomet_phi", &calomet_phi, "calomet_phi/F");
   mytree->Branch("met", &met, "met/F");
-
+  mytree->Branch("pfmet", &pfmet, "pfmet/F");
+  mytree->Branch("pfmet_eta", &pfmet_eta, "pfmet_eta/F");
+  mytree->Branch("pfmet_phi", &pfmet_phi, "pfmet_phi/F");
   // ok
   //JETS
 
@@ -2437,6 +2481,10 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gsf_nHits", gsf_nHits, "gsf_nHits[gsf_size]/I");
   mytree->Branch("gsf_nLostInnerHits", gsf_nLostInnerHits, "gsf_nLostInnerHits[gsf_size]/I");
   mytree->Branch("gsf_nLostOuterHits", gsf_nLostOuterHits, "gsf_nLostOuterHits[gsf_size]/I");
+  mytree->Branch("gsf_convFlags",gsf_convFlags, "gsf_convFlags[gsf_size]/I");
+  mytree->Branch("gsf_convDist",gsf_convDist, "gsf_convDist[gsf_size]/F");
+  mytree->Branch("gsf_convDcot",gsf_convDcot, "gsf_convDcot[gsf_size]/F");
+  mytree->Branch("gsf_convRadius",gsf_convRadius, "gsf_convRadius[gsf_size]/F");
   mytree->Branch("gsf_fBrem", gsf_fBrem, "gsf_fBrem[gsf_size]/F");
   mytree->Branch("gsf_e1x5", gsf_e1x5, "gsf_e1x5[gsf_size]/F");
   mytree->Branch("gsf_e2x5", gsf_e2x5, "gsf_e2x5[gsf_size]/F");
@@ -2489,8 +2537,8 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gsf_charge",&gsf_charge,"gsf_charge[gsf_size]/I");
   mytree->Branch("gsf_sigmaetaeta",&gsf_sigmaetaeta,"gsf_sigmaetaeta[gsf_size]/F");
   mytree->Branch("gsf_sigmaIetaIeta",&gsf_sigmaIetaIeta,"gsf_sigmaIetaIeta[gsf_size]/F");
-  mytree->Branch("gsf_isecaldriven",&gsf_isecaldriven,"gsf_isecaldriven[gsf_size]/F");
-  mytree->Branch("gsf_istrackerdriven",&gsf_istrackerdriven,"gsf_istrackerdriven[gsf_size]/F");
+  mytree->Branch("gsf_isecaldriven",&gsf_isecaldriven,"gsf_isecaldriven[gsf_size]/I");
+  mytree->Branch("gsf_istrackerdriven",&gsf_istrackerdriven,"gsf_istrackerdriven[gsf_size]/I");
 	  
   mytree->Branch("gsfsc_e",&gsfsc_e,"gsfsc_e[gsf_size]/F");
   mytree->Branch("gsfsc_pt",&gsfsc_pt,"gsfsc_pt[gsf_size]/F");
@@ -2525,7 +2573,7 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gsfpass_ECALDRIVEN",&gsfpass_ECALDRIVEN,"gsfpass_ECALDRIVEN[gsf_size]/O");  
   mytree->Branch("gsfpass_INVALID",&gsfpass_INVALID,"gsfpass_INVALID[gsf_size]/O");  
   mytree->Branch("gsfpass_NOMISSINGHITS",&gsfpass_NOMISSINGHITS,"gsfpass_NOMISSINGHITS[gsf_size]/O");  
-
+  mytree->Branch("gsfpass_NOCONVERSION",&gsfpass_NOCONVERSION,"gsfpass_NOCONVERSION[gsf_size]/O");  
   mytree->Branch("gsfpass_HEEP",&gsfpass_HEEP,"gsfpass_HEEP[gsf_size]/O");  
 
   mytree->Branch("gsfpass_ID",&gsfpass_ID,"gsfpass_ID[gsf_size]/O");  
