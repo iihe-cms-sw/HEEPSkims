@@ -65,13 +65,22 @@ process.options = cms.untracked.PSet(
 )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(20000)
+    input = cms.untracked.int32(6000)
 )
 
 process.TFileService = cms.Service("TFileService",
     fileName = cms.string('gsfcheckertree_Test.root')
 )
 
+## # Primary vertex filter
+process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
+                                           vertexCollection = cms.InputTag('offlinePrimaryVertices'),
+                                           minimumNDOF = cms.uint32 (4),
+                                           maxAbsZ = cms.double (24), #too tight?
+                                           maxd0 = cms.double (2)
+                                           )
+process.primaryVertexPath = cms.Path(process.primaryVertexFilter)
+
 process.load("UserCode.HEEPSkims.gsfcheckertree_cfi")
-process.p1 = cms.Path(process.gsfcheckerjob)
+process.p1 = cms.Path(process.primaryVertexFilter*process.gsfcheckerjob) 
 ##process.outpath = cms.EndPath(process.out)
