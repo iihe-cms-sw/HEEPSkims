@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.11 2011/11/10 13:42:42 lathomas Exp $
+// $Id: GsfCheckerTree.cc,v 1.12 2011/11/10 15:21:29 lathomas Exp $
 //
 //
 
@@ -659,6 +659,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     muon_nhitstrack[i] = -1;
     muon_nhitsmuons[i] = -1;
     muon_nhitstotal[i] = -1;
+    muon_nlayerswithhits[i] = -1;
+    muon_nlosthits[i] = -1;
     muon_nSegmentMatch[i] = -1;
     muon_isTrackerMuon[i] = false;
     muon_chi2[i] = -1.;
@@ -1126,6 +1128,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       muon_nhitstrack[index_mu] = muIt->globalTrack()->hitPattern().numberOfValidTrackerHits();
       muon_nhitsmuons[index_mu] = muIt->globalTrack()->hitPattern().numberOfValidMuonHits();
       muon_nhitstotal[index_mu] = muIt->globalTrack()->numberOfValidHits();
+      muon_nlayerswithhits[index_mu] = muIt->globalTrack()->hitPattern().trackerLayersWithMeasurement();
       muon_nlosthits[index_mu] = muIt->globalTrack()->numberOfLostHits();
       muon_nSegmentMatch[index_mu] = muIt->numberOfMatches();
 
@@ -1882,6 +1885,7 @@ GsfCheckerTree::beginJob()
   mytree->Branch("muon_nhitstrack", muon_nhitstrack, "muon_nhitstrack[muon_size]/I");
   mytree->Branch("muon_nhitsmuons", muon_nhitsmuons, "muon_nhitsmuons[muon_size]/I");
   mytree->Branch("muon_nhitstotal", muon_nhitstotal, "muon_nhitstotal[muon_size]/I");
+  mytree->Branch("muon_nlayerswithhits", muon_nlayerswithhits, "muon_nlayerswithhits[muon_size]/I");
   mytree->Branch("muon_nlosthits", muon_nlosthits, "muon_nlosthits[muon_size]/I");
   mytree->Branch("muon_nSegmentMatch", muon_nSegmentMatch, "muon_nSegmentMatch[muon_size]/I");
   mytree->Branch("muon_isTrackerMuon", muon_isTrackerMuon, "muon_isTrackerMuon[muon_size]/B");

@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.11 2011/11/10 13:42:42 lathomas Exp $
+// $Id: GsfCheckerTree.h,v 1.12 2011/11/10 15:21:29 lathomas Exp $
 //
 //
 
@@ -222,6 +222,7 @@ private:
   int muon_nhitstrack[100];
   int muon_nhitsmuons[100];
   int muon_nhitstotal[100];
+  int muon_nlayerswithhits[100];
   int muon_nlosthits[100];
   int muon_nSegmentMatch[100];
   bool muon_isTrackerMuon[100];
