@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.12 2011/11/10 15:21:29 lathomas Exp $
+// $Id: GsfCheckerTree.h,v 1.13 2011/11/29 16:50:35 treis Exp $
 //
 //
 
@@ -155,8 +155,6 @@ private:
   bool ForZee;
   bool ForData;
 
-  bool usegendata_;
-
   // parameter for SKIMMING
   double eleEtCut_;
   double muPtCut_;
@@ -270,41 +268,44 @@ private:
   int processid;
   float weight;
 
+
+  int genparticles_size;
   //Generated variables (after FSR)
-  float genelec_e_var;
-  float genelec_eta_var;
-  float genelec_phi_var;
-  float genelec_et_var;
-  float genposi_e_var;
-  float genposi_eta_var;
-  float genposi_phi_var;
-  float genposi_et_var;
-  int genelec_hassc_var;
-  int genposi_hassc_var;
+  double	genele_e[20];
+  double	genele_pt[20];
+  double	genele_px[20]; 
+  double	genele_py[20]; 
+  double	genele_pz[20]; 
+  double	genele_eta[20]; 
+  double	genele_phi[20];
+  int	genele_charge[20];
+
 
   //Generated variables (before FSR)
-  float unstablegenelec_e_var;
-  float unstablegenelec_eta_var;
-  float unstablegenelec_phi_var;
-  float unstablegenelec_et_var;
-  float unstablegenposi_e_var;
-  float unstablegenposi_eta_var;
-  float unstablegenposi_phi_var;
-  float unstablegenposi_et_var;
+  double unstableGenEle_e[20];
+  double unstableGenEle_pt[20];
+  double unstableGenEle_px[20];
+  double unstableGenEle_py[20];
+  double unstableGenEle_pz[20]; 
+  double unstableGenEle_eta[20];
+  double unstableGenEle_phi[20]; 
+  int unstableGenEle_charge[20];
+  
 
   //Generated variables (Z variables)
-  float genboson_m_var;
-  float genboson_eta_var;
-  float genboson_phi_var;
-  float genboson_e_var;
-  float genboson_ez_var;
-  float genboson_et_var;
-  float genboson_p_var;
-  float genboson_pt_var;
-  float genboson_pz_var;
+  double genelemom_e[20]; 
+  double genelemom_pt[20]; 
+  double genelemom_px[20];
+  double genelemom_py[20]; 
+  double genelemom_pz[20]; 
+  double genelemom_eta[20];  
+  double genelemom_phi[20]; 
+  int genelemom_charge[20];
+  double genelemom_mass[20];
+  int genelemom_pdgid[20];
 
-  float x1quark;
-  float x2quark;
+  float x1quark[10];
+  float x2quark[10];
 
   //genelec
   bool genelechassc;

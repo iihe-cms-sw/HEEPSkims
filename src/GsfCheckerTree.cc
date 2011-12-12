@@ -13,9 +13,9 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.12 2011/11/10 15:21:29 lathomas Exp $
+// $Id: GsfCheckerTree.cc,v 1.13 2011/11/29 16:50:36 treis Exp $
 //
-//
+//Cleaning ladies : Thomas and Laurent
 
 //TRIGGER ARNAUD
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetupFwd.h"
@@ -60,7 +60,7 @@ Implementation:
 #include "Geometry/Records/interface/CaloTopologyRecord.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
-
+//#include "LorentzVector.h"
 //For extrapolation to calo surface
 #include "PhysicsTools/IsolationAlgos/interface/PropagateToCal.h"
 
@@ -183,13 +183,8 @@ using namespace reco;
 //-----------------------------
 
 
+//this is what i added => This is what we erased 
 
-
-HepMC::FourVector momelec,momposi;
-HepMC::FourVector unstablemomelec,unstablemomposi;
-HepMC::FourVector momboson;
-
-//this is what i added
 
 int fsrposiphotonsize = 0;
 int fsrelecphotonsize = 0;
@@ -231,7 +226,7 @@ GsfCheckerTree::GsfCheckerTree(const edm::ParameterSet& iConfig)
   log_ = iConfig.getParameter<unsigned int>( "logEvents"  );
   src_ = iConfig.getParameter<edm::InputTag>( "src"  );
   hlTriggerResults_ = iConfig.getParameter<edm::InputTag> ("TriggerResultsTag");
-  usegendata_ = iConfig.getParameter<bool> ("usegendata");
+  //usegendata_ = iConfig.getParameter<bool> ("usegendata");
   eleEtCut_ = iConfig.getUntrackedParameter<double>("electronEtCut", 0.);
   muPtCut_ = iConfig.getUntrackedParameter<double>("muonPtCut", 0.);
 }
@@ -256,7 +251,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   using namespace edm;
   using namespace std;
   using namespace reco;
-
+  bool usegendata_ = !iEvent.isRealData(); 
 
   eventcounter++;
 
@@ -386,27 +381,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       && !(muonPtMax > muPtCut_ && muonPtSecondMax > muPtCut_)
      ) return;
 
-  if(usegendata_) {
-    edm::Handle<GenEventInfoProduct> GenInfoHandle;
-    bool genevtinfovalid = iEvent.getByLabel("generator",GenInfoHandle);
 
-    if(genevtinfovalid) {
-      pthat = GenInfoHandle->hasBinningValues() ? (GenInfoHandle->binningValues())[0] : 0.0 ;
-      alphaqcd = GenInfoHandle->alphaQCD();
-      alphaqed = GenInfoHandle->alphaQED();
-      qscale = GenInfoHandle->qScale();
-      processid = GenInfoHandle->signalProcessID();
-      weight = GenInfoHandle->weight();
-    }
-  }
-
-  //genelec
-  genelechassc = false;
-  genelechasgsf = false;
-
-  //genposi
-  genposihassc = false;
-  genposihasgsf = false;
 
   //FSR variables
   fsrposiphotonsize = -3;
@@ -445,8 +420,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
   
 
-  scindexforgenelec = -3;
-  scindexforgenposi = -3;
+
   scsize = -5000;
   
   //beam spot variables
@@ -457,50 +431,45 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   bsposy = -5000.;
   bsposz = -5000.;
    
-  //generated variables for the tree (after FSR)
-  genelec_e_var = -5000.;
-  genelec_eta_var = -5000.;
-  genelec_phi_var = -5000.;
-  genelec_et_var = -5000.;
-  genposi_e_var = -5000.;
-  genposi_eta_var = -5000.;
-  genposi_phi_var = -5000.;
-  genposi_et_var = -5000.;
-  genelec_hassc_var = 0;  
-  genposi_hassc_var = 0;  
-
-  //generated variables for the tree (before FSR)
-  unstablegenelec_e_var = -5000.;
-  unstablegenelec_eta_var = -5000.;
-  unstablegenelec_phi_var = -5000.;
-  unstablegenelec_et_var = -5000.;
-  unstablegenposi_e_var = -5000.;
-  unstablegenposi_eta_var = -5000.;
-  unstablegenposi_phi_var = -5000.;
-  unstablegenposi_et_var = -5000.;
-  genboson_m_var = -5000.;
-  genboson_eta_var = -5000.;
-  genboson_phi_var = -5000.;
-  genboson_e_var = -5000.;
-  genboson_et_var = -5000.;
-  genboson_ez_var = -5000.;
-  genboson_p_var = -5000.;
-  genboson_pt_var = -5000.;
-  genboson_pz_var = -5000.;
-  x1quark = -5000.;
-  x2quark = -5000;;
-
-  //supercluster matching gen variables for the tree
-  scelecenergy = -5000.;
-  sceleceta = -5000.;
-  scelecphi = -5000.;
-  scelecgsfmatched = -5000.;
-  scposienergy = -5000.;
-  scposieta = -5000.;
-  scposiphi = -5000.;
-  scposigsfmatched = -5000.;
+  genparticles_size =-10;
+  for(int i=0;i<20;i++) {
+  
+    genele_e[i] =  -5000.;
+    genele_pt[i] =  -5000.;
+    genele_px[i] = -5000.;
+    genele_py[i] = -5000.;
+    genele_pz[i] = -5000.;
+    genele_eta[i] = -5000.;
+    genele_phi[i] = -5000.;
+    genele_charge[i]= -5000;
+    
+    unstableGenEle_e[i] =  -5000.;
+    unstableGenEle_pt[i] = -5000.;
+    unstableGenEle_px[i] = -5000.;
+    unstableGenEle_py[i] = -5000.;
+    unstableGenEle_pz[i] = -5000.;
+    unstableGenEle_eta[i] = -5000.;
+    unstableGenEle_phi[i] =  -5000.;
+    unstableGenEle_charge[i]=  -5000;
+    
+    genelemom_e[i] =  -5000.;
+    genelemom_pt[i] = -5000.;
+    genelemom_px[i] =  -5000.;
+    genelemom_py[i] =  -5000.;
+    genelemom_pz[i] =  -5000.;
+    genelemom_eta[i] =  -5000.;
+    genelemom_phi[i] =  -5000.;
+    genelemom_charge[i]=  -5000;
+    genelemom_mass[i]= -5000.;
+    genelemom_pdgid[i]=  -5000;
+  }
 
 
+  for(int i=0;i<10;i++) {
+  x1quark[i] = -5000.;
+  x2quark[i] = -5000.;
+  }
+ 
   //ELE --- GSF variables
   gsf_size = -3;
   for (int i=0;i<100;i++){
@@ -601,10 +570,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     gsfctfconsistent[i] = false;
 
   }
-  gsfindexforgenelec = -3;
-  gsfindexforgenposi = -3;
-
-
 
   //------------------------------
   //Added from Vincent
@@ -697,37 +662,27 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 
   if(usegendata_){
+
+
+    edm::Handle<GenEventInfoProduct> GenInfoHandle;
+    bool genevtinfovalid = iEvent.getByLabel("generator",GenInfoHandle);
+    
+    if(genevtinfovalid) {
+      pthat = GenInfoHandle->hasBinningValues() ? (GenInfoHandle->binningValues())[0] : 0.0 ;
+      alphaqcd = GenInfoHandle->alphaQCD();
+      alphaqed = GenInfoHandle->alphaQED();
+      qscale = GenInfoHandle->qScale();
+      processid = GenInfoHandle->signalProcessID();
+      weight = GenInfoHandle->weight();
+    }
+    
+
+
     datagenerated(iEvent);
+ 
 
-    genelec_e_var = momelec.e();
-    genelec_eta_var = momelec.eta(); 
-    genelec_phi_var = momelec.phi(); 
-    genelec_et_var = momelec.e()*sin(momelec.theta()); 
-    genposi_e_var = momposi.e();
-    genposi_eta_var = momposi.eta(); 
-    genposi_phi_var = momposi.phi(); 
-    genposi_et_var = momposi.e()*sin(momposi.theta()); 
-    unstablegenelec_e_var = unstablemomelec.e();
-    unstablegenelec_eta_var = unstablemomelec.eta(); 
-    unstablegenelec_phi_var = unstablemomelec.phi(); 
-    unstablegenelec_et_var = unstablemomelec.e()*sin(unstablemomelec.theta()); 
-    unstablegenposi_e_var = unstablemomposi.e();
-    unstablegenposi_eta_var = unstablemomposi.eta(); 
-    unstablegenposi_phi_var = unstablemomposi.phi(); 
-    unstablegenposi_et_var = unstablemomposi.e()*sin(unstablemomposi.theta()); 
-    genboson_m_var = momboson.m();
-    genboson_eta_var = momboson.eta(); 
-    genboson_phi_var = momboson.phi(); 
-    genboson_e_var = momboson.e();
-    genboson_et_var = momboson.e()*sin(momboson.theta());
-    genboson_ez_var = momboson.e()*cos(momboson.theta()); 
-    genboson_p_var = sqrt(momboson.px()*momboson.px()+momboson.py()*momboson.py()+momboson.pz()*momboson.pz());
-    genboson_pt_var = sqrt(momboson.px()*momboson.px()+momboson.py()*momboson.py());
-    genboson_pz_var = momboson.pz();
-    x1quark = (genboson_m_var*genboson_m_var)/(7000.*(genboson_pz_var + sqrt(genboson_pz_var*genboson_pz_var+genboson_m_var*genboson_m_var)));
-    x2quark = (genboson_pz_var + sqrt(genboson_pz_var*genboson_pz_var+genboson_m_var*genboson_m_var))/7000.;
   }
-
+  else{genparticles_size = 1;}
 
 
   edm::Handle<TriggerResults> hltResults;
@@ -947,11 +902,9 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
 
   }
-  //hlNamesTab = (hlNames_.at(2)+"\0").c_str();
-  //cout<<"hlNamesTab = "<<hlNamesTab<<endl;
 
   for (unsigned int i=0; i!=n; ++i) {
-    //cout<<"i, HLTR->wasrun(i) , HLTR->accept(i) , HLTR->error(i) = "<<i<<", "<<HLTR->wasrun(i)<<", "<<HLTR->accept(i)<<", "<<HLTR->error(i)<<endl;
+    
     if (HLTR->wasrun(i)) hlWasRun_[i]++;
     if (HLTR->wasrun(i)) hlWasRunTab[i] = 1;
     if (!(HLTR->wasrun(i))) cout<<"hlNames(i) = "<<i<<", "<<hlNames_.at(i)<<endl;
@@ -1085,8 +1038,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   for(reco::VertexCollection::const_iterator pvIt = pvcoll->begin();pvIt != pvcoll->end(); pvIt++){
     pvx[indexpv] = pvIt->x();
     pvy[indexpv] = pvIt->y();   
-    pvz[indexpv] = pvIt->z();
-    
+    pvz[indexpv] = pvIt->z();  
     pv_isValid[indexpv] = pvIt->isValid();
     pv_ndof[indexpv] = pvIt->ndof();
     pv_nTracks[indexpv] = pvIt->nTracks();
@@ -1101,10 +1053,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   for(reco::MuonCollection::const_iterator muIt = muons->begin();muIt != muons->end(); muIt++){
     
     if (muIt->isGlobalMuon()){
-      //bool isGoodMu = isGoodMuon(const reco::MuonCollection& muIt, muon::SelectionType  GlobalMuonPromptTight);
-      
+  
       if (muIt->globalTrack()->pt() > muonPtMax) muonPtMax = muIt->globalTrack()->pt();
-
       muon_pt[index_mu] = muIt->globalTrack()->pt();
       muon_ptError[index_mu] = muIt->globalTrack()->ptError();
       muon_eta[index_mu] = muIt->globalTrack()->eta();
@@ -1112,17 +1062,14 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       muon_phi[index_mu] = muIt->globalTrack()->phi();
       muon_phiError[index_mu] = muIt->globalTrack()->phiError();
       muon_theta[index_mu] = muIt->globalTrack()->theta();
-      muon_thetaError[index_mu] = muIt->globalTrack()->thetaError();
-      
+      muon_thetaError[index_mu] = muIt->globalTrack()->thetaError();      
       muon_outerPt[index_mu] = muIt->globalTrack()->outerPt();
       muon_outerEta[index_mu] = muIt->globalTrack()->outerEta();
       muon_outerPhi[index_mu] = muIt->globalTrack()->outerPhi();
-      muon_outerTheta[index_mu] = muIt->globalTrack()->outerTheta();
-      
+      muon_outerTheta[index_mu] = muIt->globalTrack()->outerTheta();      
       muon_px[index_mu] = muIt->globalTrack()->px();
       muon_py[index_mu] = muIt->globalTrack()->py();
-      muon_pz[index_mu] = muIt->globalTrack()->pz();
-      
+      muon_pz[index_mu] = muIt->globalTrack()->pz();      
       muon_charge[index_mu] = muIt->globalTrack()->charge();
       muon_nhitspixel[index_mu] = muIt->globalTrack()->hitPattern().numberOfValidPixelHits();
       muon_nhitstrack[index_mu] = muIt->globalTrack()->hitPattern().numberOfValidTrackerHits();
@@ -1131,13 +1078,10 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       muon_nlayerswithhits[index_mu] = muIt->globalTrack()->hitPattern().trackerLayersWithMeasurement();
       muon_nlosthits[index_mu] = muIt->globalTrack()->numberOfLostHits();
       muon_nSegmentMatch[index_mu] = muIt->numberOfMatches();
-
       muon_isTrackerMuon[index_mu] = muIt->isTrackerMuon();
-
       muon_chi2[index_mu] = muIt->globalTrack()->chi2();
       muon_ndof[index_mu] = muIt->globalTrack()->ndof();
       muon_normChi2[index_mu] = muIt->globalTrack()->normalizedChi2();
-      
       muon_d0[index_mu] = muIt->globalTrack()->d0();
       muon_d0Error[index_mu] = muIt->globalTrack()->d0Error();
       muon_dz_cmsCenter[index_mu] = muIt->globalTrack()->dz();
@@ -1148,21 +1092,17 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       muon_dxy_beamSpot[index_mu] = muIt->globalTrack()->dxy(beamspot);
       muon_dxy_firstPVtx[index_mu] = muIt->globalTrack()->dxy(firstpvertex);
       muon_dxyError[index_mu] = muIt->globalTrack()->dxyError();
-
       muon_innerPosx[index_mu] = muIt->globalTrack()->innerPosition().X();
       muon_innerPosy[index_mu] = muIt->globalTrack()->innerPosition().Y();
       muon_innerPosz[index_mu] = muIt->globalTrack()->innerPosition().Z();
-
       muon_trackIso03[index_mu] = muIt->isolationR03().sumPt;
       muon_trackIso05[index_mu] = muIt->isolationR05().sumPt;
       muon_trackIso03_ptInVeto[index_mu] = muIt->isolationR03().trackerVetoPt;
-      muon_trackIso05_ptInVeto[index_mu] = muIt->isolationR05().trackerVetoPt;
-      
+      muon_trackIso05_ptInVeto[index_mu] = muIt->isolationR05().trackerVetoPt;  
       muon_emIso03[index_mu] = muIt->isolationR03().emEt;
       muon_emIso05[index_mu] = muIt->isolationR05().emEt;
       muon_emIso03_ptInVeto[index_mu] = muIt->isolationR03().emVetoEt;
       muon_emIso05_ptInVeto[index_mu] = muIt->isolationR05().emVetoEt;
-      
       muon_hadIso03[index_mu] = muIt->isolationR03().hadEt;
       muon_hadIso05[index_mu] = muIt->isolationR05().hadEt;
       muon_hadIso03_ptInVeto[index_mu] = muIt->isolationR03().hadVetoEt;
@@ -1175,9 +1115,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   muon_size = index_mu;
 
   //--------------------------------
-
-
-  //cout<<"before retrieving SC"<<endl;
+ 
 
   //Get a Handle on different collections
 
@@ -1189,18 +1127,10 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       iEvent.getByLabel("correctedHybridSuperClusters","",pHybridSuperClusters);
       iEvent.getByLabel("correctedMulti5x5SuperClustersWithPreshower","",pIslandSuperClusters);
     }
-  catch(cms::Exception &ex)
-    {
-      //cout<<" could not get any of the following collections correctedHybridSuperClusters,correctedMulti5x5SuperClustersWithPreshower"<<ex;
-    }
-
+  catch(cms::Exception &ex){}
 
   const reco::SuperClusterCollection *hybridSuperClusters = pHybridSuperClusters.product();
   const reco::SuperClusterCollection *islandSuperClusters = pIslandSuperClusters.product();
-
-  //cout<<"size of hybrid collection in the event "<<hybridSuperClusters->size()<<endl;
-  //cout<<"size of endcap collection in the event "<<islandSuperClusters->size()<<endl;
-
 
   //Merge these two supercluster collections into one (sclusters collection)
   std::vector<const reco::SuperCluster*> sclusters;
@@ -1219,123 +1149,18 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   scsize = sclusters.size();
 
   //sort all the refSC by energy
-  //cout<<"sorting the reference elements by energy"<<endl;
   std::sort(refsclusters.begin(),refsclusters.end(),refScEGreater);
-  //cout<<"the elements are now : "<<endl;
+
   for(std::vector<reco::SuperClusterRef>::const_iterator refsclustersiter = refsclusters.begin();refsclustersiter != refsclusters.end();refsclustersiter++) {
-    //cout<<"energy eta phi "<<(*refsclustersiter)->rawEnergy()+(*refsclustersiter)->preshowerEnergy()<<"  "
-    //	<<  (*refsclustersiter)->eta()<<"  "
-    //	<<  (*refsclustersiter)->phi()<<" "
-    //	<<endl;
+
   }
-  
-
-
-  //sort all the SC by energy
-  //cout<<"sorting the elements by energy"<<endl;
-  std::sort(sclusters.begin(),sclusters.end(),scEGreater);
-  //cout<<"the elements are now : "<<endl;
-  for(std::vector<const reco::SuperCluster*>::const_iterator sclustersiter = sclusters.begin();sclustersiter != sclusters.end();sclustersiter++) {
-    //cout<<"energy eta phi "<<(*sclustersiter)->rawEnergy()+(*sclustersiter)->preshowerEnergy()<<"  "
-    //	<<  (*sclustersiter)->eta()<<"  "
-    //	<<  (*sclustersiter)->phi()<<" "
-    //	<<endl;
-  }
-  
-
-
-
-  //find the sc associated to the gen electrons
-
-  //   cout<<"before FSR"<<endl;
-  //   cout<<"genelec eta  "<<unstablemomelec.eta()<<"  "
-  //       <<"genelec phi  "<<unstablemomelec.phi()<<"  "
-  //       <<"genelec et  "<<unstablemomelec.e()*sin(unstablemomelec.theta())<<"  "
-  //       <<"genelec E  "<<unstablemomelec.e()<<endl;
-  //   cout<<"genposi eta  "<<unstablemomposi.eta()<<"  "
-  //       <<"genposi phi  "<<unstablemomposi.phi()<<"  "
-  //       <<"genposi et  "<<unstablemomposi.e()*sin(unstablemomposi.theta())<<"  "
-  //       <<"genposi E  "<<unstablemomposi.e()<<endl;
-  
-  //   cout<<"after FSR"<<endl;
-  //   cout<<"genelec eta  "<<momelec.eta()<<"  "
-  //       <<"genelec phi  "<<momelec.phi()<<"  "
-  //       <<"genelec et  "<<momelec.e()*sin(momelec.theta())<<"  "
-  //       <<"genelec E  "<<momelec.e()<<endl;
-  //   cout<<"genposi eta  "<<momposi.eta()<<"  "
-  //       <<"genposi phi  "<<momposi.phi()<<"  "
-  //       <<"genposi et  "<<momposi.e()*sin(momposi.theta())<<"  "
-  //       <<"genposi E  "<<momposi.e()<<endl;
-
-  //   cout<<"Z variables"<<endl;
-  //   cout<<"genboson eta  "<<momboson.eta()<<"  "
-  //       <<"genboson phi  "<<momboson.phi()<<"  "
-  //       <<"genboson et  "<<momboson.e()*sin(momboson.theta())<<"  "
-  //       <<"genboson E  "<<momboson.e()<<endl;
-
-  //   cout<<""<<endl;
-  //   cout<<""<<endl;
-  //   cout<<""<<endl;
-  
-
-
-
-  int indexelec = -50;
-  int indexposi = -50;
-  for(unsigned int e=0;e<sclusters.size();e++) {
-    double deltaetaelec = sclusters[e]->eta()-momelec.eta();
-    double deltaphielec = sclusters[e]->phi()-momelec.phi();
-    
-    if (deltaphielec>PI) deltaphielec = deltaphielec - 2*PI;
-    else if (deltaphielec<-PI) deltaphielec = deltaphielec + 2*PI;
-    
-    double deltarelec = sqrt( deltaetaelec*deltaetaelec +  deltaphielec*deltaphielec );
-    
-    double deltaetaposi = sclusters[e]->eta()-momposi.eta();
-    double deltaphiposi = sclusters[e]->phi()-momposi.phi();
-    
-    if (deltaphiposi>PI) deltaphiposi = deltaphiposi - 2*PI;
-    else if (deltaphiposi<-PI) deltaphiposi = deltaphiposi + 2*PI;
-    
-    double deltarposi = sqrt( deltaetaposi*deltaetaposi +  deltaphiposi*deltaphiposi );
-    
-    if(deltarelec < 0.2 && indexelec == -50) indexelec = e;
-    if(deltarposi < 0.2 && indexposi == -50) indexposi = e;
-  }
-
-  if(indexelec >= 0) genelec_hassc_var = 1;
-  if(indexposi >= 0) genposi_hassc_var = 1;
  
-  scindexforgenelec = indexelec;
-  scindexforgenposi = indexposi;
+  //sort all the SC by energy
+  std::sort(sclusters.begin(),sclusters.end(),scEGreater);
+//   for(std::vector<const reco::SuperCluster*>::const_iterator sclustersiter = sclusters.begin();sclustersiter != sclusters.end();sclustersiter++) {
 
-  //cout<<" indexelec "<<indexelec<<endl;
-  //cout<<" indexposi "<<indexposi<<endl;
-
-
-  if(usegendata_)  
-    {
-      if(indexelec >= 0) {
-	std::vector<const reco::SuperCluster*>::const_iterator scelec=sclusters.begin()+indexelec;    
-	//cout<<" scelec eta "<<(*scelec)->eta()<<"  "
-	//    <<" scelec phi "<<(*scelec)->phi()<<"  "
-	//    <<" scelec energy "<<(*scelec)->energy()<<endl;
-	scelecenergy = (*scelec)->energy();
-	sceleceta = (*scelec)->eta();
-	scelecphi = (*scelec)->phi();
-      }
-      
-      if(indexposi >= 0) {
-	std::vector<const reco::SuperCluster*>::const_iterator scposi=sclusters.begin()+indexposi;    
-	//cout<<" scposi eta "<<(*scposi)->eta()<<"  "
-	//    <<" scposi phi "<<(*scposi)->phi()<<"  "
-	//    <<" scposi energy "<<(*scposi)->energy()<<endl;
-	scposienergy = (*scposi)->energy();
-	scposieta = (*scposi)->eta();
-	scposiphi = (*scposi)->phi();
-      }
-    }
-
+//   }
+  
 
   int counter = 0;
   std::vector<const reco::SuperCluster*>::const_iterator sciter=sclusters.begin();
@@ -1362,12 +1187,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       
       counter++;
     }
-
-  std::vector<const reco::SuperCluster*>::const_iterator scelec=sclusters.begin();
-  std::vector<const reco::SuperCluster*>::const_iterator scposi=sclusters.begin();
-
-  if(indexelec >= 0) scelec=sclusters.begin()+indexelec;
-  if(indexposi >= 0) scposi=sclusters.begin()+indexposi;
 
  
   //trying to see if the sc is seed associated
@@ -1430,52 +1249,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       }
       
       
-      //Try to see if the gsf is assoc to the gen elec assoc sc
-      if(indexelec >= 0) {
-	double elecdeltaeta = sceleceta-gsfsceta;
-	double elecdeltaphi = scelecphi-gsfscphi;
-	if (elecdeltaphi>PI) elecdeltaphi = elecdeltaphi - 2*PI;
-	else if (elecdeltaphi<-PI) elecdeltaphi = elecdeltaphi + 2*PI;
-	double elecdeltar = sqrt( elecdeltaeta*elecdeltaeta +  elecdeltaphi*elecdeltaphi );
-      
-	if(elecdeltar < 0.2) 
-	  {
-	    scgsfmatched[indexelec] = -1.;
-	    scelecgsfmatched = 1.;
-	  }
-      }
-
-
-      //Try to see if the gsf is assoc to the gen posi assoc sc
-      if(indexposi >= 0) {
-	double posideltaeta = scposieta-gsfsceta;
-	double posideltaphi = scposiphi-gsfscphi;
-	if (posideltaphi>PI) posideltaphi = posideltaphi - 2*PI;
-	else if (posideltaphi<-PI) posideltaphi = posideltaphi + 2*PI;
-	double posideltar = sqrt( posideltaeta*posideltaeta +  posideltaphi*posideltaphi );
-      
-	if(posideltar < 0.2) 
-	  {
-	    scgsfmatched[indexposi] = 1.;
-	    scposigsfmatched = 1.;
-	  }
-      }
-
-      double deltaetagenelec = gsfsceta-momelec.eta();
-      double deltaphigenelec = gsfscphi-momelec.phi();
-      if (deltaphigenelec>PI) deltaphigenelec = deltaphigenelec - 2*PI;
-      else if (deltaphigenelec<-PI) deltaphigenelec = deltaphigenelec + 2*PI;
-      double deltargenelec = sqrt(deltaetagenelec*deltaetagenelec + deltaphigenelec*deltaphigenelec);
-
-      double deltaetagenposi = gsfsceta-momposi.eta();
-      double deltaphigenposi = gsfscphi-momposi.phi();
-      if (deltaphigenposi>PI) deltaphigenposi = deltaphigenposi - 2*PI;
-      else if (deltaphigenposi<-PI) deltaphigenposi = deltaphigenposi + 2*PI;
-      double deltargenposi = sqrt(deltaetagenposi*deltaetagenposi + deltaphigenposi*deltaphigenposi);
-
-
-      if(deltargenelec < 0.2 && gsfindexforgenelec == -3) {gsfindexforgenelec = e;}
-      if(deltargenposi < 0.2 && gsfindexforgenposi == -3) {gsfindexforgenposi = e;}
 
 
 
@@ -1638,11 +1411,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 
     }
-
-  //Is the gen elec/posi a SC ??
-  if(scindexforgenelec >= 0) genelechassc = true;
-  if(scindexforgenposi >= 0) genposihassc = true;
-
 
   mytree->Fill();
 
@@ -2010,10 +1778,6 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gsfsc_pz",&gsfsc_pz,"gsfsc_pz[gsf_size]/F");
   mytree->Branch("gsf_gsfet",&gsf_gsfet,"gsf_gsfet[gsf_size]/F");
   mytree->Branch("scindexforgsf",&scindexforgsf,"scindexforgsf[gsf_size]/I");
-  mytree->Branch("gsfindexforgenelec",&gsfindexforgenelec,"gsfindexforgenelec/I"); 
-  mytree->Branch("gsfindexforgenposi",&gsfindexforgenposi,"gsfindexforgenposi/I"); 
-  mytree->Branch("scindexforgenelec",&scindexforgenelec,"scindexforgenelec/I"); 
-  mytree->Branch("scindexforgenposi",&scindexforgenposi,"scindexforgenposi/I"); 
   mytree->Branch("gsftracksize",&gsftracksize,"gsftracksize/I");
   mytree->Branch("gsftracketa",&gsftracketa,"gsftracketa[gsftracksize]/F");
   mytree->Branch("gsftrackphi",&gsftrackphi,"gsftrackphi[gsftracksize]/F");  
@@ -2051,40 +1815,43 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gsfscpixconsistent",&gsfscpixconsistent,"gsfscpixconsistent[gsf_size]/O");
   mytree->Branch("gsfctfconsistent",&gsfctfconsistent,"gsfctfconsistent[gsf_size]/O");
 
-
+  mytree->Branch("genparticles_size",&genparticles_size,"genparticles_size/I");
   //GEN INFO FOR ELE and POSI (after FSR)
-  mytree->Branch("genelec_e_branch",&genelec_e_var,"genelec_e_branch/F");
-  mytree->Branch("genelec_eta_branch",&genelec_eta_var,"genelec_eta_branch/F");
-  mytree->Branch("genelec_phi_branch",&genelec_phi_var,"genelec_phi_branch/F");
-  mytree->Branch("genelec_et_branch",&genelec_et_var,"genelec_et_branch/F");
-  mytree->Branch("genposi_e_branch",&genposi_e_var,"genposi_e_branch/F");
-  mytree->Branch("genposi_eta_branch",&genposi_eta_var,"genposi_eta_branch/F");
-  mytree->Branch("genposi_phi_branch",&genposi_phi_var,"genposi_phi_branch/F");
-  mytree->Branch("genposi_et_branch",&genposi_et_var,"genposi_et_branch/F");
-  mytree->Branch("genelec_hassc_branch",&genelec_hassc_var,"genelec_hassc_branch/I");
-  mytree->Branch("genposi_hassc_branch",&genposi_hassc_var,"genposi_hassc_branch/I");
-  //generated variables for the tree (before FSR)
-  mytree->Branch("unstablegenelec_e_branch",&unstablegenelec_e_var,"unstablegenelec_e_branch/F");
-  mytree->Branch("unstablegenelec_eta_branch",&unstablegenelec_eta_var,"unstablegenelec_eta_branch/F");
-  mytree->Branch("unstablegenelec_phi_branch",&unstablegenelec_phi_var,"unstablegenelec_phi_branch/F");
-  mytree->Branch("unstablegenelec_et_branch",&unstablegenelec_et_var,"unstablegenelec_et_branch/F");
-  mytree->Branch("unstablegenposi_e_branch",&unstablegenposi_e_var,"unstablegenposi_e_branch/F");
-  mytree->Branch("unstablegenposi_eta_branch",&unstablegenposi_eta_var,"unstablegenposi_eta_branch/F");
-  mytree->Branch("unstablegenposi_phi_branch",&unstablegenposi_phi_var,"unstablegenposi_phi_branch/F");
-  mytree->Branch("unstablegenposi_et_branch",&unstablegenposi_et_var,"unstablegenposi_et_branch/F");
+  
+  mytree->Branch("genele_e",&genele_e,"genele_e[genparticles_size]/D");
+  mytree->Branch("genele_eta",&genele_eta,"genele_eta[genparticles_size]/D");
+  mytree->Branch("genele_phi",&genele_phi,"genele_phi[genparticles_size]/D");
+  mytree->Branch("genele_pt",&genele_pt,"genele_pt[genparticles_size]/D");
+  mytree->Branch("genele_px",&genele_px,"genele_px[genparticles_size]/D");
+  mytree->Branch("genele_py",&genele_py,"genele_py[genparticles_size]/D");
+  mytree->Branch("genele_pz",&genele_pz,"genele_pz[genparticles_size]/D");
+  mytree->Branch("genele_charge",&genele_charge,"genele_charge[genparticles_size]/I");
+  
+  //generated variables for the tree (before FSR)   
+  mytree->Branch("unstableGenEle_e",&unstableGenEle_e,"unstableGenEle_e[genparticles_size]/D");
+  mytree->Branch("unstableGenEle_eta",&unstableGenEle_eta,"unstableGenEle_eta[genparticles_size]/D");
+  mytree->Branch("unstableGenEle_phi",&unstableGenEle_phi,"unstableGenEle_phi[genparticles_size]/D");
+  mytree->Branch("unstableGenEle_pt",&unstableGenEle_pt,"unstableGenEle_pt[genparticles_size]/D");
+  mytree->Branch("unstableGenEle_px",&unstableGenEle_px,"unstableGenEle_px[genparticles_size]/D");
+  mytree->Branch("unstableGenEle_py",&unstableGenEle_py,"unstableGenEle_py[genparticles_size]/D");
+  mytree->Branch("unstableGenEle_pz",&unstableGenEle_pz,"unstableGenEle_pz[genparticles_size]/D");
+  mytree->Branch("unstableGenEle_charge",&unstableGenEle_charge,"unstableGenEle_charge[genparticles_size]/I");
+  
   //generated variables for the tree (Z variables)
-  mytree->Branch("genboson_m_branch",&genboson_m_var,"genboson_m_branch/F");
-  mytree->Branch("genboson_eta_branch",&genboson_eta_var,"genboson_eta_branch/F");
-  mytree->Branch("genboson_phi_branch",&genboson_phi_var,"genboson_phi_branch/F");
-  mytree->Branch("genboson_e_branch",&genboson_e_var,"genboson_e_branch/F");
-  mytree->Branch("genboson_et_branch",&genboson_et_var,"genboson_et_branch/F");
-  mytree->Branch("genboson_ez_branch",&genboson_ez_var,"genboson_ez_branch/F");
-  mytree->Branch("genboson_p_branch",&genboson_p_var,"genboson_p_branch/F");
-  mytree->Branch("genboson_pt_branch",&genboson_pt_var,"genboson_pt_branch/F");
-  mytree->Branch("genboson_pz_branch",&genboson_pz_var,"genboson_pz_branch/F");
+  mytree->Branch("genelemom_e",&genelemom_e,"genelemom_e[genparticles_size]/D");
+  mytree->Branch("genelemom_eta",&genelemom_eta,"genelemom_eta[genparticles_size]/D");
+  mytree->Branch("genelemom_phi",&genelemom_phi,"genelemom_phi[genparticles_size]/D");
+  mytree->Branch("genelemom_pt",&genelemom_pt,"genelemom_pt[genparticles_size]/D");
+  mytree->Branch("genelemom_px",&genelemom_px,"genelemom_px[genparticles_size]/D");
+  mytree->Branch("genelemom_py",&genelemom_py,"genelemom_py[genparticles_size]/D");
+  mytree->Branch("genelemom_pz",&genelemom_pz,"genelemom_pz[genparticles_size]/D");
+  mytree->Branch("genelemom_charge",&genelemom_charge,"genelemom_charge[genparticles_size]/I");
+  mytree->Branch("genelemom_pdgid",&genelemom_pdgid,"genelemom_pdgid[genparticles_size]/I");
+  mytree->Branch("genelemom_mass",&genelemom_mass,"genelemom_mass[genparticles_size]/D");
+  
   //x1 and x2
-  mytree->Branch("x1quark",&x1quark,"x1quark/F");
-  mytree->Branch("x2quark",&x2quark,"x2quark/F");
+  mytree->Branch("x1quark",&x1quark,"x1quark[genparticles_size]/F");
+  mytree->Branch("x2quark",&x2quark,"x2quark[genparticles_size]/F");
   //FSR variables
   mytree->Branch("fsrposiphotonsize",&fsrposiphotonsize,"fsrposiphotonsize/I");
   mytree->Branch("fsrelecphotonsize",&fsrelecphotonsize,"fsrelecphotonsize/I");
@@ -2096,27 +1863,14 @@ GsfCheckerTree::beginJob()
   mytree->Branch("etfsrposi",&etfsrposi,"etfsrposi[fsrposiphotonsize]/F");
   mytree->Branch("etafsrposi",&etafsrposi,"etafsrposi[fsrposiphotonsize]/F");
   mytree->Branch("phifsrposi",&phifsrposi,"phifsrposi[fsrposiphotonsize]/F");
-  //supercluster matching generated electrons branches for the tree
-  mytree->Branch("scelecenergy",&scelecenergy,"scelecenergy/F");
-  mytree->Branch("sceleceta",&sceleceta,"sceleceta/F");
-  mytree->Branch("scelecphi",&scelecphi,"scelecphi/F");
-  mytree->Branch("scelecgsfmatched",&scelecgsfmatched,"scelecgsfmatched/F");
-  mytree->Branch("scposienergy",&scposienergy,"scposienergy/F");
-  mytree->Branch("scposieta",&scposieta,"scposieta/F");
-  mytree->Branch("scposiphi",&scposiphi,"scposiphi/F");
-  mytree->Branch("scposigsfmatched",&scposigsfmatched,"scposigsfmatched/F");
-  mytree->Branch("genelechassc",&genelechassc,"genelechassc/O");
-  mytree->Branch("genposihassc",&genposihassc,"genposihassc/O");
-  
 
 }
-
+ 
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
 GsfCheckerTree::endJob() {
-}
-
+  }
 
 //
 // -----------------------------------------------------------
@@ -2126,194 +1880,60 @@ void GsfCheckerTree::datagenerated(const edm::Event& e) {
   using namespace std;
   using namespace edm;
   
-  bool debug = false;
-
-  edm::Handle<HepMCProduct> EvtHandle ;
-  e.getByLabel( "generator", EvtHandle ) ;
-  const HepMC::GenEvent* Evt = EvtHandle->GetEvent() ;
-  HepMC::GenVertex* GravitonDecVtx = 0 ;
-	 
-  for ( HepMC::GenEvent::vertex_const_iterator
-	  vit=Evt->vertices_begin(); vit!=Evt->vertices_end(); vit++ )
-    {
-      for ( HepMC::GenVertex::particles_out_const_iterator
-	      pout=(*vit)->particles_out_const_begin();
-	    pout!=(*vit)->particles_out_const_end(); pout++ )
-	{
+  unsigned int counter = 0; 
+  Handle<GenParticleCollection> genParticles;
+  e.getByLabel("genParticles", genParticles);
+  for(size_t i = 0; i < genParticles->size(); ++ i) {
     
-	  if ( ((*pout)->pdg_id() == 23) && ((*pout)->status() == 3) ) {
-	    if ( (*pout)->end_vertex() != 0 )
-	      {
-		GravitonDecVtx = (*pout)->end_vertex() ;
-			momboson = (*pout)->momentum();
-		break ;
-	      }
-	  }
-	}
-      if ( GravitonDecVtx != 0 )
-	{
-	  break ; // break the initial loop over vertices
-	}
-    }
+    const GenParticle & p = (*genParticles)[i];
+    int id = p.pdgId();
+    int st = p.status(); 
 
-   
-  if ( GravitonDecVtx == 0 ) 
-    {
-      return ;
-    }
-    
-  // Print out informations for the first 10 events 
-  int icount=0;
-  if  ((debug) &&  e.id().event() <= 10 )
-    {
-      for( HepMC::GenEvent::particle_const_iterator partIter = Evt->particles_begin() ;
-	   partIter != Evt->particles_end() ; ++partIter) //loop over generator particles
-	{
-	  icount++;
-	  if(icount<20) {
-	    HepMC::FourVector p = ( *partIter )->momentum() ;
-	  }
-	}
-    }
-
-
-  // Print out informations to check out everything is ok  
-  if  ((debug) &&  e.id().event() <= 10 )
-    {
-      HepMC::GenVertex::particles_in_const_iterator Gin = GravitonDecVtx->particles_in_const_begin();
-      vector<HepMC::GenParticle*> GravitonChildren;
-      HepMC::GenVertex* outVertex = (*Gin)->end_vertex();
-
-      for(std::vector< HepMC::GenParticle*>::const_iterator iter = outVertex->particles_in_const_begin();
-	  iter != outVertex->particles_in_const_end();iter++)
-	GravitonChildren.push_back(*iter);
-    }
-
-
-  // select and store stable descendants of the DY
-  //   
-
-
-  vector<HepMC::GenParticle*> StableDYDesc ;
-  vector<HepMC::GenParticle*> UnstableDYDesc ;
-  vector<HepMC::GenParticle*> photonsfsrelec ;
-  vector<HepMC::GenParticle*> photonsfsrposi ;
-  
-  for ( HepMC::GenVertex::particle_iterator
-	  des=GravitonDecVtx->particles_begin(HepMC::descendants);
-	des!=GravitonDecVtx->particles_end(HepMC::descendants); des++ )
-    {
-      if ( (*des)->status() == 1 ) StableDYDesc.push_back(*des) ;  //means the particle is stable
-      if ( (*des)->status() == 3 ) UnstableDYDesc.push_back(*des) ;//means the particle is going to decay
-    }
-   
-     
-  // browse the array of STABLE descendants
-  // and do 2-e inv.mass
-  //
-  for ( unsigned int i=0; i<StableDYDesc.size(); i++ )
-    {
-      // skip other than electron
-      if ( abs(StableDYDesc[i]->pdg_id()) != 11 ) continue ; 
-	 
-      // Searching for unstable electron/positron pairs
-      for ( unsigned int j=i+1; j<StableDYDesc.size(); j++ )
-	{
-	  // skip other than electron
-	  if ( abs(StableDYDesc[j]->pdg_id()) != 11 ) continue ;
-	  //
-	  // skip same charge combo's
-	  //
-	  if ( (StableDYDesc[i]->pdg_id()*StableDYDesc[j]->pdg_id()) > 0 ) 
-	    continue ;
-	  //
-	  // OK, opposite charges, do the job
-	  //skip unstable descendants 
-	  if (  (StableDYDesc[i]->status() != 1) || (StableDYDesc[j]->status() != 1)  )
-	    continue;
-	  //
-	  momelec = StableDYDesc[i]->momentum();
-	  momposi = StableDYDesc[j]->momentum();
+    if( fabs(id) == 11 && st == 1) {
+        const Candidate * unstableGenEle;
+	const Candidate * mom = p.mother();
+	
+	while (fabs(mom->pdgId()) == 11){ 
+	if(mom->status() ==3 ) unstableGenEle = mom; 
+	mom = mom->mother(); 
 
 	}
-    }
-     
-     
-  // Searching for UNSTABLE electron/positron pairs
-     
-  for ( unsigned int i=0; i<UnstableDYDesc.size(); i++ )
-    {
-      // skip other than electron
-      if ( abs(UnstableDYDesc[i]->pdg_id()) != 11 ) continue ; 
-	 
-      for ( unsigned int j=i+1; j<UnstableDYDesc.size(); j++ )
-	{
-	  // skip other than electron
-	  if ( abs(UnstableDYDesc[j]->pdg_id()) != 11 ) continue ;
-	  //
-	  // skip same charge combo's
-	  if ( (UnstableDYDesc[i]->pdg_id()*UnstableDYDesc[j]->pdg_id()) > 0 ) 
-	    continue ;
-	  //
-	  // OK, opposite charges, do the job
-	  // keep unstable descendants 
-	  if (  (UnstableDYDesc[i]->status() != 3) || (UnstableDYDesc[j]->status() != 3)  )
-	    continue;
-	    
-	  unstablemomelec = UnstableDYDesc[i]->momentum();
-	  unstablemomposi = UnstableDYDesc[j]->momentum();
+	if(fabs(mom->pdgId())!= 22 && fabs(mom->pdgId())!= 23 && fabs(mom->pdgId())!=24 && fabs(mom->pdgId())!=32 && fabs(mom->pdgId())!=33 && fabs(mom->pdgId())!=39 &&fabs(mom->pdgId())!=  13) continue;
+	genele_e[counter] = p.energy(); 
+	genele_pt[counter] = p.pt();
+	genele_px[counter] = p.px();
+	genele_py[counter] = p.py();
+	genele_pz[counter] = p.pz();
+	genele_eta[counter] = p.eta(); 
+	genele_phi[counter] = p.phi();
+	genele_charge[counter]= p.charge();
 
-	  HepMC::GenVertex* ElecDecVtx = UnstableDYDesc[i]->end_vertex();
-	  HepMC::GenVertex* PosiDecVtx = UnstableDYDesc[j]->end_vertex();
+	unstableGenEle_e[counter] = unstableGenEle->energy(); 
+	unstableGenEle_pt[counter] = unstableGenEle->pt();
+	unstableGenEle_px[counter] = unstableGenEle->px();
+	unstableGenEle_py[counter] = unstableGenEle->py();
+	unstableGenEle_pz[counter] = unstableGenEle->pz();
+	unstableGenEle_eta[counter] = unstableGenEle->eta(); 
+	unstableGenEle_phi[counter] = unstableGenEle->phi();
+	unstableGenEle_charge[counter]= unstableGenEle->charge();
 
-	  int fsreleccounter = 0;
-	  int fsrposicounter = 0;
-
-	  for ( HepMC::GenVertex::particle_iterator
-		  fsrelec=ElecDecVtx->particles_begin(HepMC::descendants);
-		fsrelec!=ElecDecVtx->particles_end(HepMC::descendants); fsrelec++ )
-	    {
-	      if((*fsrelec)->pdg_id() == 22) {
-		photonsfsrelec.push_back(*fsrelec);
-		energyfsrelec[fsreleccounter] = (*fsrelec)->momentum().e();
-		etafsrelec[fsreleccounter] = (*fsrelec)->momentum().eta();
-		phifsrelec[fsreleccounter] = (*fsrelec)->momentum().phi();
-		etfsrelec[fsreleccounter] = (*fsrelec)->momentum().perp();
-		fsreleccounter++;
-	      }
-	    }
-
-	  for ( HepMC::GenVertex::particle_iterator
-		  fsrposi=PosiDecVtx->particles_begin(HepMC::descendants);
-		fsrposi!=PosiDecVtx->particles_end(HepMC::descendants); fsrposi++ )
-	    {
-	      if((*fsrposi)->pdg_id() == 22) {
-		photonsfsrposi.push_back(*fsrposi);
-		energyfsrposi[fsrposicounter] = (*fsrposi)->momentum().e();
-		etafsrposi[fsrposicounter] = (*fsrposi)->momentum().eta();
-		phifsrposi[fsrposicounter] = (*fsrposi)->momentum().phi();
-		etfsrposi[fsrposicounter] = (*fsrposi)->momentum().perp();
-		fsrposicounter++;
-	      }
-	    }
-
-	  fsrelecphotonsize = photonsfsrelec.size();
-	  fsrposiphotonsize = photonsfsrposi.size();
-	}
+	genelemom_e[counter] = mom->energy(); 
+	genelemom_pt[counter] = mom->pt();
+	genelemom_px[counter] = mom->px();
+	genelemom_py[counter] = mom->py();
+	genelemom_pz[counter] = mom->pz();
+	genelemom_eta[counter] = mom->eta(); 
+	genelemom_phi[counter] = mom->phi();
+	genelemom_charge[counter]= mom->charge();
+	genelemom_mass[counter]= mom->mass();
+	genelemom_pdgid[counter]= mom->pdgId();
+	
+	x1quark[counter] = (genelemom_mass[counter]*genelemom_mass[counter])/(7000.*(genelemom_pz[counter] + sqrt(genelemom_pz[counter]*genelemom_pz[counter]+genelemom_mass[counter]*genelemom_mass[counter] )));
+	x2quark[counter] = (genelemom_pz[counter]  + sqrt(genelemom_pz[counter]*genelemom_pz[counter]+genelemom_mass[counter]*genelemom_mass[counter] ))/7000.;
+	counter ++;      
     }
 
+    genparticles_size=counter;
 
-  elecaddposigsfgsf.setE(momposi.e()+momelec.e());
-  elecaddposigsfgsf.setPx(momposi.px()+momelec.px());
-  elecaddposigsfgsf.setPy(momposi.py()+momelec.py());
-  elecaddposigsfgsf.setPz(momposi.pz()+momelec.pz());
-    
-  unstelecaddposigsfgsf.setE(unstablemomposi.e()+unstablemomelec.e());
-  unstelecaddposigsfgsf.setPx(unstablemomposi.px()+unstablemomelec.px());
-  unstelecaddposigsfgsf.setPy(unstablemomposi.py()+unstablemomelec.py());
-  unstelecaddposigsfgsf.setPz(unstablemomposi.pz()+unstablemomelec.pz());
-    
-
+  }  
 }//end of datagenerated
-
-
