@@ -13,153 +13,77 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.13 2011/11/29 16:50:35 treis Exp $
+// $Id: GsfCheckerTree.h,v 1.14 2011/12/12 17:35:59 lathomas Exp $
 //
 //
 
 // system include files
-#include <memory>
-
-// user include files
-#include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-
-#include "FWCore/Framework/interface/ESHandle.h"
-#include "FWCore/Framework/interface/EventSetup.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-
-
-#include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
-#include "DataFormats/EgammaCandidates/interface/GsfElectronFwd.h"
-#include "DataFormats/GsfTrackReco/interface/GsfTrackFwd.h"
-#include "DataFormats/GsfTrackReco/interface/GsfTrack.h"
-#include "DataFormats/RecoCandidate/interface/RecoCandidate.h"
-#include "DataFormats/MuonReco/interface/MuonChamberMatch.h"
-#include "DataFormats/MuonReco/interface/MuonIsolation.h"
-#include "DataFormats/MuonReco/interface/MuonEnergy.h"
-#include "DataFormats/MuonReco/interface/MuonTime.h"
-#include "DataFormats/MuonReco/interface/MuonQuality.h"
-#include "DataFormats/MuonReco/interface/Muon.h"
-#include "DataFormats/TrajectorySeed/interface/TrajectorySeedCollection.h"
-#include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
-
-#include "MagneticField/Engine/interface/MagneticField.h"
-#include "TrackingTools/MaterialEffects/interface/PropagatorWithMaterial.h"
-#include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
-#include "Geometry/CaloGeometry/interface/CaloGeometry.h"
-#include "RecoTracker/MeasurementDet/interface/MeasurementTracker.h"
-#include "RecoCaloTools/MetaCollections/interface/CaloRecHitMetaCollections.h"
-
-#include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
-
-#include "DataFormats/EgammaReco/interface/ElectronSeedFwd.h"
-#include "DataFormats/EgammaReco/interface/ElectronSeed.h"
-
-#include "DataFormats/VertexReco/interface/VertexFwd.h"
-#include "DataFormats/VertexReco/interface/Vertex.h"
-
-#include "TFile.h"
-#include "TTree.h"
-
-#include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
-
-//--------From Claude Charlot---------------
-#include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
-#include "TrackingTools/GsfTools/interface/MultiTrajectoryStateTransform.h"
-#include "TrackingTools/GsfTools/interface/MultiTrajectoryStateMode.h"
-#include "TrackingTools/GsfTracking/interface/GsfConstraintAtVertex.h"
-
-#include "DataFormats/EgammaCandidates/interface/GsfElectronCoreFwd.h"
-
-
-#include "RecoEgamma/EgammaIsolationAlgos/interface/EgammaTowerIsolation.h"
-#include "RecoEgamma/EgammaIsolationAlgos/interface/EgammaRecHitIsolation.h"
-#include "RecoEgamma/EgammaIsolationAlgos/interface/ElectronTkIsolation.h"
-#include "DataFormats/Common/interface/ValueMap.h"
-
-#include "Geometry/CaloGeometry/interface/CaloGeometry.h"
-#include "Geometry/CaloTopology/interface/CaloTopology.h"
-
-#include "DataFormats/EgammaReco/interface/BasicCluster.h"
-
-
-//-----------------------------------------
-//Added from Vincent
 #include <memory>
 #include <string>
 #include <vector>
 #include <fstream>
 #include <iostream>
 
+// user include files
 #include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Utilities/interface/InputTag.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+
+#include "DataFormats/BeamSpot/interface/BeamSpot.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/VertexReco/interface/VertexFwd.h"
+#include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
+#include "DataFormats/MuonReco/interface/Muon.h"
+#include "DataFormats/MuonReco/interface/MuonFwd.h"
+#include "DataFormats/METReco/interface/CaloMET.h"
+#include "DataFormats/METReco/interface/CaloMETCollection.h"
+#include "DataFormats/METReco/interface/MET.h"
+#include "DataFormats/METReco/interface/METCollection.h"
+#include "DataFormats/METReco/interface/PFMET.h"
+#include "DataFormats/METReco/interface/PFMETCollection.h"
+#include "DataFormats/JetReco/interface/CaloJetCollection.h" 
+
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
-#include "DataFormats/EgammaReco/interface/SuperCluster.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
+#include "TrackingTools/GsfTracking/interface/GsfConstraintAtVertex.h"
+#include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
+
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
+#include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
+#include "DataFormats/Common/interface/TriggerResults.h"
+
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "TFile.h"
 #include "TTree.h"
-//-----------------------------------------
-
 
 //
 // class decleration
 //
-
-class GsfElectronAlgo;
-class MultiTrajectoryStateTransform ;
-class MultiTrajectoryStateMode ;
-class TFile;
-class CaloCluster;
-
 class GsfCheckerTree : public edm::EDAnalyzer {
 
 public:
   explicit GsfCheckerTree(const edm::ParameterSet&);
   ~GsfCheckerTree();
-  void datagenerated(const edm::Event& e);
 
 private:
   virtual void beginJob() ;
   virtual void analyze(const edm::Event&, const edm::EventSetup&);
   virtual void endJob() ;
   virtual void beginRun(edm::Run const&, edm::EventSetup const&);
-  void setupES(const edm::EventSetup& es);
 
-  typedef std::list<reco::GsfElectron *> GsfElectronPtrCollection ;
- 
- 
-
+  void DataGenPart(const edm::Event& e);
 
   // ----------member data ---------------------------
 
-  /// this will be the name of the output file 
-  std::string outputFileName_;
-  /// number of events for which to print the 
-  /// full decay chain to the log output
-  unsigned int log_;
-  /// generated particle collection src
-  edm::InputTag src_;
+  // config parameters -------------------------------
   edm::InputTag  hlTriggerResults_ ;
-
-  /// event counter for decay chain 
-  /// logging
-  unsigned int evts_;
-
-  bool ForZee;
-  bool ForData;
-
+  double comEnergy_;
   // parameter for SKIMMING
   double eleEtCut_;
   double muPtCut_;
-
-  int NbGsf;
+  // -------------------------------------------------
 
   //L1TRIGGER
   int L1trigger_size;
@@ -167,13 +91,11 @@ private:
 
   // HLT
   int hltCount;
-  int HLTriggers[300];
+  int HLTriggers[500];
 
   int PhysDecl_bool;
   
   //GLOBAL
-
-
   float calomet;
   float calomet_eta;
   float calomet_phi;
@@ -197,8 +119,7 @@ private:
 //   float jetIC5_phi[100];
 //   float jetIC5_em[100];
   
-
-  //MUON
+  // MUON
   int muon_size;
   float muon_pt[100];
   float muon_ptError[100];
@@ -252,7 +173,6 @@ private:
   float muon_innerPosx[100];
   float muon_innerPosy[100];
   float muon_innerPosz[100];
-  //--------------------------------
 
   TTree* mytree;
 
@@ -268,19 +188,16 @@ private:
   int processid;
   float weight;
 
-
   int genparticles_size;
   //Generated variables (after FSR)
-  double	genele_e[20];
-  double	genele_pt[20];
-  double	genele_px[20]; 
-  double	genele_py[20]; 
-  double	genele_pz[20]; 
-  double	genele_eta[20]; 
-  double	genele_phi[20];
-  int	genele_charge[20];
-
-
+  double genele_e[20];
+  double genele_pt[20];
+  double genele_px[20]; 
+  double genele_py[20]; 
+  double genele_pz[20]; 
+  double genele_eta[20]; 
+  double genele_phi[20];
+  int genele_charge[20];
   //Generated variables (before FSR)
   double unstableGenEle_e[20];
   double unstableGenEle_pt[20];
@@ -290,8 +207,6 @@ private:
   double unstableGenEle_eta[20];
   double unstableGenEle_phi[20]; 
   int unstableGenEle_charge[20];
-  
-
   //Generated variables (Z variables)
   double genelemom_e[20]; 
   double genelemom_pt[20]; 
@@ -307,40 +222,10 @@ private:
   float x1quark[10];
   float x2quark[10];
 
-  //genelec
-  bool genelechassc;
-  bool genelechasseed;
-  bool genelechastrackcand;
-  bool genelechasgsftrack;
-  bool genelechasgsfcore;
-  bool genelechasgsf;
-
-  //genposi
-  bool genposihassc;
-  bool genposihasseed;
-  bool genposihastrackcand;
-  bool genposihasgsftrack;
-  bool genposihasgsfcore;
-  bool genposihasgsf;
-
-  //FSR variables
-  int fsrposiphotonsize;
-  int fsrelecphotonsize;
-  
-  int numberfsrelec_var;
-  float energyfsrelec_var;
-  float energyfsrelec[10];
-  float etfsrelec[10]; 
-  float etafsrelec[10];
-  float phifsrelec[10];
-  
-  int numberfsrposi_var;
-  float energyfsrposi_var;
-  float energyfsrposi[10];
-  float etfsrposi[10]; 
-  float etafsrposi[10];
-  float phifsrposi[10];
-  
+  float trueNVtx;
+  int nVtxBefore;
+  int nVtxNow;
+  int nVtxAfter;
 
   //Beam spot info
   float sigmaZ;
@@ -352,31 +237,17 @@ private:
 
   //Primary vertex x,y,z
   int pvsize;
-  float pvx[20];
-  float pvy[20];
-  float pvz[20];
+  float pvx[50];
+  float pvy[50];
+  float pvz[50];
 
-  bool pv_isValid[20];
-  float pv_ndof[20];
-  int pv_nTracks[20];
-  float pv_normChi2[20];
-  int pv_totTrackSize[20];
-
-  float scelecenergy;
-  float sceleceta;
-  float scelecphi;
-  float scelecgsfmatched;
-  float scelecseedmatched;
-  float scposienergy;
-  float scposieta;
-  float scposiphi;
-  float scposigsfmatched;
-  float scposiseedmatched;
-
-
+  bool pv_isValid[50];
+  float pv_ndof[50];
+  int pv_nTracks[50];
+  float pv_normChi2[50];
+  int pv_totTrackSize[50];
 
   //Supercluster variables
-  //fill e,et,eta,phi,charge for every SC in the event
   float scgsfmatched[100];
   float scseedmatched[100];
   float scenergy[100];
@@ -392,49 +263,7 @@ private:
   float scx[100];
   float scy[100];
   float scz[100];
-  int ntrackerseedsneg[100];
-  int necalseedsneg[100];
-  int necaltrackerseedsneg[100];
-  int ntrackerseedspos[100];
-  int necalseedspos[100];
-  int necaltrackerseedspos[100];
   int scsize;
-
-  bool schasseed[100];
-  bool schastrackcand[100];
-  bool schasgsftrack[100];
-  bool schasgsfcore[100];
-  bool schasgsf[100];
-
-  //initialize all counters
-  int numseedspersc[100];
-  int numtrackcandpersc[100];
-  int numgsftrackspersc[100];
-  int numgsfcorepersc[100];
-  int numgsfpersc[100];
-
-
-  //Matching Supercluster variables
-  //fill e,et,eta,phi,charge for every matched SC in the event
-  float firstmatchscenergy;
-  float firstmatchsceta;
-  float firstmatchsctheta;
-  float firstmatchscet;
-  float firstmatchscphi;
-  float firstmatchscpx;
-  float firstmatchscpy;
-  float firstmatchscpz;
-  int firstmatchnseed;
-
-  float secondmatchscenergy;
-  float secondmatchsceta;
-  float secondmatchsctheta;
-  float secondmatchscet;
-  float secondmatchscphi;
-  float secondmatchscpx;
-  float secondmatchscpy;
-  float secondmatchscpz;
-  int secondmatchnseed;
 
   int gsf_size;
   int gsf_isEB[100];
@@ -527,13 +356,6 @@ private:
   float gsf_gsfet[100];
 
   int scindexforgsf[100];
-  int gsfcoreindexforgsf[100];
-
-  int gsfindexforgenelec;
-  int gsfindexforgenposi;
-
-  int scindexforgenelec;
-  int scindexforgenposi;
 
   bool gsfpass_ET[100]; 
   bool gsfpass_PT[100]; 
@@ -552,7 +374,6 @@ private:
   bool gsfpass_NOMISSINGHITS[100];
   bool gsfpass_NOCONVERSION[100];
   bool gsfpass_HEEP[100];
-
   bool gsfpass_ID[100];
   bool gsfpass_ISO[100];
 
@@ -564,33 +385,6 @@ private:
   bool gsfscpixconsistent[100];
   bool gsfctfconsistent[100];
   
-  //Seed information
-  int b_seed_nb;
-  int scindexforseed[1000];
-  int seedisecaldriven[1000]; 
-  int seedistrackerdriven[1000];
-  int seedcharge[1000];
-  int nseedhits[1000];
-  float seedfirsthitx[1000];
-  float seedfirsthity[1000];
-  float seedfirsthitz[1000];
-  float seedsecondhitx[1000];
-  float seedsecondhity[1000];
-  float seedsecondhitz[1000];
-  float seedthirdhitx[1000];
-  float seedthirdhity[1000];
-  float seedthirdhitz[1000];
-  bool seedhastrackcand[1000];
-  
-
-
-  //Track candidate information
-  int b_trackcand_nb;
-  int scindexfortrcand[1000];
-  int seedindexfortrcand[1000];
-  int trackcandseedcharge[1000];
-  bool trcandhasgsftrack[1000];
-
   //Gsf Track information
   int gsftracksize;
   float gsftracketa[100];
@@ -600,12 +394,6 @@ private:
   float gsftrackpx[100];
   float gsftrackpy[100];
   float gsftrackpz[100];
-
-  int scindexforgsftrack[100];
-  int trcandindexforgsftrack[100];
-  bool gsftrackhasgsfcore[100];
-
-  
 
   unsigned int  nEvents_;           // number of events processed
 
@@ -697,45 +485,7 @@ private:
   int prescale_HLT_DoublePhoton60;
   int prescale_HLT_DoublePhoton70;
   int prescale_HLT_DoublePhoton80;
-
-
-  //-------------From Claude Charlot--------------------
-
-  edm::ESHandle<MagneticField>                theMagField;
-  edm::ESHandle<CaloGeometry>                 theCaloGeom;
-  edm::ESHandle<CaloTopology>                 theCaloTopo;
-  edm::ESHandle<TrackerGeometry>              trackerHandle_;
-
-  const MultiTrajectoryStateTransform *mtsTransform_;
-  const MultiTrajectoryStateMode *mtsMode_;
-  GsfConstraintAtVertex *constraintAtVtx_;
-  const GsfPropagatorAdapter *geomPropBw_;
-  const GsfPropagatorAdapter *geomPropFw_;
-
-  // internal variables
-  int subdet_; //subdetector for this cluster
-  GlobalPoint sclPos_;
-  GlobalVector vtxMom_;
-  TrajectoryStateOnSurface innTSOS_;
-  TrajectoryStateOnSurface outTSOS_;
-  TrajectoryStateOnSurface vtxTSOS_;
-  TrajectoryStateOnSurface sclTSOS_;
-  TrajectoryStateOnSurface seedTSOS_;
-  TrajectoryStateOnSurface eleTSOS_;
-  TrajectoryStateOnSurface constrainedVtxTSOS_;
-  
-  const TrackerGeometry* tracker;
-
-  unsigned long long cacheIDMagField_;
-  unsigned long long cacheIDTDGeom_; 
-  unsigned long long cacheIDGeom_;
-  unsigned long long cacheIDTopo_;
-
-  const EcalRecHitCollection *ebRecHits_;
-  const EcalRecHitCollection *eeRecHits_;
-
 };
-
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(GsfCheckerTree);

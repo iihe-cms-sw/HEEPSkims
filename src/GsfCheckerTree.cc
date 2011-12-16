@@ -13,187 +13,20 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.13 2011/11/29 16:50:36 treis Exp $
+// $Id: GsfCheckerTree.cc,v 1.14 2011/12/12 17:36:00 lathomas Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 
-//TRIGGER ARNAUD
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetupFwd.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetup.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
-
-#include "CondFormats/L1TObjects/interface/L1GtTriggerMenuFwd.h"
-#include "CondFormats/L1TObjects/interface/L1GtTriggerMenu.h"
-#include "CondFormats/DataRecord/interface/L1GtTriggerMenuRcd.h"
-
-#include "HLTrigger/HLTanalyzers/interface/HLTrigReport.h"
-
-
-#include "DataFormats/GeometryVector/interface/GlobalPoint.h"
-#include "DataFormats/GeometryVector/interface/GlobalVector.h"
-
 #include "UserCode/HEEPSkims/interface/GsfCheckerTree.h"
-
-#include "DataFormats/EgammaReco/interface/SuperCluster.h"
-#include "DataFormats/EgammaReco/interface/SuperClusterFwd.h"
-
-#include "DataFormats/CaloRecHit/interface/CaloCluster.h"
-#include "DataFormats/CaloRecHit/interface/CaloClusterFwd.h"
-
-#include "CommonTools/UtilAlgos/interface/TFileService.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-
-#include "DataFormats/BeamSpot/interface/BeamSpot.h"
-#include "RecoEgamma/EgammaIsolationAlgos/interface/EgammaTowerIsolation.h"
-#include "CLHEP/Units/GlobalPhysicalConstants.h"
-#include "RecoEgamma/EgammaElectronAlgos/interface/EgAmbiguityTools.h"
-
-#include "DataFormats/EcalDetId/interface/EcalSubdetector.h"
-#include "DataFormats/EcalDetId/interface/EBDetId.h"
-#include "DataFormats/EcalDetId/interface/EEDetId.h"
-
-#include "RecoEcal/EgammaCoreTools/interface/EcalClusterTools.h"
-
-#include "RecoEgamma/EgammaElectronAlgos/interface/ElectronClassification.h"
-#include "RecoEgamma/EgammaElectronAlgos/interface/ElectronMomentumCorrector.h"
-#include "RecoEgamma/EgammaElectronAlgos/interface/ElectronEnergyCorrector.h"
-#include "Geometry/Records/interface/CaloTopologyRecord.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-
-//#include "LorentzVector.h"
-//For extrapolation to calo surface
-#include "PhysicsTools/IsolationAlgos/interface/PropagateToCal.h"
-
-#include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
-#include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
-#include "RecoLocalCalo/EcalRecAlgos/interface/EcalSeverityLevelAlgo.h"
-
-#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
 #define PI 3.141592654
 #define TWOPI 6.283185308
 
 using namespace std;
 using namespace reco;
-
-
-//-----------------------------
-//Added from Vincent
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/Utilities/interface/EDMException.h"
-
-
-#include "DataFormats/EgammaReco/interface/SuperCluster.h"
-#include "DataFormats/EgammaReco/interface/SuperClusterFwd.h"
-#include "DataFormats/EgammaReco/interface/BasicClusterFwd.h"
-#include "Calibration/EcalCalibAlgos/interface/ElectronRecalibSuperClusterAssociator.h"
-#include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
-#include "DataFormats/GsfTrackReco/interface/GsfTrack.h"
-
-#include "DataFormats/TrackReco/interface/Track.h"
-#include "DataFormats/MuonReco/interface/Muon.h"
-#include "DataFormats/MuonReco/interface/MuonFwd.h"
-#include "DataFormats/MuonDetId/interface/MuonSubdetId.h"
-#include "DataFormats/GsfTrackReco/interface/GsfTrackExtraFwd.h"
-
-#include "DataFormats/Common/interface/Ref.h"
-
-#include "DataFormats/GsfTrackReco/interface/GsfTrackFwd.h"
-#include "DataFormats/TrackReco/interface/TrackFwd.h"
-#include "DataFormats/RecoCandidate/interface/RecoCandidate.h"
-#include "DataFormats/Candidate/interface/Candidate.h"
-#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
-#include "SimG4Core/Generators/interface/HepMCParticle.h"
-#include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
-
-#include "DataFormats/EgammaCandidates/interface/GsfElectronFwd.h"
-#include "DataFormats/EgammaCandidates/interface/GsfElectronCoreFwd.h"
-#include "DataFormats/EgammaCandidates/interface/GsfElectronCore.h"
-#include "DataFormats/EgammaCandidates/interface/Electron.h"
-
-#include "RecoEcal/EgammaCoreTools/interface/EcalClusterTools.h"
-#include "DataFormats/CaloRecHit/interface/CaloClusterFwd.h"
-#include "DataFormats/CaloRecHit/interface/CaloCluster.h"
-#include "Calibration/EcalCalibAlgos/interface/EcalEleCalibLooper.h"
-
-#include "FWCore/Framework/interface/ESHandle.h"
-#include "DataFormats/Common/interface/Handle.h"
-
-#include "Calibration/EcalCalibAlgos/interface/Pi0FixedMassWindowCalibration.h"
-
-#include "Geometry/CaloEventSetup/interface/CaloTopologyRecord.h"
-#include "Geometry/CaloGeometry/interface/CaloGeometry.h"
-#include "Geometry/CaloTopology/interface/CaloTopology.h"
-#include "Geometry/CaloTopology/interface/CaloSubdetectorTopology.h"
-
-#include "DataFormats/METReco/interface/CaloMET.h"
-#include "DataFormats/METReco/interface/CaloMETFwd.h"
-#include "DataFormats/METReco/interface/CaloMETCollection.h"
-
-#include "DataFormats/METReco/interface/MET.h"
-#include "DataFormats/METReco/interface/METFwd.h"
-#include "DataFormats/METReco/interface/METCollection.h"
-
-#include "DataFormats/METReco/interface/PFMET.h"
-#include "DataFormats/METReco/interface/PFMETFwd.h"
-#include "DataFormats/METReco/interface/PFMETCollection.h"
-
-#include "DataFormats/JetReco/interface/CaloJet.h"
-//#include "DataFormats/JetReco/interface/CaloJetfwd.h"
-#include "DataFormats/JetReco/interface/CaloJetCollection.h" 
-
-#include "L1Trigger/GlobalTriggerAnalyzer/interface/L1GtUtils.h"
-
-#include "DataFormats/MuonReco/interface/Muon.h"
-// L1 bit
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetupFwd.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetup.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
-
-#include "CondFormats/L1TObjects/interface/L1GtTriggerMenuFwd.h"
-#include "CondFormats/L1TObjects/interface/L1GtTriggerMenu.h"
-#include "CondFormats/DataRecord/interface/L1GtTriggerMenuRcd.h"
-
-#include "DataFormats/L1Trigger/interface/L1ParticleMap.h"
-#include "DataFormats/L1Trigger/interface/L1ParticleMapFwd.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMapRecord.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMapFwd.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMap.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GtFdlWord.h"
-//END L1 bit
-
-
-// HLT
-#include "DataFormats/HLTReco/interface/TriggerFilterObjectWithRefs.h"
-#include "DataFormats/Common/interface/TriggerResults.h"
-#include "DataFormats/Common/interface/HLTenums.h"
-#include "FWCore/Common/interface/TriggerNames.h"
-#include "DataFormats/Provenance/interface/ParameterSetID.h"
-#include "DataFormats/HLTReco/interface/TriggerEvent.h"
-
-//GEN
-#include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
-
-#include <iostream>
-
 using namespace edm;
 using namespace std;
 using namespace reco;
-
-//-----------------------------
-
-
-//this is what i added => This is what we erased 
-
-
-int fsrposiphotonsize = 0;
-int fsrelecphotonsize = 0;
-
-HepMC::FourVector elecaddposigsfgsf = 0;
-HepMC::FourVector unstelecaddposigsfgsf = 0;
-
-unsigned ambSortingStrategy_ = 1;
-unsigned ambClustersOverlapStrategy_ = 1;
 
 //Method to sort the gsf electrons
 bool gsfEtGreater(const reco::GsfElectron &gsf1,const reco::GsfElectron &gsf2)
@@ -203,12 +36,14 @@ bool gsfEtGreater(const reco::GsfElectron &gsf1,const reco::GsfElectron &gsf2)
   return (et1 > et2);
 }
 
-bool scEGreater(const reco::SuperCluster *sc1,const reco::SuperCluster *sc2){return ((sc1->energy()+sc1->preshowerEnergy()) > (sc2->energy()+sc2->preshowerEnergy()));}
+bool scEGreater(const reco::SuperCluster *sc1,const reco::SuperCluster *sc2) {
+  return ((sc1->energy()+sc1->preshowerEnergy()) > (sc2->energy()+sc2->preshowerEnergy()));
+}
 
 
-bool refScEGreater(reco::SuperClusterRef sc1,reco::SuperClusterRef sc2){return ((sc1->energy()+sc1->preshowerEnergy()) > (sc2->energy()+sc2->preshowerEnergy()));}
-
-
+bool refScEGreater(reco::SuperClusterRef sc1,reco::SuperClusterRef sc2) {
+  return ((sc1->energy()+sc1->preshowerEnergy()) > (sc2->energy()+sc2->preshowerEnergy()));
+}
 
 
 float etacorr(float eta, float pvz, float scz){
@@ -216,17 +51,13 @@ float etacorr(float eta, float pvz, float scz){
 }
 
 
-
 GsfCheckerTree::GsfCheckerTree(const edm::ParameterSet& iConfig)
-
 {
   //now do what ever initialization is needed
   eventcounter = 0;
 
-  log_ = iConfig.getParameter<unsigned int>( "logEvents"  );
-  src_ = iConfig.getParameter<edm::InputTag>( "src"  );
   hlTriggerResults_ = iConfig.getParameter<edm::InputTag> ("TriggerResultsTag");
-  //usegendata_ = iConfig.getParameter<bool> ("usegendata");
+  comEnergy_ = iConfig.getParameter<double>("centerOfMassEnergy");
   eleEtCut_ = iConfig.getUntrackedParameter<double>("electronEtCut", 0.);
   muPtCut_ = iConfig.getUntrackedParameter<double>("muonPtCut", 0.);
 }
@@ -234,15 +65,10 @@ GsfCheckerTree::GsfCheckerTree(const edm::ParameterSet& iConfig)
 
 GsfCheckerTree::~GsfCheckerTree()
 {
-
   cout<<"GsfCheckerTree::~GsfCheckerTree"<<endl; 
   // do anything here that needs to be done at destruction time
   // (e.g. close files, deallocate resources etc.)
 }
-
-
-
-
 
 // ------------ method called to for each event  ------------
 void
@@ -251,7 +77,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   using namespace edm;
   using namespace std;
   using namespace reco;
-  bool usegendata_ = !iEvent.isRealData(); 
+  bool useGenData_ = !iEvent.isRealData(); 
 
   eventcounter++;
 
@@ -332,7 +158,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   processid = -5000;
   weight = -5000.;
 
- 
   // for skim on pt 
   //Final GSF Electron collection
   edm::Handle<reco::GsfElectronCollection> pGsfElectrons;
@@ -381,27 +206,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       && !(muonPtMax > muPtCut_ && muonPtSecondMax > muPtCut_)
      ) return;
 
-
-
-  //FSR variables
-  fsrposiphotonsize = -3;
-  fsrelecphotonsize = -3;
-  
-  for(int k=0;k<10;k++){
-    energyfsrelec[k] = -5000.;
-    etfsrelec[k] = -5000.;
-    etafsrelec[k] = -5000.;
-    phifsrelec[k] = -5000.;
-    energyfsrposi[k] = -5000.;
-    etfsrposi[k] = -5000.;
-    etafsrposi[k] = -5000.;
-    phifsrposi[k] = -5000.;
-  }
-
-
- 
   //Supercluster variables
-  //fill e,et,eta,phi,charge for every SC in the event
   for(int i=0;i<100;i++) {
     scgsfmatched[i] = -5000.;
     scenergy[i] = -5000.;
@@ -418,9 +223,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     scy[i] = -5000.;
     scz[i] = -5000.;
   }
-  
-
-
   scsize = -5000;
   
   //beam spot variables
@@ -432,8 +234,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   bsposz = -5000.;
    
   genparticles_size =-10;
-  for(int i=0;i<20;i++) {
-  
+  for (int i=0; i<20; ++i) {
     genele_e[i] =  -5000.;
     genele_pt[i] =  -5000.;
     genele_px[i] = -5000.;
@@ -464,12 +265,29 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     genelemom_pdgid[i]=  -5000;
   }
 
-
-  for(int i=0;i<10;i++) {
+  for (int i=0; i<10; ++i) {
   x1quark[i] = -5000.;
   x2quark[i] = -5000.;
   }
+
+  trueNVtx = -5000.;
+  nVtxBefore = -5000;
+  nVtxNow = -5000;
+  nVtxAfter = -5000;
  
+  //Primary vertex x,y,z
+  pvsize = -5000;
+  for (int i = 0; i < 50; ++i) {
+    pvx[i] = -5000.;
+    pvy[i] = -5000.;
+    pvz[i] = -5000.;
+    pv_isValid[i] = false;
+    pv_ndof[i] = -5000.;
+    pv_nTracks[i] = -5000;
+    pv_normChi2[i] = -5000.;
+    pv_totTrackSize[i] = -5000;
+  }
+
   //ELE --- GSF variables
   gsf_size = -3;
   for (int i=0;i<100;i++){
@@ -571,9 +389,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   }
 
-  //------------------------------
-  //Added from Vincent
-  for (int i=0;i<300;i++) HLTriggers[i]  = -10;
+  for (int i=0; i<500; ++i) HLTriggers[i]  = -10;
 
   calomet = -1.;
   calomet_eta = -1000; 
@@ -593,17 +409,16 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 //   }
   
   nJetsAKT_pt15 = -1;
-  for (unsigned int i = 0 ; i< 50 ; i++){   
+  for (unsigned int i = 0 ; i< 50 ; ++i){   
     jetAKT_pt[i] = -1;
     jetAKT_eta[i] = -1;
     jetAKT_phi[i] = -1;
     jetAKT_em[i] = -1;
   }
 
-
   //MUONS
   muon_size = -3;
-  for (unsigned int i = 0 ; i< 100 ; i++){  
+  for (unsigned int i = 0 ; i< 100 ; ++i){  
     muon_pt[i] = -1.;
     muon_ptError[i] = -1.;
     muon_eta[i] = -1.;
@@ -658,16 +473,12 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     muon_innerPosz[i] = -1.; 
   }
 
-  //------------------------------
-
-
-  if(usegendata_){
-
-
+  // generator information for MC samples
+  if (useGenData_) {
     edm::Handle<GenEventInfoProduct> GenInfoHandle;
     bool genevtinfovalid = iEvent.getByLabel("generator",GenInfoHandle);
     
-    if(genevtinfovalid) {
+    if (genevtinfovalid) {
       pthat = GenInfoHandle->hasBinningValues() ? (GenInfoHandle->binningValues())[0] : 0.0 ;
       alphaqcd = GenInfoHandle->alphaQCD();
       alphaqed = GenInfoHandle->alphaQED();
@@ -676,22 +487,34 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       weight = GenInfoHandle->weight();
     }
     
+    DataGenPart(iEvent);
 
+    // pile up info
+    edm::InputTag pileupSrc_("addPileupInfo");
+    Handle<std::vector<PileupSummaryInfo> > puInfo;
+    iEvent.getByLabel(pileupSrc_, puInfo);
 
-    datagenerated(iEvent);
- 
+    vector<PileupSummaryInfo>::const_iterator pvi;
 
+    for (pvi = puInfo->begin(); pvi != puInfo->end(); ++pvi) {
+      if (pvi->getBunchCrossing() == -1) nVtxBefore = pvi->getPU_NumInteractions();
+      else if (pvi->getBunchCrossing() == 0) {
+        trueNVtx = pvi->getTrueNumInteractions(); // from Fall11 onwards
+        nVtxNow = pvi->getPU_NumInteractions();
+      }
+      else if (pvi->getBunchCrossing() == 1) nVtxAfter = pvi->getPU_NumInteractions();
+      //cout << " Pileup Information: bunchXing, nvtx: " << pvi->getBunchCrossing() << " " << pvi->getTrueNumInteractions() << endl;
+    }
+  } else {
+    genparticles_size = 1;
   }
-  else{genparticles_size = 1;}
 
 
   edm::Handle<TriggerResults> hltResults;
   iEvent.getByLabel(hlTriggerResults_, hltResults);
 
-
   edm::Handle<edm::TriggerResults> hltTriggerResultHandle;
   iEvent.getByLabel(hlTriggerResults_, hltTriggerResultHandle);
-  
   
   hltCount = 0;   
   if(!hltTriggerResultHandle.isValid()) {
@@ -701,25 +524,12 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     hltCount = hltTriggerResultHandle->size();
     for(int i = 0 ; i < hltCount ; i++) {
       if (hltTriggerResultHandle->accept(i)) HLTriggers[i] = i;
-      
     }
   } // end HLT
   
-  
-  
-  edm::TriggerResults  triggerResults();
-  edm::ParameterSetID psetid_;
-  
-
-  edm::Handle<edm::View<reco::GenParticle> > src; 
-  iEvent.getByLabel(src_, src);
-  
-
-
   // L1 BITS
   edm::Handle< L1GlobalTriggerReadoutRecord > gtReadoutRecord;
   iEvent.getByLabel( edm::InputTag("gtDigis"), gtReadoutRecord);
-
 
   const TechnicalTriggerWord&  technicalTriggerWordBeforeMask = gtReadoutRecord->technicalTriggerWord();
   L1trigger_size = technicalTriggerWordBeforeMask.size();
@@ -730,20 +540,17 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     if (bit == 0) L1trigger_bool[i] = 0;   
   }
 
- 
   //physics declared
   L1GlobalTriggerReadoutRecord const* gtrr = gtReadoutRecord.product();
   L1GtFdlWord fdlWord = gtrr->gtFdlWord();
   if (fdlWord.physicsDeclared() == 1) PhysDecl_bool=1;
   else PhysDecl_bool=0;
 
-
   bool caloantiktjetisvalid = false;
   edm::Handle<CaloJetCollection> pCaloAntiKtJets;
   caloantiktjetisvalid = iEvent.getByLabel("ak5CaloJets", pCaloAntiKtJets);//Laurent
      const CaloJetCollection *caloAntiKtJets  = pCaloAntiKtJets.product();//Laurent
   
-
   edm::Handle<CaloMETCollection> pCaloMET;
   bool calometisvalid = iEvent.getByLabel("met", pCaloMET);
   const CaloMETCollection *caloMET  = pCaloMET.product();
@@ -756,8 +563,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   bool pfmetisvalid = iEvent.getByLabel("pfMet", pPFMET);
   const PFMETCollection *PFMET  = pPFMET.product();
 
-   // Triggers  ARNAUD
-
+  // Triggers  ARNAUD
   // get hold of TriggerResults
   Handle<TriggerResults> HLTR;
   iEvent.getByLabel(hlTriggerResults_,HLTR);
@@ -900,11 +706,9 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       HLTR->accept(i) ? HLT_DoublePhoton80 = 1 : HLT_DoublePhoton80 = 0;
       prescale_HLT_DoublePhoton80 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
     }
-
   }
 
   for (unsigned int i=0; i!=n; ++i) {
-    
     if (HLTR->wasrun(i)) hlWasRun_[i]++;
     if (HLTR->wasrun(i)) hlWasRunTab[i] = 1;
     if (!(HLTR->wasrun(i))) cout<<"hlNames(i) = "<<i<<", "<<hlNames_.at(i)<<endl;
@@ -922,9 +726,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       if (index> posPre_[i]) hltPre_[i]++;
     }
   }
-
   // fin triggers ARNAUD
-
 
   //LOOP ON anti kt jets
   int FnJetsAKT = -1;
@@ -938,72 +740,59 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   int index_jetAKT = 0;
   if(caloantiktjetisvalid){
-      FnJetsAKT = caloAntiKtJets->size();
-      for(CaloJetCollection::const_iterator antiktjetiter = caloAntiKtJets->begin();antiktjetiter != caloAntiKtJets->end();antiktjetiter++){
-        if(antiktjetiter->et() > 10. && fabs(antiktjetiter->eta()) < 3.) {
-  	FnJetsAKT_pt10++;
-  	VemJetsAKT_pt10.push_back(antiktjetiter->emEnergyFraction());
-        }
-        if(antiktjetiter->et() > 15. && fabs(antiktjetiter->eta()) < 3.) {
-  	FnJetsAKT_pt15++;
-  	VemJetsAKT_pt15.push_back(antiktjetiter->emEnergyFraction());
-        }
-        if(antiktjetiter->et() > 20. && fabs(antiktjetiter->eta()) < 3.) {
-  	FnJetsAKT_pt20++;
-  	VemJetsAKT_pt20.push_back(antiktjetiter->emEnergyFraction());
-        }
+    FnJetsAKT = caloAntiKtJets->size();
+    for(CaloJetCollection::const_iterator antiktjetiter = caloAntiKtJets->begin();antiktjetiter != caloAntiKtJets->end();antiktjetiter++){
+      if(antiktjetiter->et() > 10. && fabs(antiktjetiter->eta()) < 3.) {
+      FnJetsAKT_pt10++;
+      VemJetsAKT_pt10.push_back(antiktjetiter->emEnergyFraction());
+      }
+      if(antiktjetiter->et() > 15. && fabs(antiktjetiter->eta()) < 3.) {
+      FnJetsAKT_pt15++;
+      VemJetsAKT_pt15.push_back(antiktjetiter->emEnergyFraction());
+      }
+      if(antiktjetiter->et() > 20. && fabs(antiktjetiter->eta()) < 3.) {
+      FnJetsAKT_pt20++;
+      VemJetsAKT_pt20.push_back(antiktjetiter->emEnergyFraction());
+      }
 
-        //FILL TREE
-	if(antiktjetiter->et() > 10. && fabs(antiktjetiter->eta()) < 3.) {
-        jetAKT_pt[index_jetAKT] = antiktjetiter->et();
-        jetAKT_eta[index_jetAKT] = antiktjetiter->eta();
-        jetAKT_phi[index_jetAKT] = antiktjetiter->phi();
-        jetAKT_em[index_jetAKT] = antiktjetiter->emEnergyFraction();
+      //FILL TREE
+      if(antiktjetiter->et() > 10. && fabs(antiktjetiter->eta()) < 3.) {
+      jetAKT_pt[index_jetAKT] = antiktjetiter->et();
+      jetAKT_eta[index_jetAKT] = antiktjetiter->eta();
+      jetAKT_phi[index_jetAKT] = antiktjetiter->phi();
+      jetAKT_em[index_jetAKT] = antiktjetiter->emEnergyFraction();
 
-        index_jetAKT++;
-	}
+      index_jetAKT++;
       }
     }
-
-
+  }
 
   jetAKT_size = index_jetAKT;
   nJetsAKT_pt15 = FnJetsAKT_pt15;
 
-  
   //CALOMET
-  if(calometisvalid){
-    for(CaloMETCollection::const_iterator calometiter = caloMET->begin();calometiter != caloMET->end();calometiter++){
+  if (calometisvalid) {
+    for (CaloMETCollection::const_iterator calometiter = caloMET->begin(); calometiter != caloMET->end(); ++calometiter) {
       calomet = calometiter->et();
       calomet_eta = calometiter->eta(); 
       calomet_phi = calometiter->phi();
     }
   }  
   //MET
-  if(metisvalid){
-    for(METCollection::const_iterator metiter = MET->begin();metiter != MET->end();metiter++){
-      met = metiter->sumEt();   
-
+  if (metisvalid) {
+    for (METCollection::const_iterator metiter = MET->begin(); metiter != MET->end(); ++metiter) {
+      met = metiter->sumEt();
     }
   } 
   //PFMET
-  if(pfmetisvalid){
-    for(PFMETCollection::const_iterator pfmetiter = PFMET->begin();pfmetiter != PFMET->end();pfmetiter++){
+  if (pfmetisvalid) {
+    for(PFMETCollection::const_iterator pfmetiter = PFMET->begin(); pfmetiter != PFMET->end(); ++pfmetiter) {
       pfmet = pfmetiter->et();  
       pfmet_eta = pfmetiter->eta(); 
       pfmet_phi = pfmetiter->phi();
-
     }
   } 
   
-
-
-  //--------------------------------
-
-  //get calo towers
-  edm::Handle<CaloTowerCollection> towersH;
-  iEvent.getByLabel("towerMaker", towersH);
-
   // get the beamspot from the Event:
   edm::Handle<reco::BeamSpot> theBeamSpot;
   iEvent.getByType(theBeamSpot);
@@ -1018,7 +807,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   bsposy = theBeamSpot->position().y();
   bsposz = theBeamSpot->position().z();
 
-  //VINCENT
   math::XYZPoint beamspot(theBeamSpot->position().x(),theBeamSpot->position().y(),theBeamSpot->position().z());
   math::XYZPoint firstpvertex(0.,0.,0.);
 
@@ -1035,7 +823,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   
   pvsize = pvcoll->size();
   int indexpv = 0;
-  for(reco::VertexCollection::const_iterator pvIt = pvcoll->begin();pvIt != pvcoll->end(); pvIt++){
+  for(reco::VertexCollection::const_iterator pvIt = pvcoll->begin(); pvIt != pvcoll->end(); ++pvIt){
     pvx[indexpv] = pvIt->x();
     pvy[indexpv] = pvIt->y();   
     pvz[indexpv] = pvIt->z();  
@@ -1045,7 +833,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     pv_normChi2[indexpv] = pvIt->normalizedChi2();
     pv_totTrackSize[indexpv] = pvIt->tracksSize();
 
-    indexpv++;
+    ++indexpv;
   }
 
   int index_mu = 0;
@@ -1111,14 +899,9 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       index_mu++;
     }
   }
-
   muon_size = index_mu;
 
-  //--------------------------------
- 
-
   //Get a Handle on different collections
-
   //Get the superclusters
   edm::Handle<reco::SuperClusterCollection> pHybridSuperClusters;
   edm::Handle<reco::SuperClusterCollection> pIslandSuperClusters;
@@ -1145,7 +928,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   for(unsigned int i = 0;i<islandSuperClusters->size();i++)
     {reco::SuperClusterRef irefsc(reco::SuperClusterRef(pIslandSuperClusters,i));refsclusters.push_back(irefsc);}
 
-
   scsize = sclusters.size();
 
   //sort all the refSC by energy
@@ -1157,15 +939,11 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
  
   //sort all the SC by energy
   std::sort(sclusters.begin(),sclusters.end(),scEGreater);
-//   for(std::vector<const reco::SuperCluster*>::const_iterator sclustersiter = sclusters.begin();sclustersiter != sclusters.end();sclustersiter++) {
-
-//   }
-  
 
   int counter = 0;
   std::vector<const reco::SuperCluster*>::const_iterator sciter=sclusters.begin();
 
-  for(;sciter!=sclusters.end();sciter++)
+  for(; sciter!=sclusters.end(); ++sciter)
     {
       sceta[counter] = (*sciter)->eta();
       scetacorr[counter] = etacorr( (*sciter)->eta(), pvz[0], (*sciter)->position().z() );
@@ -1188,11 +966,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       counter++;
     }
 
- 
   //trying to see if the sc is seed associated
   
-
- 
   edm::Handle<GsfTrackCollection> gsfTracksH ;
   iEvent.getByLabel("electronGsfTracks",gsfTracksH) ;
   const GsfTrackCollection *gsftracks = gsfTracksH.product();
@@ -1204,7 +979,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       gsftrackiter!=gsftracks->end();
       gsftrackiter++)
     {
-
       gsftracketa[v] = gsftrackiter->eta();
       gsftrackphi[v] = gsftrackiter->phi();  
       gsftrackp[v] = gsftrackiter->p();
@@ -1212,7 +986,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       gsftrackpx[v] = gsftrackiter->px();
       gsftrackpy[v] = gsftrackiter->py();
       gsftrackpz[v] = gsftrackiter->pz();
-	
       v++;
     }//end of loop on gsf tracks
 
@@ -1223,10 +996,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   //To remove spikes (ECAL CLUSTER LAZY TOOLS)
   edm::Handle<EcalRecHitCollection> EBReducedRecHits;
   iEvent.getByLabel("reducedEcalRecHitsEB",EBReducedRecHits);
-  ebRecHits_ = EBReducedRecHits.product();
   edm::Handle<EcalRecHitCollection> EEReducedRecHits;
   iEvent.getByLabel("reducedEcalRecHitsEE",EEReducedRecHits);
-  eeRecHits_ = EEReducedRecHits.product();
   EcalClusterLazyTools lazytool(iEvent,iSetup,InputTag("reducedEcalRecHitsEB"),InputTag("reducedEcalRecHitsEE"));
 
   gsf_size = gsfelectrons.size();
@@ -1238,7 +1009,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       gsfscphi = gsfiter->superCluster()->phi();
       gsfscenergy = gsfiter->superCluster()->energy();
 
-
       scindexforgsf[e] = -3;
       //try to get the index for the sc assoc to this gsf
       reco::SuperClusterRef gsfrefsc = gsfiter->superCluster();
@@ -1248,10 +1018,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	}
       }
       
-      
-
-
-
       //Fill the gsf related variables
       gsf_e[e] = gsfiter->energy();
       gsf_p[e] = gsfiter->p();
@@ -1310,9 +1076,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       gsf_e2x5[e] =gsfiter->e2x5Max() ;
       gsf_e5x5[e] =gsfiter->e5x5() ;
 
-      
       const reco::CaloClusterPtr seed = gsfiter->superCluster()->seed();
-     
 
       gsf_e1x3[e] = lazytool.e1x3(*seed);
 //       gsf_e3x1[e] = lazytool.e3x1(*seed);
@@ -1330,9 +1094,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 //       gsf_eTop[e] = lazytool.eTop(*seed);
 //       gsf_eBottom[e] = lazytool.eBottom(*seed);
 //       gsf_e2nd[e] = lazytool.e2nd(*seed);
-
-
-
 
       // HEEP selection v3.2  - 24/10/2011 Thomas
       bool gsfetbarrel = gsf_gsfet[e] > 35.;
@@ -1374,7 +1135,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       bool noMissingHits = gsf_nLostInnerHits[e] == 0;
       bool noConversion = gsf_convFlags[e] != 3; 
 
-
       //Boolean HEEP cuts
       gsfpass_ET[e] = (gsfetbarrel && barrelsc) || (gsfetendcap && endcapsc); 
       gsfpass_PT[e] = true; 
@@ -1397,7 +1157,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
       gsfpass_HEEP[e] = gsfpass_ET[e] && gsfpass_DETAIN[e] && gsfpass_DPHIIN[e] && gsfpass_HADEM[e] && gsfpass_SIGMAIETAIETA[e] && gsfpass_E2X5OVER5X5[e] && gsfpass_ISOLEMHADDEPTH1[e] && gsfpass_ISOLHADDEPTH2[e] && gsfpass_ISOLPTTRKS[e] && gsfpass_NOMISSINGHITS[e];
       
-
       //charge info
       scpixcharge[e] = gsfiter->scPixCharge();
       if(gsfiter->closestCtfTrackRef().isNonnull()) ctfcharge[e] = gsfiter->closestCtfTrackRef()->charge();
@@ -1408,18 +1167,12 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
       //increment index for gsf
       e++;
-
-
     }
 
   mytree->Fill();
-
-   
 }//end of analyze method
 
 
-
-// FROM ARNAUD
 void GsfCheckerTree::beginRun(edm::Run const& iRun, edm::EventSetup const& iSetup)
 {
   using namespace std;
@@ -1486,7 +1239,6 @@ void GsfCheckerTree::beginRun(edm::Run const& iRun, edm::EventSetup const& iSetu
   }
   //return true;
 }
-      
 
 
 // ------------ method called once each job just before starting event loop  ------------
@@ -1507,7 +1259,6 @@ GsfCheckerTree::beginJob()
   mytree->Branch("alphaqed",&alphaqed,"alphaqed/F");
   mytree->Branch("qscale",&qscale,"qscale/F");
   mytree->Branch("weight",&weight,"weight/F");
-
 
   //TRIGGERS
   mytree->Branch("hltCount",&hltCount,"hltCount/I");
@@ -1609,7 +1360,7 @@ GsfCheckerTree::beginJob()
   mytree->Branch("pvx",&pvx,"pvx[pvsize]/F");
   mytree->Branch("pvy",&pvy,"pvy[pvsize]/F");
   mytree->Branch("pvz",&pvz,"pvz[pvsize]/F");
-  mytree->Branch("pv_isValid",&pv_isValid,"pv_isValid[pvsize]/B");
+  mytree->Branch("pv_isValid",&pv_isValid,"pv_isValid[pvsize]/O");
   mytree->Branch("pv_ndof",&pv_ndof,"pv_ndof[pvsize]/F");
   mytree->Branch("pv_nTracks",&pv_nTracks,"pv_nTracks[pvsize]/I");
   mytree->Branch("pv_normChi2",&pv_normChi2,"pv_normChi2[pvsize]/F");
@@ -1656,7 +1407,7 @@ GsfCheckerTree::beginJob()
   mytree->Branch("muon_nlayerswithhits", muon_nlayerswithhits, "muon_nlayerswithhits[muon_size]/I");
   mytree->Branch("muon_nlosthits", muon_nlosthits, "muon_nlosthits[muon_size]/I");
   mytree->Branch("muon_nSegmentMatch", muon_nSegmentMatch, "muon_nSegmentMatch[muon_size]/I");
-  mytree->Branch("muon_isTrackerMuon", muon_isTrackerMuon, "muon_isTrackerMuon[muon_size]/B");
+  mytree->Branch("muon_isTrackerMuon", muon_isTrackerMuon, "muon_isTrackerMuon[muon_size]/O");
   mytree->Branch("muon_chi2", muon_chi2, "muon_chi2[muon_size]/F");
   mytree->Branch("muon_ndof", muon_ndof, "muon_ndof[muon_size]/I");
   mytree->Branch("muon_normChi2", muon_normChi2, "muon_normChi2[muon_size]/F");
@@ -1852,30 +1603,21 @@ GsfCheckerTree::beginJob()
   //x1 and x2
   mytree->Branch("x1quark",&x1quark,"x1quark[genparticles_size]/F");
   mytree->Branch("x2quark",&x2quark,"x2quark[genparticles_size]/F");
-  //FSR variables
-  mytree->Branch("fsrposiphotonsize",&fsrposiphotonsize,"fsrposiphotonsize/I");
-  mytree->Branch("fsrelecphotonsize",&fsrelecphotonsize,"fsrelecphotonsize/I");
-  mytree->Branch("energyfsrelec",&energyfsrelec,"energyfsrelec[fsrelecphotonsize]/F");
-  mytree->Branch("etfsrelec",&etfsrelec,"etfsrelec[fsrelecphotonsize]/F");
-  mytree->Branch("etafsrelec",&etafsrelec,"etafsrelec[fsrelecphotonsize]/F");
-  mytree->Branch("phifsrelec",&phifsrelec,"phifsrelec[fsrelecphotonsize]/F");
-  mytree->Branch("energyfsrposi",&energyfsrposi,"energyfsrposi[fsrposiphotonsize]/F");
-  mytree->Branch("etfsrposi",&etfsrposi,"etfsrposi[fsrposiphotonsize]/F");
-  mytree->Branch("etafsrposi",&etafsrposi,"etafsrposi[fsrposiphotonsize]/F");
-  mytree->Branch("phifsrposi",&phifsrposi,"phifsrposi[fsrposiphotonsize]/F");
 
+  mytree->Branch("trueNVtx",&trueNVtx,"trueNVtx/F");
+  mytree->Branch("nVtxBefore",&nVtxBefore,"nVtxBefore/I");
+  mytree->Branch("nVtxNow",&nVtxNow,"nVtxNow/I");
+  mytree->Branch("nVtxAfter",&nVtxAfter,"nVtxAfter/I");
 }
  
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
 GsfCheckerTree::endJob() {
-  }
+}
 
 //
-// -----------------------------------------------------------
-// -----------------------------------------------------------
-void GsfCheckerTree::datagenerated(const edm::Event& e) {
+void GsfCheckerTree::DataGenPart(const edm::Event& e) {
 
   using namespace std;
   using namespace edm;
@@ -1883,57 +1625,57 @@ void GsfCheckerTree::datagenerated(const edm::Event& e) {
   unsigned int counter = 0; 
   Handle<GenParticleCollection> genParticles;
   e.getByLabel("genParticles", genParticles);
-  for(size_t i = 0; i < genParticles->size(); ++ i) {
+  for (size_t i = 0; i < genParticles->size(); ++i) {
     
     const GenParticle & p = (*genParticles)[i];
     int id = p.pdgId();
     int st = p.status(); 
 
-    if( fabs(id) == 11 && st == 1) {
-        const Candidate * unstableGenEle;
-	const Candidate * mom = p.mother();
-	
-	while (fabs(mom->pdgId()) == 11){ 
-	if(mom->status() ==3 ) unstableGenEle = mom; 
-	mom = mom->mother(); 
-
-	}
-	if(fabs(mom->pdgId())!= 22 && fabs(mom->pdgId())!= 23 && fabs(mom->pdgId())!=24 && fabs(mom->pdgId())!=32 && fabs(mom->pdgId())!=33 && fabs(mom->pdgId())!=39 &&fabs(mom->pdgId())!=  13) continue;
-	genele_e[counter] = p.energy(); 
-	genele_pt[counter] = p.pt();
-	genele_px[counter] = p.px();
-	genele_py[counter] = p.py();
-	genele_pz[counter] = p.pz();
-	genele_eta[counter] = p.eta(); 
-	genele_phi[counter] = p.phi();
-	genele_charge[counter]= p.charge();
-
-	unstableGenEle_e[counter] = unstableGenEle->energy(); 
-	unstableGenEle_pt[counter] = unstableGenEle->pt();
-	unstableGenEle_px[counter] = unstableGenEle->px();
-	unstableGenEle_py[counter] = unstableGenEle->py();
-	unstableGenEle_pz[counter] = unstableGenEle->pz();
-	unstableGenEle_eta[counter] = unstableGenEle->eta(); 
-	unstableGenEle_phi[counter] = unstableGenEle->phi();
-	unstableGenEle_charge[counter]= unstableGenEle->charge();
-
-	genelemom_e[counter] = mom->energy(); 
-	genelemom_pt[counter] = mom->pt();
-	genelemom_px[counter] = mom->px();
-	genelemom_py[counter] = mom->py();
-	genelemom_pz[counter] = mom->pz();
-	genelemom_eta[counter] = mom->eta(); 
-	genelemom_phi[counter] = mom->phi();
-	genelemom_charge[counter]= mom->charge();
-	genelemom_mass[counter]= mom->mass();
-	genelemom_pdgid[counter]= mom->pdgId();
-	
-	x1quark[counter] = (genelemom_mass[counter]*genelemom_mass[counter])/(7000.*(genelemom_pz[counter] + sqrt(genelemom_pz[counter]*genelemom_pz[counter]+genelemom_mass[counter]*genelemom_mass[counter] )));
-	x2quark[counter] = (genelemom_pz[counter]  + sqrt(genelemom_pz[counter]*genelemom_pz[counter]+genelemom_mass[counter]*genelemom_mass[counter] ))/7000.;
-	counter ++;      
+    if (fabs(id) == 11 && st == 1) {
+      const Candidate * unstableGenEle = p.clone(); // stable = unstable at the beginning
+      const Candidate * mom = p.mother();
+      
+      while (fabs(mom->pdgId()) == 11) { 
+        if(mom->status() ==3 ) unstableGenEle = mom; 
+          mom = mom->mother(); 
+      }
+      
+      if(fabs(mom->pdgId())!= 22 && fabs(mom->pdgId())!= 23 && fabs(mom->pdgId())!=24 && fabs(mom->pdgId())!=32 && fabs(mom->pdgId())!=33 && fabs(mom->pdgId())!=39 &&fabs(mom->pdgId())!=  13) continue;
+      
+      genele_e[counter] = p.energy(); 
+      genele_pt[counter] = p.pt();
+      genele_px[counter] = p.px();
+      genele_py[counter] = p.py();
+      genele_pz[counter] = p.pz();
+      genele_eta[counter] = p.eta(); 
+      genele_phi[counter] = p.phi();
+      genele_charge[counter]= p.charge();
+      
+      unstableGenEle_e[counter] = unstableGenEle->energy(); 
+      unstableGenEle_pt[counter] = unstableGenEle->pt();
+      unstableGenEle_px[counter] = unstableGenEle->px();
+      unstableGenEle_py[counter] = unstableGenEle->py();
+      unstableGenEle_pz[counter] = unstableGenEle->pz();
+      unstableGenEle_eta[counter] = unstableGenEle->eta(); 
+      unstableGenEle_phi[counter] = unstableGenEle->phi();
+      unstableGenEle_charge[counter]= unstableGenEle->charge();
+      
+      genelemom_e[counter] = mom->energy(); 
+      genelemom_pt[counter] = mom->pt();
+      genelemom_px[counter] = mom->px();
+      genelemom_py[counter] = mom->py();
+      genelemom_pz[counter] = mom->pz();
+      genelemom_eta[counter] = mom->eta(); 
+      genelemom_phi[counter] = mom->phi();
+      genelemom_charge[counter]= mom->charge();
+      genelemom_mass[counter]= mom->mass();
+      genelemom_pdgid[counter]= mom->pdgId();
+      
+      x1quark[counter] = (genelemom_mass[counter]*genelemom_mass[counter]) / (comEnergy_ * (genelemom_pz[counter] + sqrt(genelemom_pz[counter]*genelemom_pz[counter]+genelemom_mass[counter]*genelemom_mass[counter] )));
+      x2quark[counter] = (genelemom_pz[counter] + sqrt(genelemom_pz[counter]*genelemom_pz[counter]+genelemom_mass[counter]*genelemom_mass[counter] )) / comEnergy_;
+      counter ++;      
     }
-
     genparticles_size=counter;
-
   }  
-}//end of datagenerated
+}//end of DataGenPart
+
