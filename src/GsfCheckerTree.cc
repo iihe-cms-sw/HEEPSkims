@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.14 2011/12/12 17:36:00 lathomas Exp $
+// $Id: GsfCheckerTree.cc,v 1.15 2011/12/16 13:55:34 treis Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 
@@ -25,28 +25,33 @@ Implementation:
 using namespace std;
 using namespace reco;
 using namespace edm;
-using namespace std;
-using namespace reco;
 
 //Method to sort the gsf electrons
-bool gsfEtGreater(const reco::GsfElectron &gsf1,const reco::GsfElectron &gsf2)
+bool 
+gsfEtGreater(const reco::GsfElectron &gsf1,const reco::GsfElectron &gsf2)
 {
   float et1 = gsf1.caloEnergy()*sin(gsf1.p4().theta());
   float et2 = gsf2.caloEnergy()*sin(gsf2.p4().theta());
   return (et1 > et2);
 }
 
-bool scEGreater(const reco::SuperCluster *sc1,const reco::SuperCluster *sc2) {
+bool 
+scEGreater(const reco::SuperCluster *sc1,const reco::SuperCluster *sc2) 
+{
   return ((sc1->energy()+sc1->preshowerEnergy()) > (sc2->energy()+sc2->preshowerEnergy()));
 }
 
 
-bool refScEGreater(reco::SuperClusterRef sc1,reco::SuperClusterRef sc2) {
+bool 
+refScEGreater(reco::SuperClusterRef sc1,reco::SuperClusterRef sc2) 
+{
   return ((sc1->energy()+sc1->preshowerEnergy()) > (sc2->energy()+sc2->preshowerEnergy()));
 }
 
 
-float etacorr(float eta, float pvz, float scz){
+float 
+etacorr(float eta, float pvz, float scz) 
+{
   return asinh(sinh(eta)*(1.-pvz/scz));
 }
 
@@ -58,6 +63,7 @@ GsfCheckerTree::GsfCheckerTree(const edm::ParameterSet& iConfig)
 
   hlTriggerResults_ = iConfig.getParameter<edm::InputTag> ("TriggerResultsTag");
   comEnergy_ = iConfig.getParameter<double>("centerOfMassEnergy");
+  bJetPtMin_ = iConfig.getUntrackedParameter<double>("bJetPtMin", 10.);
   eleEtCut_ = iConfig.getUntrackedParameter<double>("electronEtCut", 0.);
   muPtCut_ = iConfig.getUntrackedParameter<double>("muonPtCut", 0.);
 }
@@ -74,9 +80,6 @@ GsfCheckerTree::~GsfCheckerTree()
 void
 GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-  using namespace edm;
-  using namespace std;
-  using namespace reco;
   bool useGenData_ = !iEvent.isRealData(); 
 
   eventcounter++;
@@ -510,9 +513,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
 
 
-  edm::Handle<TriggerResults> hltResults;
-  iEvent.getByLabel(hlTriggerResults_, hltResults);
-
   edm::Handle<edm::TriggerResults> hltTriggerResultHandle;
   iEvent.getByLabel(hlTriggerResults_, hltTriggerResultHandle);
   
@@ -549,7 +549,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   bool caloantiktjetisvalid = false;
   edm::Handle<CaloJetCollection> pCaloAntiKtJets;
   caloantiktjetisvalid = iEvent.getByLabel("ak5CaloJets", pCaloAntiKtJets);//Laurent
-     const CaloJetCollection *caloAntiKtJets  = pCaloAntiKtJets.product();//Laurent
+  const CaloJetCollection *caloAntiKtJets = pCaloAntiKtJets.product();//Laurent
   
   edm::Handle<CaloMETCollection> pCaloMET;
   bool calometisvalid = iEvent.getByLabel("met", pCaloMET);
@@ -742,22 +742,22 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   if(caloantiktjetisvalid){
     FnJetsAKT = caloAntiKtJets->size();
     for(CaloJetCollection::const_iterator antiktjetiter = caloAntiKtJets->begin();antiktjetiter != caloAntiKtJets->end();antiktjetiter++){
-      if(antiktjetiter->et() > 10. && fabs(antiktjetiter->eta()) < 3.) {
+      if(antiktjetiter->pt() > 10. && fabs(antiktjetiter->eta()) < 3.) {
       FnJetsAKT_pt10++;
       VemJetsAKT_pt10.push_back(antiktjetiter->emEnergyFraction());
       }
-      if(antiktjetiter->et() > 15. && fabs(antiktjetiter->eta()) < 3.) {
+      if(antiktjetiter->pt() > 15. && fabs(antiktjetiter->eta()) < 3.) {
       FnJetsAKT_pt15++;
       VemJetsAKT_pt15.push_back(antiktjetiter->emEnergyFraction());
       }
-      if(antiktjetiter->et() > 20. && fabs(antiktjetiter->eta()) < 3.) {
+      if(antiktjetiter->pt() > 20. && fabs(antiktjetiter->eta()) < 3.) {
       FnJetsAKT_pt20++;
       VemJetsAKT_pt20.push_back(antiktjetiter->emEnergyFraction());
       }
 
       //FILL TREE
-      if(antiktjetiter->et() > 10. && fabs(antiktjetiter->eta()) < 3.) {
-      jetAKT_pt[index_jetAKT] = antiktjetiter->et();
+      if(antiktjetiter->pt() > 10. && fabs(antiktjetiter->eta()) < 3.) {
+      jetAKT_pt[index_jetAKT] = antiktjetiter->pt();
       jetAKT_eta[index_jetAKT] = antiktjetiter->eta();
       jetAKT_phi[index_jetAKT] = antiktjetiter->phi();
       jetAKT_em[index_jetAKT] = antiktjetiter->emEnergyFraction();
@@ -769,6 +769,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   jetAKT_size = index_jetAKT;
   nJetsAKT_pt15 = FnJetsAKT_pt15;
+
+  BTagData(iEvent);
 
   //CALOMET
   if (calometisvalid) {
@@ -994,10 +996,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   double gsfscenergy = 0.;
 
   //To remove spikes (ECAL CLUSTER LAZY TOOLS)
-  edm::Handle<EcalRecHitCollection> EBReducedRecHits;
-  iEvent.getByLabel("reducedEcalRecHitsEB",EBReducedRecHits);
-  edm::Handle<EcalRecHitCollection> EEReducedRecHits;
-  iEvent.getByLabel("reducedEcalRecHitsEE",EEReducedRecHits);
   EcalClusterLazyTools lazytool(iEvent,iSetup,InputTag("reducedEcalRecHitsEB"),InputTag("reducedEcalRecHitsEE"));
 
   gsf_size = gsfelectrons.size();
@@ -1173,11 +1171,9 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 }//end of analyze method
 
 
-void GsfCheckerTree::beginRun(edm::Run const& iRun, edm::EventSetup const& iSetup)
+void 
+GsfCheckerTree::beginRun(edm::Run const& iRun, edm::EventSetup const& iSetup)
 {
-  using namespace std;
-  using namespace edm;
- 
   cout<<"dans beginrun run number"<<iRun.id()<<" and n = "<<hlNames_.size()<<endl;
 
   bool changed (true);
@@ -1380,6 +1376,27 @@ GsfCheckerTree::beginJob()
   //   mytree->Branch("jetIC5_eta", jetIC5_eta, "jetIC5_eta[jetIC5_size]/F");
   //   mytree->Branch("jetIC5_phi", jetIC5_phi, "jetIC5_phi[jetIC5_size]/F");
   //   mytree->Branch("jetIC5_em", jetIC5_em, "jetIC5_em[jetIC5_size]/F");
+ 
+  //BTAG
+  mytree->Branch("bTagJetColl_size", &bTagJetColl_size, "bTagJetColl_size/i");
+  mytree->Branch("bTagJet_et", bTagJet_et, "bTagJet_et[bTagJetColl_size]/F");
+  mytree->Branch("bTagJet_pt", bTagJet_pt, "bTagJet_pt[bTagJetColl_size]/F");
+  mytree->Branch("bTagJet_eta", bTagJet_eta, "bTagJet_eta[bTagJetColl_size]/F");
+  mytree->Branch("bTagJet_phi", bTagJet_phi, "bTagJet_phi[bTagJetColl_size]/F");
+  mytree->Branch("tCHighEffBTags", tCHighEffBTags, "tCHighEffBTags[bTagJetColl_size]/F");
+  mytree->Branch("tCHighPurBTags", tCHighPurBTags, "tCHighPurBTags[bTagJetColl_size]/F");
+  mytree->Branch("jetProbBTags", jetProbBTags, "jetProbBTags[bTagJetColl_size]/F");
+  mytree->Branch("jetBProbBTags", jetBProbBTags, "jetBProbBTags[bTagJetColl_size]/F");
+  mytree->Branch("sSecVertHighEffBTags", sSecVertHighEffBTags, "sSecVertHighEffBTags[bTagJetColl_size]/F");
+  mytree->Branch("sSecVertHighPurBTags", sSecVertHighPurBTags, "sSecVertHighPurBTags[bTagJetColl_size]/F");
+  mytree->Branch("cSecVertBTags", cSecVertBTags, "cSecVertBTags[bTagJetColl_size]/F");
+  mytree->Branch("cSecVertMVABTags", cSecVertMVABTags, "cSecVertMVABTags[bTagJetColl_size]/F");
+  mytree->Branch("ghostTrkBTags", ghostTrkBTags, "ghostTrkBTags[bTagJetColl_size]/F");
+  mytree->Branch("softEleIP3dBTags", softEleIP3dBTags, "softEleIP3dBTags[bTagJetColl_size]/F");
+  mytree->Branch("softElePtBTags", softElePtBTags, "softElePtBTags[bTagJetColl_size]/F");
+  mytree->Branch("softMuBTags", softMuBTags, "softMuBTags[bTagJetColl_size]/F");
+  mytree->Branch("softMuIP3dBTags", softMuIP3dBTags, "softMuIP3dBTags[bTagJetColl_size]/F");
+  mytree->Branch("softMuPtBTags", softMuPtBTags, "softMuPtBTags[bTagJetColl_size]/F");
   
 
   //MUONS
@@ -1617,11 +1634,9 @@ GsfCheckerTree::endJob() {
 }
 
 //
-void GsfCheckerTree::DataGenPart(const edm::Event& e) {
-
-  using namespace std;
-  using namespace edm;
-  
+void 
+GsfCheckerTree::DataGenPart(const edm::Event& e) 
+{
   unsigned int counter = 0; 
   Handle<GenParticleCollection> genParticles;
   e.getByLabel("genParticles", genParticles);
@@ -1679,3 +1694,99 @@ void GsfCheckerTree::DataGenPart(const edm::Event& e) {
   }  
 }//end of DataGenPart
 
+//
+void
+GsfCheckerTree::BTagData(const edm::Event &event)
+{
+  bTagJetColl_size = 0;
+  for (unsigned int i = 0; i < 50; ++i) {
+    bTagJet_et[i] = -1000.;
+    bTagJet_pt[i] = -1000.;
+    bTagJet_eta[i] = -1000.;
+    bTagJet_phi[i] = -1000.;
+
+    tCHighEffBTags[i] = -1000.;
+    tCHighPurBTags[i] = -1000.;
+    jetProbBTags[i] = -1000.;
+    jetBProbBTags[i] = -1000.;
+    sSecVertHighEffBTags[i] = -1000.;
+    sSecVertHighPurBTags[i] = -1000.;
+    cSecVertBTags[i] = -1000.;
+    cSecVertMVABTags[i] = -1000.;
+    ghostTrkBTags[i] = -1000.;
+    softEleIP3dBTags[i] = -1000.;
+    softElePtBTags[i] = -1000.;
+    softMuBTags[i] = -1000.;
+    softMuIP3dBTags[i] = -1000.;
+    softMuPtBTags[i] = -1000.;
+  }
+
+  edm::Handle<reco::JetTagCollection> tCHighEffBTagHandle;
+  event.getByLabel("trackCountingHighEffBJetTags", tCHighEffBTagHandle);
+  const reco::JetTagCollection &tCHighEffBTag = *(tCHighEffBTagHandle.product());
+  edm::Handle<reco::JetTagCollection> tCHighPurBTagHandle;
+  event.getByLabel("trackCountingHighPurBJetTags", tCHighPurBTagHandle);
+  const reco::JetTagCollection &tCHighPurBTag = *(tCHighPurBTagHandle.product());
+  edm::Handle<reco::JetTagCollection> jetProbBTagHandle;
+  event.getByLabel("jetProbabilityBJetTags", jetProbBTagHandle);
+  const reco::JetTagCollection &jetProbBTag = *(jetProbBTagHandle.product());
+  edm::Handle<reco::JetTagCollection> jetBProbBTagHandle;
+  event.getByLabel("jetBProbabilityBJetTags", jetBProbBTagHandle);
+  const reco::JetTagCollection &jetBProbBTag = *(jetBProbBTagHandle.product());
+  edm::Handle<reco::JetTagCollection> sSecVertHighEffBTagHandle;
+  event.getByLabel("simpleSecondaryVertexHighEffBJetTags", sSecVertHighEffBTagHandle);
+  const reco::JetTagCollection &sSecVertHighEffBTag = *(sSecVertHighEffBTagHandle.product());
+  edm::Handle<reco::JetTagCollection> sSecVertHighPurBTagHandle;
+  event.getByLabel("simpleSecondaryVertexHighPurBJetTags", sSecVertHighPurBTagHandle);
+  const reco::JetTagCollection &sSecVertHighPurBTag = *(sSecVertHighPurBTagHandle.product());
+  edm::Handle<reco::JetTagCollection> cSecVertBTagHandle;
+  event.getByLabel("combinedSecondaryVertexBJetTags", cSecVertBTagHandle);
+  const reco::JetTagCollection &cSecVertBTag = *(cSecVertBTagHandle.product());
+  edm::Handle<reco::JetTagCollection> cSecVertMVABTagHandle;
+  event.getByLabel("combinedSecondaryVertexMVABJetTags", cSecVertMVABTagHandle);
+  const reco::JetTagCollection &cSecVertMVABTag = *(cSecVertMVABTagHandle.product());
+  edm::Handle<reco::JetTagCollection> ghostTrkBTagHandle;
+  event.getByLabel("ghostTrackBJetTags", ghostTrkBTagHandle);
+  const reco::JetTagCollection &ghostTrkBTag = *(ghostTrkBTagHandle.product());
+  edm::Handle<reco::JetTagCollection> softEleIP3dBTagHandle;
+  event.getByLabel("softElectronByIP3dBJetTags", softEleIP3dBTagHandle);
+  const reco::JetTagCollection &softEleIP3dBTag = *(softEleIP3dBTagHandle.product());
+  edm::Handle<reco::JetTagCollection> softElePtBTagHandle;
+  event.getByLabel("softElectronByPtBJetTags", softElePtBTagHandle);
+  const reco::JetTagCollection &softElePtBTag = *(softElePtBTagHandle.product());
+  edm::Handle<reco::JetTagCollection> softMuBTagHandle;
+  event.getByLabel("softMuonBJetTags", softMuBTagHandle);
+  const reco::JetTagCollection &softMuBTag = *(softMuBTagHandle.product());
+  edm::Handle<reco::JetTagCollection> softMuIP3dBTagHandle;
+  event.getByLabel("softMuonByIP3dBJetTags", softMuIP3dBTagHandle);
+  const reco::JetTagCollection &softMuIP3dBTag = *(softMuIP3dBTagHandle.product());
+  edm::Handle<reco::JetTagCollection> softMuPtBTagHandle;
+  event.getByLabel("softMuonByPtBJetTags", softMuPtBTagHandle);
+  const reco::JetTagCollection &softMuPtBTag = *(softMuPtBTagHandle.product());
+
+  for (unsigned int i = 0; i < tCHighEffBTag.size(); ++i) {
+    if (tCHighEffBTag[i].first->pt() > bJetPtMin_ && fabs(tCHighEffBTag[i].first->eta()) < 3.) {
+      bTagJet_et[bTagJetColl_size] = tCHighEffBTag[i].first->et();
+      bTagJet_pt[bTagJetColl_size] = tCHighEffBTag[i].first->pt();
+      bTagJet_eta[bTagJetColl_size] = tCHighEffBTag[i].first->eta();
+      bTagJet_phi[bTagJetColl_size] = tCHighEffBTag[i].first->phi();
+
+      tCHighEffBTags[bTagJetColl_size] = tCHighEffBTag[i].second;
+      tCHighPurBTags[bTagJetColl_size] = tCHighPurBTag[i].second;
+      jetProbBTags[bTagJetColl_size] = jetProbBTag[i].second;
+      jetBProbBTags[bTagJetColl_size] = jetBProbBTag[i].second;
+      sSecVertHighEffBTags[bTagJetColl_size] = sSecVertHighEffBTag[i].second;
+      sSecVertHighPurBTags[bTagJetColl_size] = sSecVertHighPurBTag[i].second;
+      cSecVertBTags[bTagJetColl_size] = cSecVertBTag[i].second;
+      cSecVertMVABTags[bTagJetColl_size] = cSecVertMVABTag[i].second;
+      ghostTrkBTags[bTagJetColl_size] = ghostTrkBTag[i].second;
+      softEleIP3dBTags[bTagJetColl_size] = softEleIP3dBTag[i].second;
+      softElePtBTags[bTagJetColl_size] = softElePtBTag[i].second;
+      softMuBTags[bTagJetColl_size] = softMuBTag[i].second;
+      softMuIP3dBTags[bTagJetColl_size] = softMuIP3dBTag[i].second;
+      softMuPtBTags[bTagJetColl_size] = softMuPtBTag[i].second;
+
+      ++bTagJetColl_size;
+    }
+  }
+} //END of BTagData

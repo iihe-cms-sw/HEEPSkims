@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.14 2011/12/12 17:35:59 lathomas Exp $
+// $Id: GsfCheckerTree.h,v 1.15 2011/12/16 13:55:34 treis Exp $
 //
 //
 
@@ -42,6 +42,7 @@ Implementation:
 #include "DataFormats/METReco/interface/PFMET.h"
 #include "DataFormats/METReco/interface/PFMETCollection.h"
 #include "DataFormats/JetReco/interface/CaloJetCollection.h" 
+#include "DataFormats/BTauReco/interface/JetTag.h"
 
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
@@ -74,12 +75,14 @@ private:
   virtual void beginRun(edm::Run const&, edm::EventSetup const&);
 
   void DataGenPart(const edm::Event& e);
+  void BTagData(const edm::Event& event);
 
   // ----------member data ---------------------------
 
   // config parameters -------------------------------
   edm::InputTag  hlTriggerResults_ ;
   double comEnergy_;
+  double bJetPtMin_;
   // parameter for SKIMMING
   double eleEtCut_;
   double muPtCut_;
@@ -118,6 +121,27 @@ private:
 //   float jetIC5_eta[100];
 //   float jetIC5_phi[100];
 //   float jetIC5_em[100];
+
+  //BTAG
+  unsigned int bTagJetColl_size;
+  float bTagJet_et[50];
+  float bTagJet_pt[50];
+  float bTagJet_eta[50];
+  float bTagJet_phi[50];
+  float tCHighEffBTags[50];
+  float tCHighPurBTags[50];
+  float jetProbBTags[50];
+  float jetBProbBTags[50];
+  float sSecVertHighEffBTags[50];
+  float sSecVertHighPurBTags[50];
+  float cSecVertBTags[50];
+  float cSecVertMVABTags[50];
+  float ghostTrkBTags[50];
+  float softEleIP3dBTags[50];
+  float softElePtBTags[50];
+  float softMuBTags[50];
+  float softMuIP3dBTags[50];
+  float softMuPtBTags[50];
   
   // MUON
   int muon_size;
