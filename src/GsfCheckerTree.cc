@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.15 2011/12/16 13:55:34 treis Exp $
+// $Id: GsfCheckerTree.cc,v 1.16 2012/01/02 21:24:18 treis Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 
@@ -30,29 +30,29 @@ using namespace edm;
 bool 
 gsfEtGreater(const reco::GsfElectron &gsf1,const reco::GsfElectron &gsf2)
 {
-  float et1 = gsf1.caloEnergy()*sin(gsf1.p4().theta());
-  float et2 = gsf2.caloEnergy()*sin(gsf2.p4().theta());
+  float et1 = gsf1.caloEnergy() * sin(gsf1.p4().theta());
+  float et2 = gsf2.caloEnergy() * sin(gsf2.p4().theta());
   return (et1 > et2);
 }
 
 bool 
 scEGreater(const reco::SuperCluster *sc1,const reco::SuperCluster *sc2) 
 {
-  return ((sc1->energy()+sc1->preshowerEnergy()) > (sc2->energy()+sc2->preshowerEnergy()));
+  return ((sc1->energy() + sc1->preshowerEnergy()) > (sc2->energy() + sc2->preshowerEnergy()));
 }
 
 
 bool 
 refScEGreater(reco::SuperClusterRef sc1,reco::SuperClusterRef sc2) 
 {
-  return ((sc1->energy()+sc1->preshowerEnergy()) > (sc2->energy()+sc2->preshowerEnergy()));
+  return ((sc1->energy() + sc1->preshowerEnergy()) > (sc2->energy() + sc2->preshowerEnergy()));
 }
 
 
 float 
 etacorr(float eta, float pvz, float scz) 
 {
-  return asinh(sinh(eta)*(1.-pvz/scz));
+  return asinh(sinh(eta) * (1. - pvz/scz));
 }
 
 
@@ -61,7 +61,7 @@ GsfCheckerTree::GsfCheckerTree(const edm::ParameterSet& iConfig)
   //now do what ever initialization is needed
   eventcounter = 0;
 
-  hlTriggerResults_ = iConfig.getParameter<edm::InputTag> ("TriggerResultsTag");
+  hlTriggerResults_ = iConfig.getParameter<edm::InputTag>("TriggerResultsTag");
   comEnergy_ = iConfig.getParameter<double>("centerOfMassEnergy");
   bJetPtMin_ = iConfig.getUntrackedParameter<double>("bJetPtMin", 10.);
   eleEtCut_ = iConfig.getUntrackedParameter<double>("electronEtCut", 0.);
@@ -88,78 +88,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   runnumber = iEvent.id().run();
   eventnumber = iEvent.id().event();
   luminosityBlock = iEvent.id().luminosityBlock(); 
-
-  HLT_Mu15 = -10;
-  HLT_Mu30 = -10;
-  HLT_Mu40_eta2p1 = -10;
-  HLT_Mu15_Photon20_CaloIdL = -10;
-  HLT_Mu8_Ele17_CaloIdT_CaloIsoVL = -10;
-  HLT_Mu17_Ele8_CaloIdT_CaloIsoVL = -10;
-  HLT_Ele8 = -10;
-  HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT = -10;
-  HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL = -10;
-  HLT_Ele32_CaloIdL_CaloIsoVL_SC17 = -10;
-  HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17 = -10;
-  HLT_DoubleEle33_CaloIdL = -10;
-  HLT_DoubleEle33_CaloIdL_CaloIsoT = -10;
-  HLT_DoubleEle33_CaloIdT = -10;
-  HLT_DoubleEle45_CaloIdL = -10;
-  HLT_Photon20_CaloIdVL_IsoL = -10;
-  HLT_Photon30_CaloIdVL = -10;
-  HLT_Photon50_CaloIdVL = -10;
-  HLT_Photon50_CaloIdVL_IsoL = -10;
-  HLT_Photon75_CaloIdVL = -10;
-  HLT_Photon90_CaloIdVL = -10;
-  HLT_Photon125 = -10;
-  HLT_Photon135 = -10;
-  HLT_Photon200_NoHE = -10;
-  HLT_Photon225_NoHE = -10;
-  HLT_Photon26_Photon18 = -10;
-  HLT_Photon36_Photon22 = -10;
-  HLT_DoublePhoton33 = -10;
-  HLT_DoublePhoton60 = -10;
-  HLT_DoublePhoton70 = -10;
-  HLT_DoublePhoton80 = -10;
-
-  prescale_HLT_Mu15 = -10;
-  prescale_HLT_Mu30 = -10;
-  prescale_HLT_Mu40_eta2p1 = -10;
-  prescale_HLT_Mu15_Photon20_CaloIdL = -10;
-  prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL = -10;
-  prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL = -10;
-  prescale_HLT_Ele8 = -10;
-  prescale_HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT = -10;
-  prescale_HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL = -10;
-  prescale_HLT_Ele32_CaloIdL_CaloIsoVL_SC17 = -10;
-  prescale_HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17 = -10;
-  prescale_HLT_DoubleEle33_CaloIdL = -10;
-  prescale_HLT_DoubleEle33_CaloIdL_CaloIsoT = -10;
-  prescale_HLT_DoubleEle33_CaloIdT = -10;
-  prescale_HLT_DoubleEle45_CaloIdL = -10;
-  prescale_HLT_Photon20_CaloIdVL_IsoL = -10;
-  prescale_HLT_Photon30_CaloIdVL = -10;
-  prescale_HLT_Photon50_CaloIdVL = -10;
-  prescale_HLT_Photon50_CaloIdVL_IsoL = -10;
-  prescale_HLT_Photon75_CaloIdVL = -10;
-  prescale_HLT_Photon90_CaloIdVL = -10;
-  prescale_HLT_Photon125 = -10;
-  prescale_HLT_Photon135 = -10;
-  prescale_HLT_Photon200_NoHE = -10;
-  prescale_HLT_Photon225_NoHE = -10;
-  prescale_HLT_Photon26_Photon18 = -10;
-  prescale_HLT_Photon36_Photon22 = -10;
-  prescale_HLT_DoublePhoton33 = -10;
-  prescale_HLT_DoublePhoton60 = -10;
-  prescale_HLT_DoublePhoton70 = -10;
-  prescale_HLT_DoublePhoton80 = -10;
-
-
-  pthat = -5000.;
-  alphaqcd = -5000.;
-  alphaqed = -5000.;
-  qscale = -5000.;
-  processid = -5000;
-  weight = -5000.;
 
   // for skim on pt 
   //Final GSF Electron collection
@@ -236,43 +164,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   bsposy = -5000.;
   bsposz = -5000.;
    
-  genparticles_size =-10;
-  for (int i=0; i<20; ++i) {
-    genele_e[i] =  -5000.;
-    genele_pt[i] =  -5000.;
-    genele_px[i] = -5000.;
-    genele_py[i] = -5000.;
-    genele_pz[i] = -5000.;
-    genele_eta[i] = -5000.;
-    genele_phi[i] = -5000.;
-    genele_charge[i]= -5000;
-    
-    unstableGenEle_e[i] =  -5000.;
-    unstableGenEle_pt[i] = -5000.;
-    unstableGenEle_px[i] = -5000.;
-    unstableGenEle_py[i] = -5000.;
-    unstableGenEle_pz[i] = -5000.;
-    unstableGenEle_eta[i] = -5000.;
-    unstableGenEle_phi[i] =  -5000.;
-    unstableGenEle_charge[i]=  -5000;
-    
-    genelemom_e[i] =  -5000.;
-    genelemom_pt[i] = -5000.;
-    genelemom_px[i] =  -5000.;
-    genelemom_py[i] =  -5000.;
-    genelemom_pz[i] =  -5000.;
-    genelemom_eta[i] =  -5000.;
-    genelemom_phi[i] =  -5000.;
-    genelemom_charge[i]=  -5000;
-    genelemom_mass[i]= -5000.;
-    genelemom_pdgid[i]=  -5000;
-  }
-
-  for (int i=0; i<10; ++i) {
-  x1quark[i] = -5000.;
-  x2quark[i] = -5000.;
-  }
-
   trueNVtx = -5000.;
   nVtxBefore = -5000;
   nVtxNow = -5000;
@@ -392,33 +283,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   }
 
-  for (int i=0; i<500; ++i) HLTriggers[i]  = -10;
-
-  calomet = -1.;
-  calomet_eta = -1000; 
-  calomet_phi = -1000;
-  met = -1.;
-  pfmet = -1;
-  pfmet_eta = -1000; 
-  pfmet_phi = -1000;
-
-  //IC5
-  //  nJetsIC5_pt15 = -1;
-//   for (unsigned int i = 0 ; i< 100 ; i++){   
-//     jetIC5_pt[i] = -1;
-//     jetIC5_eta[i] = -1;
-//     jetIC5_phi[i] = -1;
-//     jetIC5_em[i] = -1;
-//   }
-  
-  nJetsAKT_pt15 = -1;
-  for (unsigned int i = 0 ; i< 50 ; ++i){   
-    jetAKT_pt[i] = -1;
-    jetAKT_eta[i] = -1;
-    jetAKT_phi[i] = -1;
-    jetAKT_em[i] = -1;
-  }
-
   //MUONS
   muon_size = -3;
   for (unsigned int i = 0 ; i< 100 ; ++i){  
@@ -478,6 +342,13 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   // generator information for MC samples
   if (useGenData_) {
+    pthat = -5000.;
+    alphaqcd = -5000.;
+    alphaqed = -5000.;
+    qscale = -5000.;
+    processid = -5000;
+    weight = -5000.;
+
     edm::Handle<GenEventInfoProduct> GenInfoHandle;
     bool genevtinfovalid = iEvent.getByLabel("generator",GenInfoHandle);
     
@@ -512,289 +383,14 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     genparticles_size = 1;
   }
 
+  L1TInfo(iEvent);
+  HLTInfo(iEvent, iSetup);
 
-  edm::Handle<edm::TriggerResults> hltTriggerResultHandle;
-  iEvent.getByLabel(hlTriggerResults_, hltTriggerResultHandle);
-  
-  hltCount = 0;   
-  if(!hltTriggerResultHandle.isValid()) {
-    std::cout << "invalid handle for HLT TriggerResults" << std::endl;
-  } 
-  else {
-    hltCount = hltTriggerResultHandle->size();
-    for(int i = 0 ; i < hltCount ; i++) {
-      if (hltTriggerResultHandle->accept(i)) HLTriggers[i] = i;
-    }
-  } // end HLT
-  
-  // L1 BITS
-  edm::Handle< L1GlobalTriggerReadoutRecord > gtReadoutRecord;
-  iEvent.getByLabel( edm::InputTag("gtDigis"), gtReadoutRecord);
+  METData(iEvent);
 
-  const TechnicalTriggerWord&  technicalTriggerWordBeforeMask = gtReadoutRecord->technicalTriggerWord();
-  L1trigger_size = technicalTriggerWordBeforeMask.size();
-
-  for(unsigned int i = 0;i<technicalTriggerWordBeforeMask.size();i++){
-    bool bit = technicalTriggerWordBeforeMask.at(i);
-    if (bit == 1) L1trigger_bool[i] = 1;   
-    if (bit == 0) L1trigger_bool[i] = 0;   
-  }
-
-  //physics declared
-  L1GlobalTriggerReadoutRecord const* gtrr = gtReadoutRecord.product();
-  L1GtFdlWord fdlWord = gtrr->gtFdlWord();
-  if (fdlWord.physicsDeclared() == 1) PhysDecl_bool=1;
-  else PhysDecl_bool=0;
-
-  bool caloantiktjetisvalid = false;
-  edm::Handle<CaloJetCollection> pCaloAntiKtJets;
-  caloantiktjetisvalid = iEvent.getByLabel("ak5CaloJets", pCaloAntiKtJets);//Laurent
-  const CaloJetCollection *caloAntiKtJets = pCaloAntiKtJets.product();//Laurent
-  
-  edm::Handle<CaloMETCollection> pCaloMET;
-  bool calometisvalid = iEvent.getByLabel("met", pCaloMET);
-  const CaloMETCollection *caloMET  = pCaloMET.product();
-
-  edm::Handle<METCollection> pMET;
-  bool metisvalid = iEvent.getByLabel("htMetKT4", pMET);
-  const METCollection *MET  = pMET.product();
-
-  edm::Handle<PFMETCollection> pPFMET;
-  bool pfmetisvalid = iEvent.getByLabel("pfMet", pPFMET);
-  const PFMETCollection *PFMET  = pPFMET.product();
-
-  // Triggers  ARNAUD
-  // get hold of TriggerResults
-  Handle<TriggerResults> HLTR;
-  iEvent.getByLabel(hlTriggerResults_,HLTR);
-  if (HLTR.isValid()) {
-    if (HLTR->wasrun()) nWasRun_++;
-    const bool accept(HLTR->accept());
-    LogDebug("HLTrigReport") << "HL TriggerResults decision: " << accept;
-    if (accept) ++nAccept_;
-    if (HLTR->error() ) nErrors_++;
-  } else {
-    LogDebug("HLTrigReport") << "HL TriggerResults with label ["+hlTriggerResults_.encode()+"] not found!";
-    nErrors_++;
-  }
-
-  // decision for each HL algorithm
-  const unsigned int n(hlNames_.size());
-  for (unsigned int i=0; i!=n; ++i) {
-
-    if (hlNames_.at(i).find("HLT_Mu15_v") == 0) {
-      HLTR->accept(i) ? HLT_Mu15 = 1 : HLT_Mu15 = 0;
-      prescale_HLT_Mu15 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Mu30_v") == 0) {
-      HLTR->accept(i) ? HLT_Mu30 = 1 : HLT_Mu30 = 0;
-      prescale_HLT_Mu30 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Mu40_eta2p1_v") == 0) {
-      HLTR->accept(i) ? HLT_Mu40_eta2p1 = 1 : HLT_Mu40_eta2p1 = 0;
-      prescale_HLT_Mu40_eta2p1 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Mu15_Photon20_CaloIdL_v") == 0) {
-      HLTR->accept(i) ? HLT_Mu15_Photon20_CaloIdL = 1 : HLT_Mu15_Photon20_CaloIdL = 0;
-      prescale_HLT_Mu15_Photon20_CaloIdL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_v") == 0) {
-      HLTR->accept(i) ? HLT_Mu8_Ele17_CaloIdT_CaloIsoVL = 1 : HLT_Mu8_Ele17_CaloIdT_CaloIsoVL = 0;
-      prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_v") == 0) {
-      HLTR->accept(i) ? HLT_Mu17_Ele8_CaloIdT_CaloIsoVL = 1 : HLT_Mu17_Ele8_CaloIdT_CaloIsoVL = 0;
-      prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Ele8_v") == 0) {
-      HLTR->accept(i) ? HLT_Ele8 = 1 : HLT_Ele8 = 0;
-      prescale_HLT_Ele8 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v") == 0) {
-      HLTR->accept(i) ? HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT = 1 : HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT = 0;
-      prescale_HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v") == 0) {
-      HLTR->accept(i) ? HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL = 1 : HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL = 0;
-      prescale_HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v") == 0) {
-      HLTR->accept(i) ? HLT_Ele32_CaloIdL_CaloIsoVL_SC17 = 1 : HLT_Ele32_CaloIdL_CaloIsoVL_SC17 = 0;
-      prescale_HLT_Ele32_CaloIdL_CaloIsoVL_SC17 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17_v") == 0) {
-      HLTR->accept(i) ? HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17 = 1 : HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17 = 0;
-      prescale_HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_DoubleEle33_CaloIdL_v") == 0) {
-      HLTR->accept(i) ? HLT_DoubleEle33_CaloIdL = 1 : HLT_DoubleEle33_CaloIdL = 0;
-      prescale_HLT_DoubleEle33_CaloIdL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_DoubleEle33_CaloIdL_CaloIsoT_v") == 0) {
-      HLTR->accept(i) ? HLT_DoubleEle33_CaloIdL_CaloIsoT = 1 : HLT_DoubleEle33_CaloIdL_CaloIsoT = 0;
-      prescale_HLT_DoubleEle33_CaloIdL_CaloIsoT = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_DoubleEle33_CaloIdT_v") == 0) {
-      HLTR->accept(i) ? HLT_DoubleEle33_CaloIdT = 1 : HLT_DoubleEle33_CaloIdT = 0;
-      prescale_HLT_DoubleEle33_CaloIdT = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_DoubleEle45_CaloIdL_v") == 0) {
-      HLTR->accept(i) ? HLT_DoubleEle45_CaloIdL = 1 : HLT_DoubleEle45_CaloIdL = 0;
-      prescale_HLT_DoubleEle45_CaloIdL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Photon20_CaloIdVL_IsoL_v") == 0) {
-      HLTR->accept(i) ? HLT_Photon20_CaloIdVL_IsoL = 1 : HLT_Photon20_CaloIdVL_IsoL = 0;
-      prescale_HLT_Photon20_CaloIdVL_IsoL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Photon30_CaloIdVL_v") == 0) {
-      HLTR->accept(i) ? HLT_Photon30_CaloIdVL = 1 : HLT_Photon30_CaloIdVL = 0;
-      prescale_HLT_Photon30_CaloIdVL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Photon50_CaloIdVL_v") == 0) {
-      HLTR->accept(i) ? HLT_Photon50_CaloIdVL = 1 : HLT_Photon50_CaloIdVL = 0;
-      prescale_HLT_Photon50_CaloIdVL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Photon50_CaloIdVL_IsoL_v") == 0) {
-      HLTR->accept(i) ? HLT_Photon50_CaloIdVL_IsoL = 1 : HLT_Photon50_CaloIdVL_IsoL = 0;
-      prescale_HLT_Photon50_CaloIdVL_IsoL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Photon75_CaloIdVL_v") == 0) {
-      HLTR->accept(i) ? HLT_Photon75_CaloIdVL = 1 : HLT_Photon75_CaloIdVL = 0;
-      prescale_HLT_Photon75_CaloIdVL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Photon90_CaloIdVL_v") == 0) {
-      HLTR->accept(i) ? HLT_Photon90_CaloIdVL = 1 : HLT_Photon90_CaloIdVL = 0;
-      prescale_HLT_Photon90_CaloIdVL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Photon125_v") == 0) {
-      HLTR->accept(i) ? HLT_Photon125 = 1 : HLT_Photon125 = 0;
-      prescale_HLT_Photon125 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Photon135_v") == 0) {
-      HLTR->accept(i) ? HLT_Photon135 = 1 : HLT_Photon135 = 0;
-      prescale_HLT_Photon135 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Photon200_NoHE_v") == 0) {
-      HLTR->accept(i) ? HLT_Photon200_NoHE = 1 : HLT_Photon200_NoHE = 0;
-      prescale_HLT_Photon200_NoHE = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Photon225_NoHE_v") == 0) {
-      HLTR->accept(i) ? HLT_Photon225_NoHE = 1 : HLT_Photon225_NoHE = 0;
-      prescale_HLT_Photon225_NoHE = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Photon26_Photon18_v") == 0) {
-      HLTR->accept(i) ? HLT_Photon26_Photon18 = 1 : HLT_Photon26_Photon18 = 0;
-      prescale_HLT_Photon26_Photon18 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_Photon36_Photon22_v") == 0) {
-      HLTR->accept(i) ? HLT_Photon36_Photon22 = 1 : HLT_Photon36_Photon22 = 0;
-      prescale_HLT_Photon36_Photon22 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_DoublePhoton33_v") == 0) {
-      HLTR->accept(i) ? HLT_DoublePhoton33 = 1 : HLT_DoublePhoton33 = 0;
-      prescale_HLT_DoublePhoton33 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_DoublePhoton60_v") == 0) {
-      HLTR->accept(i) ? HLT_DoublePhoton60 = 1 : HLT_DoublePhoton60 = 0;
-      prescale_HLT_DoublePhoton60 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_DoublePhoton70_v") == 0) {
-      HLTR->accept(i) ? HLT_DoublePhoton70 = 1 : HLT_DoublePhoton70 = 0;
-      prescale_HLT_DoublePhoton70 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-    if (hlNames_.at(i).find("HLT_DoublePhoton80_v") == 0) {
-      HLTR->accept(i) ? HLT_DoublePhoton80 = 1 : HLT_DoublePhoton80 = 0;
-      prescale_HLT_DoublePhoton80 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
-    }
-  }
-
-  for (unsigned int i=0; i!=n; ++i) {
-    if (HLTR->wasrun(i)) hlWasRun_[i]++;
-    if (HLTR->wasrun(i)) hlWasRunTab[i] = 1;
-    if (!(HLTR->wasrun(i))) cout<<"hlNames(i) = "<<i<<", "<<hlNames_.at(i)<<endl;
-
-    if (HLTR->accept(i)) hlAccept_[i]++;
-    if (HLTR->accept(i)) hlAcceptTab[i] = i;
-    if (HLTR->error(i) ) hlErrors_[i]++;
-    if (HLTR->error(i) ) hlErrorTab[i] = 1;
-    const int index(static_cast<int>(HLTR->index(i)));
-    if (HLTR->accept(i)) {
-      if (index>=posL1s_[i]) hltL1s_[i]++;
-      if (index>=posPre_[i]) hltPre_[i]++;
-    } else {
-      if (index> posL1s_[i]) hltL1s_[i]++;
-      if (index> posPre_[i]) hltPre_[i]++;
-    }
-  }
-  // fin triggers ARNAUD
-
-  //LOOP ON anti kt jets
-  int FnJetsAKT = -1;
-  int FnJetsAKT_pt10 = 0;
-  int FnJetsAKT_pt15 = 0;
-  int FnJetsAKT_pt20 = 0;
-
-  vector <float> VemJetsAKT_pt10;
-  vector <float> VemJetsAKT_pt15;
-  vector <float> VemJetsAKT_pt20;
-
-  int index_jetAKT = 0;
-  if(caloantiktjetisvalid){
-    FnJetsAKT = caloAntiKtJets->size();
-    for(CaloJetCollection::const_iterator antiktjetiter = caloAntiKtJets->begin();antiktjetiter != caloAntiKtJets->end();antiktjetiter++){
-      if(antiktjetiter->pt() > 10. && fabs(antiktjetiter->eta()) < 3.) {
-      FnJetsAKT_pt10++;
-      VemJetsAKT_pt10.push_back(antiktjetiter->emEnergyFraction());
-      }
-      if(antiktjetiter->pt() > 15. && fabs(antiktjetiter->eta()) < 3.) {
-      FnJetsAKT_pt15++;
-      VemJetsAKT_pt15.push_back(antiktjetiter->emEnergyFraction());
-      }
-      if(antiktjetiter->pt() > 20. && fabs(antiktjetiter->eta()) < 3.) {
-      FnJetsAKT_pt20++;
-      VemJetsAKT_pt20.push_back(antiktjetiter->emEnergyFraction());
-      }
-
-      //FILL TREE
-      if(antiktjetiter->pt() > 10. && fabs(antiktjetiter->eta()) < 3.) {
-      jetAKT_pt[index_jetAKT] = antiktjetiter->pt();
-      jetAKT_eta[index_jetAKT] = antiktjetiter->eta();
-      jetAKT_phi[index_jetAKT] = antiktjetiter->phi();
-      jetAKT_em[index_jetAKT] = antiktjetiter->emEnergyFraction();
-
-      index_jetAKT++;
-      }
-    }
-  }
-
-  jetAKT_size = index_jetAKT;
-  nJetsAKT_pt15 = FnJetsAKT_pt15;
-
+  JetData(iEvent);
   BTagData(iEvent);
 
-  //CALOMET
-  if (calometisvalid) {
-    for (CaloMETCollection::const_iterator calometiter = caloMET->begin(); calometiter != caloMET->end(); ++calometiter) {
-      calomet = calometiter->et();
-      calomet_eta = calometiter->eta(); 
-      calomet_phi = calometiter->phi();
-    }
-  }  
-  //MET
-  if (metisvalid) {
-    for (METCollection::const_iterator metiter = MET->begin(); metiter != MET->end(); ++metiter) {
-      met = metiter->sumEt();
-    }
-  } 
-  //PFMET
-  if (pfmetisvalid) {
-    for(PFMETCollection::const_iterator pfmetiter = PFMET->begin(); pfmetiter != PFMET->end(); ++pfmetiter) {
-      pfmet = pfmetiter->et();  
-      pfmet_eta = pfmetiter->eta(); 
-      pfmet_phi = pfmetiter->phi();
-    }
-  } 
-  
   // get the beamspot from the Event:
   edm::Handle<reco::BeamSpot> theBeamSpot;
   iEvent.getByType(theBeamSpot);
@@ -1637,6 +1233,43 @@ GsfCheckerTree::endJob() {
 void 
 GsfCheckerTree::DataGenPart(const edm::Event& e) 
 {
+  genparticles_size =-10;
+  for (int i=0; i<20; ++i) {
+    genele_e[i] =  -5000.;
+    genele_pt[i] =  -5000.;
+    genele_px[i] = -5000.;
+    genele_py[i] = -5000.;
+    genele_pz[i] = -5000.;
+    genele_eta[i] = -5000.;
+    genele_phi[i] = -5000.;
+    genele_charge[i]= -5000;
+    
+    unstableGenEle_e[i] =  -5000.;
+    unstableGenEle_pt[i] = -5000.;
+    unstableGenEle_px[i] = -5000.;
+    unstableGenEle_py[i] = -5000.;
+    unstableGenEle_pz[i] = -5000.;
+    unstableGenEle_eta[i] = -5000.;
+    unstableGenEle_phi[i] =  -5000.;
+    unstableGenEle_charge[i]=  -5000;
+    
+    genelemom_e[i] =  -5000.;
+    genelemom_pt[i] = -5000.;
+    genelemom_px[i] =  -5000.;
+    genelemom_py[i] =  -5000.;
+    genelemom_pz[i] =  -5000.;
+    genelemom_eta[i] =  -5000.;
+    genelemom_phi[i] =  -5000.;
+    genelemom_charge[i]=  -5000;
+    genelemom_mass[i]= -5000.;
+    genelemom_pdgid[i]=  -5000;
+  }
+
+  for (int i=0; i<10; ++i) {
+  x1quark[i] = -5000.;
+  x2quark[i] = -5000.;
+  }
+
   unsigned int counter = 0; 
   Handle<GenParticleCollection> genParticles;
   e.getByLabel("genParticles", genParticles);
@@ -1693,6 +1326,394 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
     genparticles_size=counter;
   }  
 }//end of DataGenPart
+
+//
+void
+GsfCheckerTree::L1TInfo(const edm::Event &iEvent)
+{
+  edm::Handle< L1GlobalTriggerReadoutRecord > gtReadoutRecord;
+  iEvent.getByLabel( edm::InputTag("gtDigis"), gtReadoutRecord);
+
+  const TechnicalTriggerWord&  technicalTriggerWordBeforeMask = gtReadoutRecord->technicalTriggerWord();
+  L1trigger_size = technicalTriggerWordBeforeMask.size();
+
+  for(unsigned int i = 0;i<technicalTriggerWordBeforeMask.size();i++){
+    bool bit = technicalTriggerWordBeforeMask.at(i);
+    if (bit == 1) L1trigger_bool[i] = 1;   
+    if (bit == 0) L1trigger_bool[i] = 0;   
+  }
+
+  //physics declared
+  L1GlobalTriggerReadoutRecord const* gtrr = gtReadoutRecord.product();
+  L1GtFdlWord fdlWord = gtrr->gtFdlWord();
+  if (fdlWord.physicsDeclared() == 1) PhysDecl_bool=1;
+  else PhysDecl_bool=0;
+} // END of L1TInfo
+
+//
+void
+GsfCheckerTree::HLTInfo(const edm::Event &iEvent, const edm::EventSetup& iSetup)
+{
+  for (int i=0; i < 500; ++i) HLTriggers[i]  = -10;
+
+  HLT_Mu15 = -10;
+  HLT_Mu30 = -10;
+  HLT_Mu40_eta2p1 = -10;
+  HLT_Mu15_Photon20_CaloIdL = -10;
+  HLT_Mu8_Ele17_CaloIdT_CaloIsoVL = -10;
+  HLT_Mu17_Ele8_CaloIdT_CaloIsoVL = -10;
+  HLT_Ele8 = -10;
+  HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT = -10;
+  HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL = -10;
+  HLT_Ele32_CaloIdL_CaloIsoVL_SC17 = -10;
+  HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17 = -10;
+  HLT_DoubleEle33_CaloIdL = -10;
+  HLT_DoubleEle33_CaloIdL_CaloIsoT = -10;
+  HLT_DoubleEle33_CaloIdT = -10;
+  HLT_DoubleEle45_CaloIdL = -10;
+  HLT_Photon20_CaloIdVL_IsoL = -10;
+  HLT_Photon30_CaloIdVL = -10;
+  HLT_Photon50_CaloIdVL = -10;
+  HLT_Photon50_CaloIdVL_IsoL = -10;
+  HLT_Photon75_CaloIdVL = -10;
+  HLT_Photon90_CaloIdVL = -10;
+  HLT_Photon125 = -10;
+  HLT_Photon135 = -10;
+  HLT_Photon200_NoHE = -10;
+  HLT_Photon225_NoHE = -10;
+  HLT_Photon26_Photon18 = -10;
+  HLT_Photon36_Photon22 = -10;
+  HLT_DoublePhoton33 = -10;
+  HLT_DoublePhoton60 = -10;
+  HLT_DoublePhoton70 = -10;
+  HLT_DoublePhoton80 = -10;
+
+  prescale_HLT_Mu15 = -10;
+  prescale_HLT_Mu30 = -10;
+  prescale_HLT_Mu40_eta2p1 = -10;
+  prescale_HLT_Mu15_Photon20_CaloIdL = -10;
+  prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL = -10;
+  prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL = -10;
+  prescale_HLT_Ele8 = -10;
+  prescale_HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT = -10;
+  prescale_HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL = -10;
+  prescale_HLT_Ele32_CaloIdL_CaloIsoVL_SC17 = -10;
+  prescale_HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17 = -10;
+  prescale_HLT_DoubleEle33_CaloIdL = -10;
+  prescale_HLT_DoubleEle33_CaloIdL_CaloIsoT = -10;
+  prescale_HLT_DoubleEle33_CaloIdT = -10;
+  prescale_HLT_DoubleEle45_CaloIdL = -10;
+  prescale_HLT_Photon20_CaloIdVL_IsoL = -10;
+  prescale_HLT_Photon30_CaloIdVL = -10;
+  prescale_HLT_Photon50_CaloIdVL = -10;
+  prescale_HLT_Photon50_CaloIdVL_IsoL = -10;
+  prescale_HLT_Photon75_CaloIdVL = -10;
+  prescale_HLT_Photon90_CaloIdVL = -10;
+  prescale_HLT_Photon125 = -10;
+  prescale_HLT_Photon135 = -10;
+  prescale_HLT_Photon200_NoHE = -10;
+  prescale_HLT_Photon225_NoHE = -10;
+  prescale_HLT_Photon26_Photon18 = -10;
+  prescale_HLT_Photon36_Photon22 = -10;
+  prescale_HLT_DoublePhoton33 = -10;
+  prescale_HLT_DoublePhoton60 = -10;
+  prescale_HLT_DoublePhoton70 = -10;
+  prescale_HLT_DoublePhoton80 = -10;
+
+  edm::Handle<edm::TriggerResults> hltTriggerResultHandle;
+  iEvent.getByLabel(hlTriggerResults_, hltTriggerResultHandle);
+ 
+  hltCount = 0;   
+  if(!hltTriggerResultHandle.isValid()) {
+    std::cout << "invalid handle for HLT TriggerResults" << std::endl;
+  } 
+  else {
+    hltCount = hltTriggerResultHandle->size();
+    for(int i = 0 ; i < hltCount ; i++) {
+      if (hltTriggerResultHandle->accept(i)) HLTriggers[i] = i;
+    }
+  }
+ 
+  // get hold of TriggerResults
+  Handle<TriggerResults> HLTR;
+  iEvent.getByLabel(hlTriggerResults_,HLTR);
+  if (HLTR.isValid()) {
+    if (HLTR->wasrun()) nWasRun_++;
+    const bool accept(HLTR->accept());
+    LogDebug("HLTrigReport") << "HL TriggerResults decision: " << accept;
+    if (accept) ++nAccept_;
+    if (HLTR->error() ) nErrors_++;
+  } else {
+    LogDebug("HLTrigReport") << "HL TriggerResults with label ["+hlTriggerResults_.encode()+"] not found!";
+    nErrors_++;
+  }
+
+  // decision for each HL algorithm
+  const unsigned int n(hlNames_.size());
+  for (unsigned int i=0; i!=n; ++i) {
+
+    if (hlNames_.at(i).find("HLT_Mu15_v") == 0) {
+      HLTR->accept(i) ? HLT_Mu15 = 1 : HLT_Mu15 = 0;
+      prescale_HLT_Mu15 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Mu30_v") == 0) {
+      HLTR->accept(i) ? HLT_Mu30 = 1 : HLT_Mu30 = 0;
+      prescale_HLT_Mu30 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Mu40_eta2p1_v") == 0) {
+      HLTR->accept(i) ? HLT_Mu40_eta2p1 = 1 : HLT_Mu40_eta2p1 = 0;
+      prescale_HLT_Mu40_eta2p1 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Mu15_Photon20_CaloIdL_v") == 0) {
+      HLTR->accept(i) ? HLT_Mu15_Photon20_CaloIdL = 1 : HLT_Mu15_Photon20_CaloIdL = 0;
+      prescale_HLT_Mu15_Photon20_CaloIdL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_v") == 0) {
+      HLTR->accept(i) ? HLT_Mu8_Ele17_CaloIdT_CaloIsoVL = 1 : HLT_Mu8_Ele17_CaloIdT_CaloIsoVL = 0;
+      prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_v") == 0) {
+      HLTR->accept(i) ? HLT_Mu17_Ele8_CaloIdT_CaloIsoVL = 1 : HLT_Mu17_Ele8_CaloIdT_CaloIsoVL = 0;
+      prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Ele8_v") == 0) {
+      HLTR->accept(i) ? HLT_Ele8 = 1 : HLT_Ele8 = 0;
+      prescale_HLT_Ele8 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v") == 0) {
+      HLTR->accept(i) ? HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT = 1 : HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT = 0;
+      prescale_HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v") == 0) {
+      HLTR->accept(i) ? HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL = 1 : HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL = 0;
+      prescale_HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v") == 0) {
+      HLTR->accept(i) ? HLT_Ele32_CaloIdL_CaloIsoVL_SC17 = 1 : HLT_Ele32_CaloIdL_CaloIsoVL_SC17 = 0;
+      prescale_HLT_Ele32_CaloIdL_CaloIsoVL_SC17 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17_v") == 0) {
+      HLTR->accept(i) ? HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17 = 1 : HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17 = 0;
+      prescale_HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_DoubleEle33_CaloIdL_v") == 0) {
+      HLTR->accept(i) ? HLT_DoubleEle33_CaloIdL = 1 : HLT_DoubleEle33_CaloIdL = 0;
+      prescale_HLT_DoubleEle33_CaloIdL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_DoubleEle33_CaloIdL_CaloIsoT_v") == 0) {
+      HLTR->accept(i) ? HLT_DoubleEle33_CaloIdL_CaloIsoT = 1 : HLT_DoubleEle33_CaloIdL_CaloIsoT = 0;
+      prescale_HLT_DoubleEle33_CaloIdL_CaloIsoT = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_DoubleEle33_CaloIdT_v") == 0) {
+      HLTR->accept(i) ? HLT_DoubleEle33_CaloIdT = 1 : HLT_DoubleEle33_CaloIdT = 0;
+      prescale_HLT_DoubleEle33_CaloIdT = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_DoubleEle45_CaloIdL_v") == 0) {
+      HLTR->accept(i) ? HLT_DoubleEle45_CaloIdL = 1 : HLT_DoubleEle45_CaloIdL = 0;
+      prescale_HLT_DoubleEle45_CaloIdL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Photon20_CaloIdVL_IsoL_v") == 0) {
+      HLTR->accept(i) ? HLT_Photon20_CaloIdVL_IsoL = 1 : HLT_Photon20_CaloIdVL_IsoL = 0;
+      prescale_HLT_Photon20_CaloIdVL_IsoL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Photon30_CaloIdVL_v") == 0) {
+      HLTR->accept(i) ? HLT_Photon30_CaloIdVL = 1 : HLT_Photon30_CaloIdVL = 0;
+      prescale_HLT_Photon30_CaloIdVL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Photon50_CaloIdVL_v") == 0) {
+      HLTR->accept(i) ? HLT_Photon50_CaloIdVL = 1 : HLT_Photon50_CaloIdVL = 0;
+      prescale_HLT_Photon50_CaloIdVL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Photon50_CaloIdVL_IsoL_v") == 0) {
+      HLTR->accept(i) ? HLT_Photon50_CaloIdVL_IsoL = 1 : HLT_Photon50_CaloIdVL_IsoL = 0;
+      prescale_HLT_Photon50_CaloIdVL_IsoL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Photon75_CaloIdVL_v") == 0) {
+      HLTR->accept(i) ? HLT_Photon75_CaloIdVL = 1 : HLT_Photon75_CaloIdVL = 0;
+      prescale_HLT_Photon75_CaloIdVL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Photon90_CaloIdVL_v") == 0) {
+      HLTR->accept(i) ? HLT_Photon90_CaloIdVL = 1 : HLT_Photon90_CaloIdVL = 0;
+      prescale_HLT_Photon90_CaloIdVL = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Photon125_v") == 0) {
+      HLTR->accept(i) ? HLT_Photon125 = 1 : HLT_Photon125 = 0;
+      prescale_HLT_Photon125 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Photon135_v") == 0) {
+      HLTR->accept(i) ? HLT_Photon135 = 1 : HLT_Photon135 = 0;
+      prescale_HLT_Photon135 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Photon200_NoHE_v") == 0) {
+      HLTR->accept(i) ? HLT_Photon200_NoHE = 1 : HLT_Photon200_NoHE = 0;
+      prescale_HLT_Photon200_NoHE = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Photon225_NoHE_v") == 0) {
+      HLTR->accept(i) ? HLT_Photon225_NoHE = 1 : HLT_Photon225_NoHE = 0;
+      prescale_HLT_Photon225_NoHE = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Photon26_Photon18_v") == 0) {
+      HLTR->accept(i) ? HLT_Photon26_Photon18 = 1 : HLT_Photon26_Photon18 = 0;
+      prescale_HLT_Photon26_Photon18 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_Photon36_Photon22_v") == 0) {
+      HLTR->accept(i) ? HLT_Photon36_Photon22 = 1 : HLT_Photon36_Photon22 = 0;
+      prescale_HLT_Photon36_Photon22 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_DoublePhoton33_v") == 0) {
+      HLTR->accept(i) ? HLT_DoublePhoton33 = 1 : HLT_DoublePhoton33 = 0;
+      prescale_HLT_DoublePhoton33 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_DoublePhoton60_v") == 0) {
+      HLTR->accept(i) ? HLT_DoublePhoton60 = 1 : HLT_DoublePhoton60 = 0;
+      prescale_HLT_DoublePhoton60 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_DoublePhoton70_v") == 0) {
+      HLTR->accept(i) ? HLT_DoublePhoton70 = 1 : HLT_DoublePhoton70 = 0;
+      prescale_HLT_DoublePhoton70 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+    if (hlNames_.at(i).find("HLT_DoublePhoton80_v") == 0) {
+      HLTR->accept(i) ? HLT_DoublePhoton80 = 1 : HLT_DoublePhoton80 = 0;
+      prescale_HLT_DoublePhoton80 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+  }
+
+  for (unsigned int i=0; i!=n; ++i) {
+    if (HLTR->wasrun(i)) hlWasRun_[i]++;
+    if (HLTR->wasrun(i)) hlWasRunTab[i] = 1;
+    if (!(HLTR->wasrun(i))) cout<<"hlNames(i) = "<<i<<", "<<hlNames_.at(i)<<endl;
+
+    if (HLTR->accept(i)) hlAccept_[i]++;
+    if (HLTR->accept(i)) hlAcceptTab[i] = i;
+    if (HLTR->error(i) ) hlErrors_[i]++;
+    if (HLTR->error(i) ) hlErrorTab[i] = 1;
+    const int index(static_cast<int>(HLTR->index(i)));
+    if (HLTR->accept(i)) {
+      if (index>=posL1s_[i]) hltL1s_[i]++;
+      if (index>=posPre_[i]) hltPre_[i]++;
+    } else {
+      if (index> posL1s_[i]) hltL1s_[i]++;
+      if (index> posPre_[i]) hltPre_[i]++;
+    }
+  }
+} // END of HLTInfo
+
+//
+void
+GsfCheckerTree::METData(const edm::Event &iEvent)
+{
+  calomet = -1.;
+  calomet_eta = -1000.; 
+  calomet_phi = -1000.;
+  met = -1.;
+  pfmet = -1.;
+  pfmet_eta = -1000.; 
+  pfmet_phi = -1000.;
+
+  edm::Handle<CaloMETCollection> pCaloMET;
+  bool calometisvalid = iEvent.getByLabel("met", pCaloMET);
+  const CaloMETCollection *caloMET  = pCaloMET.product();
+
+  edm::Handle<METCollection> pMET;
+  bool metisvalid = iEvent.getByLabel("htMetKT4", pMET);
+  const METCollection *MET  = pMET.product();
+
+  edm::Handle<PFMETCollection> pPFMET;
+  bool pfmetisvalid = iEvent.getByLabel("pfMet", pPFMET);
+  const PFMETCollection *PFMET  = pPFMET.product();
+
+  //CALOMET
+  if (calometisvalid) {
+    for (CaloMETCollection::const_iterator calometiter = caloMET->begin(); calometiter != caloMET->end(); ++calometiter) {
+      calomet = calometiter->et();
+      calomet_eta = calometiter->eta(); 
+      calomet_phi = calometiter->phi();
+    }
+  }  
+  //MET
+  if (metisvalid) {
+    for (METCollection::const_iterator metiter = MET->begin(); metiter != MET->end(); ++metiter) {
+      met = metiter->sumEt();
+    }
+  } 
+  //PFMET
+  if (pfmetisvalid) {
+    for(PFMETCollection::const_iterator pfmetiter = PFMET->begin(); pfmetiter != PFMET->end(); ++pfmetiter) {
+      pfmet = pfmetiter->et();  
+      pfmet_eta = pfmetiter->eta(); 
+      pfmet_phi = pfmetiter->phi();
+    }
+  } 
+} // END of METData
+
+//
+void
+GsfCheckerTree::JetData(const edm::Event &iEvent)
+{
+  //IC5
+  //  nJetsIC5_pt15 = -1;
+//   for (unsigned int i = 0 ; i< 100 ; i++){   
+//     jetIC5_pt[i] = -1;
+//     jetIC5_eta[i] = -1;
+//     jetIC5_phi[i] = -1;
+//     jetIC5_em[i] = -1;
+//   }
+  
+  nJetsAKT_pt15 = -1;
+  for (unsigned int i = 0 ; i< 50 ; ++i){   
+    jetAKT_pt[i] = -1;
+    jetAKT_eta[i] = -1;
+    jetAKT_phi[i] = -1;
+    jetAKT_em[i] = -1;
+  }
+
+  bool caloantiktjetisvalid = false;
+  edm::Handle<CaloJetCollection> pCaloAntiKtJets;
+  caloantiktjetisvalid = iEvent.getByLabel("ak5CaloJets", pCaloAntiKtJets);
+  const CaloJetCollection *caloAntiKtJets = pCaloAntiKtJets.product();
+  
+  //LOOP ON anti kt jets
+  int FnJetsAKT = -1;
+  int FnJetsAKT_pt10 = 0;
+  int FnJetsAKT_pt15 = 0;
+  int FnJetsAKT_pt20 = 0;
+
+  vector <float> VemJetsAKT_pt10;
+  vector <float> VemJetsAKT_pt15;
+  vector <float> VemJetsAKT_pt20;
+
+  int index_jetAKT = 0;
+  if(caloantiktjetisvalid){
+    FnJetsAKT = caloAntiKtJets->size();
+    for(CaloJetCollection::const_iterator antiktjetiter = caloAntiKtJets->begin();antiktjetiter != caloAntiKtJets->end();antiktjetiter++){
+      if(antiktjetiter->pt() > 10. && fabs(antiktjetiter->eta()) < 3.) {
+      FnJetsAKT_pt10++;
+      VemJetsAKT_pt10.push_back(antiktjetiter->emEnergyFraction());
+      }
+      if(antiktjetiter->pt() > 15. && fabs(antiktjetiter->eta()) < 3.) {
+      FnJetsAKT_pt15++;
+      VemJetsAKT_pt15.push_back(antiktjetiter->emEnergyFraction());
+      }
+      if(antiktjetiter->pt() > 20. && fabs(antiktjetiter->eta()) < 3.) {
+      FnJetsAKT_pt20++;
+      VemJetsAKT_pt20.push_back(antiktjetiter->emEnergyFraction());
+      }
+
+      //FILL TREE
+      if(antiktjetiter->pt() > 10. && fabs(antiktjetiter->eta()) < 3.) {
+      jetAKT_pt[index_jetAKT] = antiktjetiter->pt();
+      jetAKT_eta[index_jetAKT] = antiktjetiter->eta();
+      jetAKT_phi[index_jetAKT] = antiktjetiter->phi();
+      jetAKT_em[index_jetAKT] = antiktjetiter->emEnergyFraction();
+
+      index_jetAKT++;
+      }
+    }
+  }
+
+  jetAKT_size = index_jetAKT;
+  nJetsAKT_pt15 = FnJetsAKT_pt15;
+}
 
 //
 void

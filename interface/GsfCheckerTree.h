@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.15 2011/12/16 13:55:34 treis Exp $
+// $Id: GsfCheckerTree.h,v 1.16 2012/01/02 21:24:19 treis Exp $
 //
 //
 
@@ -75,6 +75,10 @@ private:
   virtual void beginRun(edm::Run const&, edm::EventSetup const&);
 
   void DataGenPart(const edm::Event& e);
+  void L1TInfo(const edm::Event& iEvent);
+  void HLTInfo(const edm::Event& iEvent, const edm::EventSetup& iSetup);
+  void METData(const edm::Event& iEvent);
+  void JetData(const edm::Event& iEvent);
   void BTagData(const edm::Event& event);
 
   // ----------member data ---------------------------
