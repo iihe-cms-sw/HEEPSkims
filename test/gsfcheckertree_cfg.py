@@ -84,6 +84,16 @@ process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
                                            )
 process.primaryVertexPath = cms.Path(process.primaryVertexFilter)
 
+
+## The next three lines are for rho computation (energy density, highly correlated to PU), see here :
+## https://twiki.cern.ch/twiki/bin/view/CMS/EgammaRecipesFor2011#FastJet_based_pile_up_isolation
+
+process.load("RecoJets.JetProducers.kt4PFJets_cfi")
+process.kt6PFJets = process.kt4PFJets.clone( rParam = 0.6, doRhoFastjet = True )
+process.kt6PFJets.Rho_EtaMax = cms.double(2.5)
+
+
 process.load("UserCode.HEEPSkims.gsfcheckertree_cfi")
-process.p1 = cms.Path(process.primaryVertexFilter*process.gsfcheckerjob) 
+process.otherStuff = cms.Sequence( process.kt6PFJets ) 
+process.p1 = cms.Path(process.otherStuff*process.primaryVertexFilter*process.gsfcheckerjob) 
 ##process.outpath = cms.EndPath(process.out)

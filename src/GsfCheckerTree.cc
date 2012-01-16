@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.16 2012/01/02 21:24:18 treis Exp $
+// $Id: GsfCheckerTree.cc,v 1.17 2012/01/10 17:13:53 treis Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 
@@ -136,6 +136,21 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       && !(gsfPtMax > eleEtCut_ && muonPtMax > muPtCut_)
       && !(muonPtMax > muPtCut_ && muonPtSecondMax > muPtCut_)
      ) return;
+
+  //rho variable
+  rho = 0;
+  rhoiso = 0;
+  edm::Handle<double> rho_;
+  edm::Handle<double> rhoiso_;
+  bool isrho; 
+  bool isrhoiso;
+  isrho = iEvent.getByLabel(edm::InputTag("kt6PFJets:rho"),rho_);
+  isrhoiso =iEvent.getByLabel(edm::InputTag("kt6PFJetsIso:rho"),rhoiso_);
+  if(isrho)   rho =*rho_;
+  if(isrhoiso) rhoiso =*rhoiso_;
+  cout << "rho= " << rho << endl;
+  cout << "rhoiso= " << rhoiso << endl;
+
 
   //Supercluster variables
   for(int i=0;i<100;i++) {
@@ -933,6 +948,8 @@ GsfCheckerTree::beginJob()
 
 
   //GLOBAL PHYSICAL INFO 
+  mytree->Branch("rho", &rho, "rho/F");
+  mytree->Branch("rhoiso", &rhoiso, "rhoiso/F");
   mytree->Branch("calomet", &calomet, "calomet/F");
   mytree->Branch("calomet_eta", &calomet_eta, "calomet_eta/F");
   mytree->Branch("calomet_phi", &calomet_phi, "calomet_phi/F");

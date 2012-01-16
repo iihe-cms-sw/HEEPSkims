@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.16 2012/01/02 21:24:19 treis Exp $
+// $Id: GsfCheckerTree.h,v 1.17 2012/01/10 17:13:54 treis Exp $
 //
 //
 
@@ -103,6 +103,8 @@ private:
   int PhysDecl_bool;
   
   //GLOBAL
+  float rho;
+  float rhoiso;
   float calomet;
   float calomet_eta;
   float calomet_phi;
