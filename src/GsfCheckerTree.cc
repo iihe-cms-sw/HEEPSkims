@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.17 2012/01/10 17:13:53 treis Exp $
+// $Id: GsfCheckerTree.cc,v 1.18 2012/01/16 13:18:53 lathomas Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 
@@ -81,7 +81,7 @@ void
 GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   bool useGenData_ = !iEvent.isRealData(); 
-
+  
   eventcounter++;
 
   //Run and event number
@@ -186,7 +186,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
  
   //Primary vertex x,y,z
   pvsize = -5000;
-  for (int i = 0; i < 50; ++i) {
+  for (int i = 0; i < NvtxMax; ++i) {
     pvx[i] = -5000.;
     pvy[i] = -5000.;
     pvz[i] = -5000.;
@@ -435,6 +435,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
   
   pvsize = pvcoll->size();
+  if(pvsize > NvtxMax) return;
   int indexpv = 0;
   for(reco::VertexCollection::const_iterator pvIt = pvcoll->begin(); pvIt != pvcoll->end(); ++pvIt){
     pvx[indexpv] = pvIt->x();

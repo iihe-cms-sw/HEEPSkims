@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.17 2012/01/10 17:13:54 treis Exp $
+// $Id: GsfCheckerTree.h,v 1.18 2012/01/16 13:18:54 lathomas Exp $
 //
 //
 
@@ -91,7 +91,7 @@ private:
   double eleEtCut_;
   double muPtCut_;
   // -------------------------------------------------
-
+  const int NvtxMax = 100;
   //L1TRIGGER
   int L1trigger_size;
   int L1trigger_bool[100];
@@ -267,9 +267,9 @@ private:
 
   //Primary vertex x,y,z
   int pvsize;
-  float pvx[50];
-  float pvy[50];
-  float pvz[50];
+  float pvx[NvtxMax];
+  float pvy[NvtxMax];
+  float pvz[NvtxMax];
 
   bool pv_isValid[50];
   float pv_ndof[50];
