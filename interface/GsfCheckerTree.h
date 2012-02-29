@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.18 2012/01/16 13:18:54 lathomas Exp $
+// $Id: GsfCheckerTree.h,v 1.19 2012/02/29 00:49:10 lathomas Exp $
 //
 //
 
@@ -58,7 +58,7 @@ Implementation:
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "TFile.h"
 #include "TTree.h"
-
+const int NvtxMax = 100;
 //
 // class decleration
 //
@@ -91,7 +91,7 @@ private:
   double eleEtCut_;
   double muPtCut_;
   // -------------------------------------------------
-  const int NvtxMax = 100;
+  
   //L1TRIGGER
   int L1trigger_size;
   int L1trigger_bool[100];
