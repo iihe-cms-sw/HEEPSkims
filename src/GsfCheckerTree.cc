@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.18 2012/01/16 13:18:53 lathomas Exp $
+// $Id: GsfCheckerTree.cc,v 1.19 2012/02/29 00:48:51 lathomas Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 
@@ -435,7 +435,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
   
   pvsize = pvcoll->size();
-  if(pvsize > NvtxMax) return;
+  cout << "pvsize : " << pvsize << " NvtxMax : " << NvtxMax <<  endl;
+  if(pvsize >= NvtxMax || pvsize <1 ) return;
   int indexpv = 0;
   for(reco::VertexCollection::const_iterator pvIt = pvcoll->begin(); pvIt != pvcoll->end(); ++pvIt){
     pvx[indexpv] = pvIt->x();
@@ -514,7 +515,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
   }
   muon_size = index_mu;
-
+  cout << "muon_size " << muon_size << endl;
   //Get a Handle on different collections
   //Get the superclusters
   edm::Handle<reco::SuperClusterCollection> pHybridSuperClusters;
@@ -543,7 +544,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     {reco::SuperClusterRef irefsc(reco::SuperClusterRef(pIslandSuperClusters,i));refsclusters.push_back(irefsc);}
 
   scsize = sclusters.size();
-
+  cout << "scsize " << scsize << endl;
+  cout << "refscsize " << refsclusters.size() << endl;
   //sort all the refSC by energy
   std::sort(refsclusters.begin(),refsclusters.end(),refScEGreater);
 
@@ -587,7 +589,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   const GsfTrackCollection *gsftracks = gsfTracksH.product();
 
   gsftracksize = gsftracks->size();
-
+  cout << "gsftracksize " <<gsftracksize << endl;
   int v=0;
   for(GsfTrackCollection::const_iterator gsftrackiter = gsftracks->begin(); 
       gsftrackiter!=gsftracks->end();
@@ -611,6 +613,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   EcalClusterLazyTools lazytool(iEvent,iSetup,InputTag("reducedEcalRecHitsEB"),InputTag("reducedEcalRecHitsEE"));
 
   gsf_size = gsfelectrons.size();
+  cout << "gsf_size " <<  gsf_size << endl;
   int e=0;
   reco::GsfElectronCollection::const_iterator gsfiter = gsfelectrons.begin();
   for(;gsfiter!=gsfelectrons.end();gsfiter++)
@@ -992,7 +995,7 @@ GsfCheckerTree::beginJob()
   //   mytree->Branch("jetIC5_em", jetIC5_em, "jetIC5_em[jetIC5_size]/F");
  
   //BTAG
-  mytree->Branch("bTagJetColl_size", &bTagJetColl_size, "bTagJetColl_size/i");
+  mytree->Branch("bTagJetColl_size", &bTagJetColl_size, "bTagJetColl_size/I");
   mytree->Branch("bTagJet_et", bTagJet_et, "bTagJet_et[bTagJetColl_size]/F");
   mytree->Branch("bTagJet_pt", bTagJet_pt, "bTagJet_pt[bTagJetColl_size]/F");
   mytree->Branch("bTagJet_eta", bTagJet_eta, "bTagJet_eta[bTagJetColl_size]/F");
@@ -1291,6 +1294,7 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
   unsigned int counter = 0; 
   Handle<GenParticleCollection> genParticles;
   e.getByLabel("genParticles", genParticles);
+  cout <<"genParticles->size() " << genParticles->size() << endl;
   for (size_t i = 0; i < genParticles->size(); ++i) {
     
     const GenParticle & p = (*genParticles)[i];
@@ -1354,7 +1358,7 @@ GsfCheckerTree::L1TInfo(const edm::Event &iEvent)
 
   const TechnicalTriggerWord&  technicalTriggerWordBeforeMask = gtReadoutRecord->technicalTriggerWord();
   L1trigger_size = technicalTriggerWordBeforeMask.size();
-
+  cout << "L1trigger_size " << L1trigger_size << endl;
   for(unsigned int i = 0;i<technicalTriggerWordBeforeMask.size();i++){
     bool bit = technicalTriggerWordBeforeMask.at(i);
     if (bit == 1) L1trigger_bool[i] = 1;   
@@ -1468,6 +1472,7 @@ GsfCheckerTree::HLTInfo(const edm::Event &iEvent, const edm::EventSetup& iSetup)
 
   // decision for each HL algorithm
   const unsigned int n(hlNames_.size());
+  cout << "hlNames_.size() " << hlNames_.size() << endl; 
   for (unsigned int i=0; i!=n; ++i) {
 
     if (hlNames_.at(i).find("HLT_Mu15_v") == 0) {
@@ -1678,7 +1683,7 @@ GsfCheckerTree::JetData(const edm::Event &iEvent)
 //   }
   
   nJetsAKT_pt15 = -1;
-  for (unsigned int i = 0 ; i< 50 ; ++i){   
+  for (int i = 0 ; i< NbJets; ++i){   
     jetAKT_pt[i] = -1;
     jetAKT_eta[i] = -1;
     jetAKT_phi[i] = -1;
@@ -1703,6 +1708,7 @@ GsfCheckerTree::JetData(const edm::Event &iEvent)
   int index_jetAKT = 0;
   if(caloantiktjetisvalid){
     FnJetsAKT = caloAntiKtJets->size();
+    cout << "caloAntiKtJets->size() " << caloAntiKtJets->size()<< endl;
     for(CaloJetCollection::const_iterator antiktjetiter = caloAntiKtJets->begin();antiktjetiter != caloAntiKtJets->end();antiktjetiter++){
       if(antiktjetiter->pt() > 10. && fabs(antiktjetiter->eta()) < 3.) {
       FnJetsAKT_pt10++;
@@ -1738,7 +1744,7 @@ void
 GsfCheckerTree::BTagData(const edm::Event &event)
 {
   bTagJetColl_size = 0;
-  for (unsigned int i = 0; i < 50; ++i) {
+  for (int i = 0; i < NbJets; ++i) {
     bTagJet_et[i] = -1000.;
     bTagJet_pt[i] = -1000.;
     bTagJet_eta[i] = -1000.;
@@ -1802,7 +1808,7 @@ GsfCheckerTree::BTagData(const edm::Event &event)
   edm::Handle<reco::JetTagCollection> softMuPtBTagHandle;
   event.getByLabel("softMuonByPtBJetTags", softMuPtBTagHandle);
   const reco::JetTagCollection &softMuPtBTag = *(softMuPtBTagHandle.product());
-
+  cout << "tCHighEffBTag.size() " << tCHighEffBTag.size() << endl;
   for (unsigned int i = 0; i < tCHighEffBTag.size(); ++i) {
     if (tCHighEffBTag[i].first->pt() > bJetPtMin_ && fabs(tCHighEffBTag[i].first->eta()) < 3.) {
       bTagJet_et[bTagJetColl_size] = tCHighEffBTag[i].first->et();

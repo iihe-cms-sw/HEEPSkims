@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.19 2012/02/29 00:49:10 lathomas Exp $
+// $Id: GsfCheckerTree.h,v 1.20 2012/02/29 01:04:52 lathomas Exp $
 //
 //
 
@@ -59,6 +59,8 @@ Implementation:
 #include "TFile.h"
 #include "TTree.h"
 const int NvtxMax = 100;
+const int NbJets = 100;
+const int scsizeMax = 200; 
 //
 // class decleration
 //
@@ -117,37 +119,38 @@ private:
   //JETS 
   int nJetsAKT_pt15;
   int jetAKT_size;
-  float jetAKT_pt[50];
-  float jetAKT_eta[50];
-  float jetAKT_phi[50];
-  float jetAKT_em[50];
+  float jetAKT_eta[NbJets];
+  float jetAKT_pt[NbJets];
+
+  float jetAKT_phi[NbJets];
+  float jetAKT_em[NbJets];
    //  int nJetsIC5_pt15; 
 //   int jetIC5_size;
-//   float jetIC5_pt[100];
-//   float jetIC5_eta[100];
-//   float jetIC5_phi[100];
-//   float jetIC5_em[100];
+//   float jetIC5_pt[NbJets];
+//   float jetIC5_eta[NbJets];
+//   float jetIC5_phi[NbJets];
+//   float jetIC5_em[NbJets];
 
   //BTAG
-  unsigned int bTagJetColl_size;
-  float bTagJet_et[50];
-  float bTagJet_pt[50];
-  float bTagJet_eta[50];
-  float bTagJet_phi[50];
-  float tCHighEffBTags[50];
-  float tCHighPurBTags[50];
-  float jetProbBTags[50];
-  float jetBProbBTags[50];
-  float sSecVertHighEffBTags[50];
-  float sSecVertHighPurBTags[50];
-  float cSecVertBTags[50];
-  float cSecVertMVABTags[50];
-  float ghostTrkBTags[50];
-  float softEleIP3dBTags[50];
-  float softElePtBTags[50];
-  float softMuBTags[50];
-  float softMuIP3dBTags[50];
-  float softMuPtBTags[50];
+  int bTagJetColl_size;
+  float bTagJet_et[NbJets];
+  float bTagJet_pt[NbJets];
+  float bTagJet_eta[NbJets];
+  float bTagJet_phi[NbJets];
+  float tCHighEffBTags[NbJets];
+  float tCHighPurBTags[NbJets];
+  float jetProbBTags[NbJets];
+  float jetBProbBTags[NbJets];
+  float sSecVertHighEffBTags[NbJets];
+  float sSecVertHighPurBTags[NbJets];
+  float cSecVertBTags[NbJets];
+  float cSecVertMVABTags[NbJets];
+  float ghostTrkBTags[NbJets];
+  float softEleIP3dBTags[NbJets];
+  float softElePtBTags[NbJets];
+  float softMuBTags[NbJets];
+  float softMuIP3dBTags[NbJets];
+  float softMuPtBTags[NbJets];
   
   // MUON
   int muon_size;
@@ -271,28 +274,28 @@ private:
   float pvy[NvtxMax];
   float pvz[NvtxMax];
 
-  bool pv_isValid[50];
-  float pv_ndof[50];
-  int pv_nTracks[50];
-  float pv_normChi2[50];
-  int pv_totTrackSize[50];
+  bool pv_isValid[NvtxMax];
+  float pv_ndof[NvtxMax];
+  int pv_nTracks[NvtxMax];
+  float pv_normChi2[NvtxMax];
+  int pv_totTrackSize[NvtxMax];
 
   //Supercluster variables
-  float scgsfmatched[100];
-  float scseedmatched[100];
-  float scenergy[100];
-  float sceta[100];
-  float scetacorr[100];
-  float sctheta[100];
-  float scthetacorr[100];
-  float scet[100];
-  float scphi[100];
-  float scpx[100];
-  float scpy[100];
-  float scpz[100];
-  float scx[100];
-  float scy[100];
-  float scz[100];
+  float scgsfmatched[scsizeMax];
+  float scseedmatched[scsizeMax];
+  float scenergy[scsizeMax];
+  float sceta[scsizeMax];
+  float scetacorr[scsizeMax];
+  float sctheta[scsizeMax];
+  float scthetacorr[scsizeMax];
+  float scet[scsizeMax];
+  float scphi[scsizeMax];
+  float scpx[scsizeMax];
+  float scpy[scsizeMax];
+  float scpz[scsizeMax];
+  float scx[scsizeMax];
+  float scy[scsizeMax];
+  float scz[scsizeMax];
   int scsize;
 
   int gsf_size;
