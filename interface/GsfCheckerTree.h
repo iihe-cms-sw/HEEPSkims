@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.20 2012/02/29 01:04:52 lathomas Exp $
+// $Id: GsfCheckerTree.h,v 1.21 2012/03/01 13:56:35 lathomas Exp $
 //
 //
 
@@ -58,9 +58,7 @@ Implementation:
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "TFile.h"
 #include "TTree.h"
-const int NvtxMax = 100;
 const int NbJets = 100;
-const int scsizeMax = 200; 
 //
 // class decleration
 //
@@ -94,13 +92,15 @@ private:
   double muPtCut_;
   // -------------------------------------------------
   
+  TTree* mytree;
+
   //L1TRIGGER
   int L1trigger_size;
-  int L1trigger_bool[100];
+  int *L1trigger_bool;
 
   // HLT
   int hltCount;
-  int HLTriggers[500];
+  int *HLTriggers;
 
   int PhysDecl_bool;
   
@@ -119,11 +119,10 @@ private:
   //JETS 
   int nJetsAKT_pt15;
   int jetAKT_size;
-  float jetAKT_eta[NbJets];
-  float jetAKT_pt[NbJets];
-
-  float jetAKT_phi[NbJets];
-  float jetAKT_em[NbJets];
+  float *jetAKT_eta;
+  float *jetAKT_pt;
+  float *jetAKT_phi;
+  float *jetAKT_em;
    //  int nJetsIC5_pt15; 
 //   int jetIC5_size;
 //   float jetIC5_pt[NbJets];
@@ -133,81 +132,79 @@ private:
 
   //BTAG
   int bTagJetColl_size;
-  float bTagJet_et[NbJets];
-  float bTagJet_pt[NbJets];
-  float bTagJet_eta[NbJets];
-  float bTagJet_phi[NbJets];
-  float tCHighEffBTags[NbJets];
-  float tCHighPurBTags[NbJets];
-  float jetProbBTags[NbJets];
-  float jetBProbBTags[NbJets];
-  float sSecVertHighEffBTags[NbJets];
-  float sSecVertHighPurBTags[NbJets];
-  float cSecVertBTags[NbJets];
-  float cSecVertMVABTags[NbJets];
-  float ghostTrkBTags[NbJets];
-  float softEleIP3dBTags[NbJets];
-  float softElePtBTags[NbJets];
-  float softMuBTags[NbJets];
-  float softMuIP3dBTags[NbJets];
-  float softMuPtBTags[NbJets];
+  float *bTagJet_et;
+  float *bTagJet_pt;
+  float *bTagJet_eta;
+  float *bTagJet_phi;
+  float *tCHighEffBTags;
+  float *tCHighPurBTags;
+  float *jetProbBTags;
+  float *jetBProbBTags;
+  float *sSecVertHighEffBTags;
+  float *sSecVertHighPurBTags;
+  float *cSecVertBTags;
+  float *cSecVertMVABTags;
+  float *ghostTrkBTags;
+  float *softEleIP3dBTags;
+  float *softElePtBTags;
+  float *softMuBTags;
+  float *softMuIP3dBTags;
+  float *softMuPtBTags;
   
   // MUON
   int muon_size;
-  float muon_pt[100];
-  float muon_ptError[100];
-  float muon_eta[100];
-  float muon_etaError[100];
-  float muon_phi[100];
-  float muon_phiError[100];
-  float muon_theta[100];
-  float muon_thetaError[100]; 
-  float muon_outerPt[100];
-  float muon_outerEta[100];
-  float muon_outerPhi[100];
-  float muon_outerTheta[100];
-  float muon_px[100];
-  float muon_py[100];
-  float muon_pz[100];
-  int muon_charge[100];
-  int muon_nhitspixel[100];
-  int muon_nhitstrack[100];
-  int muon_nhitsmuons[100];
-  int muon_nhitstotal[100];
-  int muon_nlayerswithhits[100];
-  int muon_nlosthits[100];
-  int muon_nSegmentMatch[100];
-  bool muon_isTrackerMuon[100];
-  float muon_chi2[100];
-  int muon_ndof[100];
-  float muon_normChi2[100];
-  float muon_d0[100];
-  float muon_d0Error[100];
-  float muon_dz_cmsCenter[100];
-  float muon_dz_beamSpot[100];
-  float muon_dz_firstPVtx[100];
-  float muon_dzError[100];
-  float muon_dxy_cmsCenter[100];
-  float muon_dxy_beamSpot[100];
-  float muon_dxy_firstPVtx[100];
-  float muon_dxyError[100]; 
-  float muon_trackIso03[100]; 
-  float muon_trackIso05[100]; 
-  float muon_trackIso03_ptInVeto[100]; 
-  float muon_trackIso05_ptInVeto[100]; 
-  float muon_emIso03[100]; 
-  float muon_emIso05[100]; 
-  float muon_emIso03_ptInVeto[100]; 
-  float muon_emIso05_ptInVeto[100]; 
-  float muon_hadIso03[100]; 
-  float muon_hadIso05[100]; 
-  float muon_hadIso03_ptInVeto[100]; 
-  float muon_hadIso05_ptInVeto[100]; 
-  float muon_innerPosx[100];
-  float muon_innerPosy[100];
-  float muon_innerPosz[100];
-
-  TTree* mytree;
+  float *muon_pt;
+  float *muon_ptError;
+  float *muon_eta;
+  float *muon_etaError;
+  float *muon_phi;
+  float *muon_phiError;
+  float *muon_theta;
+  float *muon_thetaError; 
+  float *muon_outerPt;
+  float *muon_outerEta;
+  float *muon_outerPhi;
+  float *muon_outerTheta;
+  float *muon_px;
+  float *muon_py;
+  float *muon_pz;
+  int *muon_charge;
+  int *muon_nhitspixel;
+  int *muon_nhitstrack;
+  int *muon_nhitsmuons;
+  int *muon_nhitstotal;
+  int *muon_nlayerswithhits;
+  int *muon_nlosthits;
+  int *muon_nSegmentMatch;
+  bool *muon_isTrackerMuon;
+  float *muon_chi2;
+  int *muon_ndof;
+  float *muon_normChi2;
+  float *muon_d0;
+  float *muon_d0Error;
+  float *muon_dz_cmsCenter;
+  float *muon_dz_beamSpot;
+  float *muon_dz_firstPVtx;
+  float *muon_dzError;
+  float *muon_dxy_cmsCenter;
+  float *muon_dxy_beamSpot;
+  float *muon_dxy_firstPVtx;
+  float *muon_dxyError; 
+  float *muon_trackIso03; 
+  float *muon_trackIso05; 
+  float *muon_trackIso03_ptInVeto; 
+  float *muon_trackIso05_ptInVeto; 
+  float *muon_emIso03; 
+  float *muon_emIso05; 
+  float *muon_emIso03_ptInVeto; 
+  float *muon_emIso05_ptInVeto; 
+  float *muon_hadIso03; 
+  float *muon_hadIso05; 
+  float *muon_hadIso03_ptInVeto; 
+  float *muon_hadIso05_ptInVeto; 
+  float *muon_innerPosx;
+  float *muon_innerPosy;
+  float *muon_innerPosz;
 
   unsigned int runnumber;
   unsigned int eventnumber;
@@ -223,37 +220,37 @@ private:
 
   int genparticles_size;
   //Generated variables (after FSR)
-  double genele_e[20];
-  double genele_pt[20];
-  double genele_px[20]; 
-  double genele_py[20]; 
-  double genele_pz[20]; 
-  double genele_eta[20]; 
-  double genele_phi[20];
-  int genele_charge[20];
+  double *genele_e;
+  double *genele_pt;
+  double *genele_px; 
+  double *genele_py; 
+  double *genele_pz; 
+  double *genele_eta; 
+  double *genele_phi;
+  int *genele_charge;
   //Generated variables (before FSR)
-  double unstableGenEle_e[20];
-  double unstableGenEle_pt[20];
-  double unstableGenEle_px[20];
-  double unstableGenEle_py[20];
-  double unstableGenEle_pz[20]; 
-  double unstableGenEle_eta[20];
-  double unstableGenEle_phi[20]; 
-  int unstableGenEle_charge[20];
+  double *unstableGenEle_e;
+  double *unstableGenEle_pt;
+  double *unstableGenEle_px;
+  double *unstableGenEle_py;
+  double *unstableGenEle_pz; 
+  double *unstableGenEle_eta;
+  double *unstableGenEle_phi; 
+  int *unstableGenEle_charge;
   //Generated variables (Z variables)
-  double genelemom_e[20]; 
-  double genelemom_pt[20]; 
-  double genelemom_px[20];
-  double genelemom_py[20]; 
-  double genelemom_pz[20]; 
-  double genelemom_eta[20];  
-  double genelemom_phi[20]; 
-  int genelemom_charge[20];
-  double genelemom_mass[20];
-  int genelemom_pdgid[20];
+  double *genelemom_e; 
+  double *genelemom_pt; 
+  double *genelemom_px;
+  double *genelemom_py; 
+  double *genelemom_pz; 
+  double *genelemom_eta;  
+  double *genelemom_phi; 
+  int *genelemom_charge;
+  double *genelemom_mass;
+  int *genelemom_pdgid;
 
-  float x1quark[10];
-  float x2quark[10];
+  float *x1quark;
+  float *x2quark;
 
   float trueNVtx;
   int nVtxBefore;
@@ -270,163 +267,150 @@ private:
 
   //Primary vertex x,y,z
   int pvsize;
-  float pvx[NvtxMax];
-  float pvy[NvtxMax];
-  float pvz[NvtxMax];
-
-  bool pv_isValid[NvtxMax];
-  float pv_ndof[NvtxMax];
-  int pv_nTracks[NvtxMax];
-  float pv_normChi2[NvtxMax];
-  int pv_totTrackSize[NvtxMax];
+  float *pvx;
+  float *pvy;
+  float *pvz;
+  bool *pv_isValid;
+  float *pv_ndof;
+  int *pv_nTracks;
+  float *pv_normChi2;
+  int *pv_totTrackSize;
 
   //Supercluster variables
-  float scgsfmatched[scsizeMax];
-  float scseedmatched[scsizeMax];
-  float scenergy[scsizeMax];
-  float sceta[scsizeMax];
-  float scetacorr[scsizeMax];
-  float sctheta[scsizeMax];
-  float scthetacorr[scsizeMax];
-  float scet[scsizeMax];
-  float scphi[scsizeMax];
-  float scpx[scsizeMax];
-  float scpy[scsizeMax];
-  float scpz[scsizeMax];
-  float scx[scsizeMax];
-  float scy[scsizeMax];
-  float scz[scsizeMax];
   int scsize;
+  //float *scgsfmatched;
+  //float *scseedmatched;
+  float *scenergy;
+  float *sceta;
+  float *scetacorr;
+  float *sctheta;
+  float *scthetacorr;
+  float *scet;
+  float *scphi;
+  float *scpx;
+  float *scpy;
+  float *scpz;
+  float *scx;
+  float *scy;
+  float *scz;
 
   int gsf_size;
-  int gsf_isEB[100];
-  int gsf_isEE[100];
-  float gsf_px[100];
-  float gsf_py[100];
-  float gsf_pz[100];
-  float gsf_pt[100];
-  float gsf_etSC[100];
-  float gsf_eta[100];
-  float gsf_phi[100];
-  float gsf_theta[100];
-  int gsf_charge[100];
-  float gsf_deltaEtaATvtx[100];
-  float gsf_deltaPhiATvtx[100];
-  float gsf_deltaEtaATcalo[100];
-  float gsf_deltaPhiATcalo[100];
-  float gsf_sigmaetaeta[100];
-  float gsf_sigmaIetaIeta[100];
-  float gsf_ecalEnergy[100];
-  float gsf_eOVERp[100];
-  float gsf_ptOVERetsc[100];
-  float gsf_dxy[100];
-  float gsf_dz[100];
-  float gsf_vz[100];
-  int gsf_nHits[100];
-  int gsf_nLostInnerHits[100];
-  int gsf_nLostOuterHits[100];
-  int gsf_convFlags[100];
-  float gsf_convDist[100];
-  float gsf_convDcot[100];
-  float gsf_convRadius[100];
-  float gsf_fBrem[100];
-  //float gsf_e1OVERe9[100];
-  float gsf_e1x5[100];
-  float gsf_e2x5[100];
-  float gsf_e5x5[100];
-
-  float gsf_eMax[100];
-  float gsf_e1x3[100];
-  float gsf_e3x1[100];
-  //float gsf_e1x5[100];
-  float gsf_e2x2[100];
-  float gsf_e3x2[100];
-  float gsf_e3x3[100];
-  float gsf_e4x4[100];
-  //float gsf_e5x5[100];
-  float gsf_e2x5Right[100];
-  float gsf_e2x5Left[100];  
-  float gsf_e2x5Top[100];  
-  float gsf_e2x5Bottom[100];
-  float gsf_e2x5Max[100];
-  float gsf_eLeft[100];
-  float gsf_eRight[100];
-  float gsf_eTop[100];
-  float gsf_eBottom[100];
-  float gsf_e2nd[100];
-
-  int gsf_nb;
-  float gsf_p[100];
-  float gsf_e[100];
-
-  float gsf_deltaeta[100];
-  float gsf_deltaphi[100];
-  float gsf_hovere[100];
-  float gsf_hdepth1overe[100];
-  float gsf_hdepth2overe[100];
-
-  float gsf_trackiso[100];
-  float gsf_ecaliso[100];
-  float gsf_hcaliso1[100];
-  float gsf_hcaliso2[100];
-
-  float gsf_class[100];
-  int gsf_isecaldriven[100];
-  int gsf_istrackerdriven[100];
-
-
-  float gsfsc_e[100];
-  float gsfsc_pt[100];
-  float gsfsc_eta[100];
-  float gsfsc_phi[100];
-  float gsfsc_px[100];
-  float gsfsc_py[100];
-  float gsfsc_pz[100];
-
-  float gsf_e2x5overe5x5[100];
-  float gsf_e1x5overe5x5[100];
-
-  float gsf_gsfet[100];
-
-  int scindexforgsf[100];
-
-  bool gsfpass_ET[100]; 
-  bool gsfpass_PT[100]; 
-  bool gsfpass_DETETA[100]; 
-  bool gsfpass_CRACK[100]; 
-  bool gsfpass_DETAIN[100]; 
-  bool gsfpass_DPHIIN[100]; 
-  bool gsfpass_HADEM[100]; 
-  bool gsfpass_SIGMAIETAIETA [100];
-  bool gsfpass_E2X5OVER5X5[100]; 
-  bool gsfpass_ISOLEMHADDEPTH1[100];
-  bool gsfpass_ISOLHADDEPTH2[100]; 
-  bool gsfpass_ISOLPTTRKS[100]; 
-  bool gsfpass_ECALDRIVEN[100]; 
-  bool gsfpass_INVALID[100];
-  bool gsfpass_NOMISSINGHITS[100];
-  bool gsfpass_NOCONVERSION[100];
-  bool gsfpass_HEEP[100];
-  bool gsfpass_ID[100];
-  bool gsfpass_ISO[100];
+  int *gsf_isEB;
+  int *gsf_isEE;
+  float *gsf_px;
+  float *gsf_py;
+  float *gsf_pz;
+  float *gsf_pt;
+  //float *gsf_etSC;
+  float *gsf_eta;
+  float *gsf_phi;
+  float *gsf_theta;
+  int *gsf_charge;
+  //float *gsf_deltaEtaATvtx;
+  //float *gsf_deltaPhiATvtx;
+  float *gsf_deltaEtaATcalo;
+  float *gsf_deltaPhiATcalo;
+  float *gsf_sigmaetaeta;
+  float *gsf_sigmaIetaIeta;
+  float *gsf_ecalEnergy;
+  float *gsf_eOVERp;
+  //float *gsf_ptOVERetsc;
+  float *gsf_dxy;
+  float *gsf_dz;
+  float *gsf_vz;
+  int *gsf_nHits;
+  int *gsf_nLostInnerHits;
+  int *gsf_nLostOuterHits;
+  int *gsf_convFlags;
+  float *gsf_convDist;
+  float *gsf_convDcot;
+  float *gsf_convRadius;
+  float *gsf_fBrem;
+  //float *gsf_e1OVERe9;
+  float *gsf_e1x5;
+  float *gsf_e2x5;
+  float *gsf_e5x5;
+  //float *gsf_eMax;
+  float *gsf_e1x3;
+  //float *gsf_e3x1;
+  //float *gsf_e1x5;
+  //float *gsf_e2x2;
+  //float *gsf_e3x2;
+  //float *gsf_e3x3;
+  //float *gsf_e4x4;
+  //float *gsf_e5x5;
+  //float *gsf_e2x5Right;
+  //float *gsf_e2x5Left;  
+  //float *gsf_e2x5Top;  
+  //float *gsf_e2x5Bottom;
+  //float *gsf_e2x5Max;
+  //float *gsf_eLeft;
+  //float *gsf_eRight;
+  //float *gsf_eTop;
+  //float *gsf_eBottom;
+  //float *gsf_e2nd;
+  float *gsf_p;
+  float *gsf_e;
+  float *gsf_deltaeta;
+  float *gsf_deltaphi;
+  float *gsf_hovere;
+  float *gsf_hdepth1overe;
+  float *gsf_hdepth2overe;
+  float *gsf_trackiso;
+  float *gsf_ecaliso;
+  float *gsf_hcaliso1;
+  float *gsf_hcaliso2;
+  float *gsf_class;
+  int *gsf_isecaldriven;
+  int *gsf_istrackerdriven;
+  float *gsfsc_e;
+  float *gsfsc_pt;
+  float *gsfsc_eta;
+  float *gsfsc_phi;
+  float *gsfsc_px;
+  float *gsfsc_py;
+  float *gsfsc_pz;
+  float *gsf_e2x5overe5x5;
+  float *gsf_e1x5overe5x5;
+  float *gsf_gsfet;
+  int *scindexforgsf;
+  bool *gsfpass_ET; 
+  bool *gsfpass_PT; 
+  bool *gsfpass_DETETA; 
+  bool *gsfpass_CRACK; 
+  bool *gsfpass_DETAIN; 
+  bool *gsfpass_DPHIIN; 
+  bool *gsfpass_HADEM; 
+  bool *gsfpass_SIGMAIETAIETA ;
+  bool *gsfpass_E2X5OVER5X5; 
+  bool *gsfpass_ISOLEMHADDEPTH1;
+  bool *gsfpass_ISOLHADDEPTH2; 
+  bool *gsfpass_ISOLPTTRKS; 
+  bool *gsfpass_ECALDRIVEN; 
+  bool *gsfpass_INVALID;
+  bool *gsfpass_NOMISSINGHITS;
+  bool *gsfpass_NOCONVERSION;
+  bool *gsfpass_HEEP;
+  bool *gsfpass_ID;
+  bool *gsfpass_ISO;
 
   //charge information
-  int scpixcharge[100];
-  int ctfcharge[100];
-  int gsfcharge[100];
-  bool gsfctfscpixconsistent[100];
-  bool gsfscpixconsistent[100];
-  bool gsfctfconsistent[100];
+  int *scpixcharge;
+  int *ctfcharge;
+  int *gsfcharge;
+  bool *gsfctfscpixconsistent;
+  bool *gsfscpixconsistent;
+  bool *gsfctfconsistent;
   
   //Gsf Track information
   int gsftracksize;
-  float gsftracketa[100];
-  float gsftrackphi[100];
-  float gsftrackp[100];
-  float gsftrackpt[100];
-  float gsftrackpx[100];
-  float gsftrackpy[100];
-  float gsftrackpz[100];
+  float *gsftracketa;
+  float *gsftrackphi;
+  float *gsftrackp;
+  float *gsftrackpt;
+  float *gsftrackpx;
+  float *gsftrackpy;
+  float *gsftrackpz;
 
   unsigned int  nEvents_;           // number of events processed
 
@@ -435,9 +419,9 @@ private:
   unsigned int  nErrors_;           // # where at least one HLT had error
 
   std::vector<unsigned int> hlWasRun_; // # where HLT[i] was run
-  int hlWasRunTab[450];
-  int hlAcceptTab[450];
-  int hlErrorTab[450];
+  int hlWasRunTab[500];
+  int hlAcceptTab[500];
+  int hlErrorTab[500];
   const char* hlNamesTab;
   std::vector<unsigned int> hltL1s_;   // # of events after L1 seed
   std::vector<unsigned int> hltPre_;   // # of events after HLT prescale
