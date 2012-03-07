@@ -25,8 +25,8 @@ readFiles.extend( [
 ##        '/store/data/Run2011A/DoubleMu/AOD/May10ReReco-v1/0000/060CAB29-B17B-E011-BCE6-002618943877.root',
 ##        '/store/data/Run2011A/DoubleMu/AOD/May10ReReco-v1/0000/046174B6-C17B-E011-A76D-00248C55CC3C.root',
 
-        '/store/data/Run2011B/DoubleMu/AOD/PromptReco-v1/000/175/875/24DC5B25-06DC-E011-9F25-003048D2C020.root',
-        '/store/data/Run2011B/DoubleMu/AOD/PromptReco-v1/000/175/874/582F2395-1FDC-E011-964A-003048F0258C.root',
+##        '/store/data/Run2011B/DoubleMu/AOD/PromptReco-v1/000/175/875/24DC5B25-06DC-E011-9F25-003048D2C020.root',
+##        '/store/data/Run2011B/DoubleMu/AOD/PromptReco-v1/000/175/874/582F2395-1FDC-E011-964A-003048F0258C.root',
 ##        '/store/data/Run2011B/DoubleMu/AOD/PromptReco-v1/000/175/874/40616F63-F9DC-E011-89B5-001D09F23F2A.root',
 ##        '/store/data/Run2011B/DoubleMu/AOD/PromptReco-v1/000/175/873/80730A1C-85DD-E011-A7B2-BCAEC53296F9.root',
 ##        '/store/data/Run2011B/DoubleMu/AOD/PromptReco-v1/000/175/872/6E90F149-37DE-E011-886B-003048D2C0F2.root',
@@ -51,7 +51,7 @@ readFiles.extend( [
 ##        '/store/mc/Summer11/DYToEE_M-200_TuneZ2_7TeV-powheg-pythia/GEN-SIM-RECO/PU_S4_START42_V11-v2/0000/C81695E4-B29E-E011-8277-002481E14E2C.root',
 ##        '/store/mc/Summer11/DYToEE_M-200_TuneZ2_7TeV-powheg-pythia/GEN-SIM-RECO/PU_S4_START42_V11-v2/0000/B870F4BB-009E-E011-BE41-00E08178C0CD.root',
 
-##        '/store/mc/Fall11/TTJets_TuneZ2_7TeV-madgraph-tauola/AODSIM/PU_S6_START42_V14B-v1/0000/380EDCD0-CFFA-E011-8B63-002618943834.root',
+        '/store/mc/Fall11/TTJets_TuneZ2_7TeV-madgraph-tauola/AODSIM/PU_S6_START42_V14B-v1/0000/380EDCD0-CFFA-E011-8B63-002618943834.root',
 ])
 
 ##process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
@@ -67,7 +67,7 @@ process.options = cms.untracked.PSet(
 )
 
 process.maxEvents = cms.untracked.PSet(
-    #input = cms.untracked.int32(6000)
+    #input = cms.untracked.int32(1000)
     input = cms.untracked.int32(-1)
 )
 
@@ -76,10 +76,11 @@ process.TFileService = cms.Service("TFileService",
 )
 
 ## # Primary vertex filter
+## # https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookCollisionsDataAnalysis
 process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
                                            vertexCollection = cms.InputTag('offlinePrimaryVertices'),
                                            minimumNDOF = cms.uint32 (4),
-                                           maxAbsZ = cms.double (24), #too tight?
+                                           maxAbsZ = cms.double (15),
                                            maxd0 = cms.double (2)
                                            )
 process.primaryVertexPath = cms.Path(process.primaryVertexFilter)
