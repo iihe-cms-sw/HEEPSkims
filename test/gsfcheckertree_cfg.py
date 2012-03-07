@@ -75,7 +75,7 @@ process.TFileService = cms.Service("TFileService",
     fileName = cms.string('gsfcheckertree_Test.root')
 )
 
-## # Primary vertex filter
+## # Primary vertex filter and no scraping events
 ## # https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookCollisionsDataAnalysis
 process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
                                            vertexCollection = cms.InputTag('offlinePrimaryVertices'),
@@ -84,6 +84,13 @@ process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
                                            maxd0 = cms.double (2)
                                            )
 process.primaryVertexPath = cms.Path(process.primaryVertexFilter)
+
+process.noscraping = cms.EDFilter("FilterOutScraping",
+                                applyfilter = cms.untracked.bool(True),
+                                debugOn = cms.untracked.bool(True),
+                                numtrack = cms.untracked.uint32(10),
+                                thresh = cms.untracked.double(0.25)
+                                )
 
 
 ## The next three lines are for rho computation (energy density, highly correlated to PU), see here :
@@ -96,5 +103,5 @@ process.kt6PFJets.Rho_EtaMax = cms.double(2.5)
 
 process.load("UserCode.HEEPSkims.gsfcheckertree_cfi")
 process.otherStuff = cms.Sequence( process.kt6PFJets ) 
-process.p1 = cms.Path(process.otherStuff*process.primaryVertexFilter*process.gsfcheckerjob) 
+process.p1 = cms.Path(process.otherStuff * process.noscraping * process.primaryVertexFilter * process.gsfcheckerjob) 
 ##process.outpath = cms.EndPath(process.out)
