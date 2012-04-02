@@ -11,7 +11,7 @@ gsfcheckerjob = cms.EDAnalyzer("GsfCheckerTree",
 
   # for skimming on 2ele, 1ele-1mu and 2mu
   electronEtCut = cms.untracked.double(35),
-  muonPtCut = cms.untracked.double(100000),
+  muonPtCut = cms.untracked.double(35),
                
 )
 

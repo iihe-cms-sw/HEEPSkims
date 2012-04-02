@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.21 2012/03/02 15:26:19 treis Exp $
+// $Id: GsfCheckerTree.cc,v 1.22 2012/04/02 12:28:48 lathomas Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -185,10 +185,10 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
 
   // SKIMMING
-//   if (!(gsfPtMax > eleEtCut_ && gsfPtSecondMax > eleEtCut_)
-//       && !(gsfPtMax > eleEtCut_ && muonPtMax > muPtCut_)
-//       && !(muonPtMax > muPtCut_ && muonPtSecondMax > muPtCut_)
-//      ) return;
+  if (!(gsfPtMax > eleEtCut_ && gsfPtSecondMax > eleEtCut_)
+      && !(gsfPtMax > eleEtCut_ && muonPtMax > muPtCut_)
+      && !(muonPtMax > muPtCut_ && muonPtSecondMax > muPtCut_)
+     ) return;
 
 
 
