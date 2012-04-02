@@ -14,17 +14,20 @@ process.GlobalTag.globaltag = 'GR_R_42_V18::All'
 
 readFiles = cms.untracked.vstring()
 secFiles = cms.untracked.vstring()
-
+process.load('FWCore.MessageService.MessageLogger_cfi')
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.source = cms.Source("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
 
 readFiles.extend( [
+    'dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/lathomas/Photon/LaurentPhoton-Run2011BSkim2ElePt35/319d9d50ddc1c21c2a4623a85e06b6f6/output_77_2_49z.root'
 ##        '/store/data/Run2011A/DoubleMu/AOD/May10ReReco-v1/0000/06F51A88-807C-E011-AC86-001A92971ACE.root',
 ##        '/store/data/Run2011A/DoubleMu/AOD/May10ReReco-v1/0000/06CBB6AF-D28B-E011-B5EE-00248C0BE013.root',
 ##        '/store/data/Run2011A/DoubleMu/AOD/May10ReReco-v1/0000/0662A4B8-687C-E011-B2C4-003048678C3A.root',
 ##        '/store/data/Run2011A/DoubleMu/AOD/May10ReReco-v1/0000/063975F5-B17B-E011-AAB2-003048678BAA.root',
 ##        '/store/data/Run2011A/DoubleMu/AOD/May10ReReco-v1/0000/060CAB29-B17B-E011-BCE6-002618943877.root',
 ##        '/store/data/Run2011A/DoubleMu/AOD/May10ReReco-v1/0000/046174B6-C17B-E011-A76D-00248C55CC3C.root',
-
+##         '/store/data/Run2011B/DoubleMu/AOD/PromptReco-v1/000/175/875/24DC5B25-06DC-E011-9F25-003048D2C020.root',
+##         '/store/data/Run2011B/DoubleMu/AOD/PromptReco-v1/000/175/874/582F2395-1FDC-E011-964A-003048F0258C.root',
 ##        '/store/data/Run2011B/DoubleMu/AOD/PromptReco-v1/000/175/875/24DC5B25-06DC-E011-9F25-003048D2C020.root',
 ##        '/store/data/Run2011B/DoubleMu/AOD/PromptReco-v1/000/175/874/582F2395-1FDC-E011-964A-003048F0258C.root',
 ##        '/store/data/Run2011B/DoubleMu/AOD/PromptReco-v1/000/175/874/40616F63-F9DC-E011-89B5-001D09F23F2A.root',
@@ -51,7 +54,7 @@ readFiles.extend( [
 ##        '/store/mc/Summer11/DYToEE_M-200_TuneZ2_7TeV-powheg-pythia/GEN-SIM-RECO/PU_S4_START42_V11-v2/0000/C81695E4-B29E-E011-8277-002481E14E2C.root',
 ##        '/store/mc/Summer11/DYToEE_M-200_TuneZ2_7TeV-powheg-pythia/GEN-SIM-RECO/PU_S4_START42_V11-v2/0000/B870F4BB-009E-E011-BE41-00E08178C0CD.root',
 
-        '/store/mc/Fall11/TTJets_TuneZ2_7TeV-madgraph-tauola/AODSIM/PU_S6_START42_V14B-v1/0000/380EDCD0-CFFA-E011-8B63-002618943834.root',
+       ##   '/store/mc/Fall11/TTJets_TuneZ2_7TeV-madgraph-tauola/AODSIM/PU_S6_START42_V14B-v1/0000/380EDCD0-CFFA-E011-8B63-002618943834.root',
 ])
 
 ##process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
@@ -87,11 +90,18 @@ process.primaryVertexPath = cms.Path(process.primaryVertexFilter)
 
 process.noscraping = cms.EDFilter("FilterOutScraping",
                                 applyfilter = cms.untracked.bool(True),
-                                debugOn = cms.untracked.bool(True),
+                                debugOn = cms.untracked.bool(False),
                                 numtrack = cms.untracked.uint32(10),
                                 thresh = cms.untracked.double(0.25)
                                 )
+## from RecoJets.Configuration.CaloTowersRec_cff import *
 
+## from RecoJets.JetProducers.CaloJetParameters_cfi import *
+## from RecoJets.JetProducers.AnomalousCellParameters_cfi import *
+process.load("Geometry.CMSCommonData.cmsIdealGeometryXML_cfi")
+process.CaloTowerConstituentsMapBuilder = cms.ESProducer("CaloTowerConstituentsMapBuilder",
+  MapFile = cms.untracked.string('Geometry/CaloTopology/data/CaloTowerEEGeometric.map.gz')
+)
 
 ## The next three lines are for rho computation (energy density, highly correlated to PU), see here :
 ## https://twiki.cern.ch/twiki/bin/view/CMS/EgammaRecipesFor2011#FastJet_based_pile_up_isolation
@@ -102,6 +112,8 @@ process.kt6PFJets.Rho_EtaMax = cms.double(2.5)
 
 
 process.load("UserCode.HEEPSkims.gsfcheckertree_cfi")
-process.otherStuff = cms.Sequence( process.kt6PFJets ) 
-process.p1 = cms.Path(process.otherStuff * process.noscraping * process.primaryVertexFilter * process.gsfcheckerjob) 
+process.otherStuff = cms.Sequence( process.kt6PFJets )
+
+
+process.p1 = cms.Path(process.otherStuff   *process.noscraping * process.primaryVertexFilter * process.gsfcheckerjob) 
 ##process.outpath = cms.EndPath(process.out)
