@@ -1,3 +1,6 @@
+#ifndef UserCode_HEEPSkims_GsfCheckerTree_h
+#define UserCode_HEEPSkims_GsfCheckerTree_h
+
 // -*- C++ -*-
 //
 // Package:    GsfCheckerTree
@@ -13,7 +16,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.21 2012/03/01 13:56:35 lathomas Exp $
+// $Id: GsfCheckerTree.h,v 1.22 2012/03/02 15:26:19 treis Exp $
 //
 //
 
@@ -28,6 +31,8 @@ Implementation:
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
+#include "SHarper/HEEPAnalyzer/interface/HEEPEventHelper.h"
+#include "SHarper/HEEPAnalyzer/interface/HEEPEvent.h"
 
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
@@ -43,7 +48,7 @@ Implementation:
 #include "DataFormats/METReco/interface/PFMETCollection.h"
 #include "DataFormats/JetReco/interface/CaloJetCollection.h" 
 #include "DataFormats/BTauReco/interface/JetTag.h"
-
+#include "DataFormats/EgammaReco/interface/BasicCluster.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
@@ -58,14 +63,33 @@ Implementation:
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "TFile.h"
 #include "TTree.h"
+#include "RecoEgamma/EgammaElectronAlgos/interface/ElectronHcalHelper.h"
+
+class TH1;
+
+namespace edm {
+  class ParameterSet;
+  class Event;
+  class EventSetup;
+}
 const int NbJets = 100;
 //
 // class decleration
 //
 class GsfCheckerTree : public edm::EDAnalyzer {
 
+private:
+  heep::EventHelper evtHelper_; //this is our magic class where all the nastyness is contained
+  heep::Event heepEvt_;
+
+  //the next three variables are simply for the example analysis
+  int nrPass_;
+  int nrFail_;
+  ElectronHcalHelper::Configuration hcalCfg;
+  ElectronHcalHelper *hcalHelper;
+
 public:
-  explicit GsfCheckerTree(const edm::ParameterSet&);
+  explicit GsfCheckerTree(const edm::ParameterSet& iConfig);
   ~GsfCheckerTree();
 
 private:
@@ -356,10 +380,15 @@ private:
   float *gsf_hovere;
   float *gsf_hdepth1overe;
   float *gsf_hdepth2overe;
+  float *gsf_hovere2012;
+  float *gsf_hdepth1overe2012;
+  float *gsf_hdepth2overe2012;
   float *gsf_trackiso;
   float *gsf_ecaliso;
   float *gsf_hcaliso1;
   float *gsf_hcaliso2;
+  float *gsf_hcaliso12012;
+  float *gsf_hcaliso22012;
   float *gsf_class;
   int *gsf_isecaldriven;
   int *gsf_istrackerdriven;
@@ -503,6 +532,6 @@ private:
   int prescale_HLT_DoublePhoton70;
   int prescale_HLT_DoublePhoton80;
 };
-
+#endif
 //define this as a plug-in
-DEFINE_FWK_MODULE(GsfCheckerTree);
+

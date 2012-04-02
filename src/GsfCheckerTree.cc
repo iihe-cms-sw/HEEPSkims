@@ -13,12 +13,19 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.20 2012/03/01 13:56:19 lathomas Exp $
+// $Id: GsfCheckerTree.cc,v 1.21 2012/03/02 15:26:19 treis Exp $
 //
 //Cleaning ladies : Thomas and Laurent
-
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "UserCode/HEEPSkims/interface/GsfCheckerTree.h"
-
+#include "DataFormats/RecoCandidate/interface/IsoDepositFwd.h"
+#include "DataFormats/RecoCandidate/interface/IsoDeposit.h"
+#include "SHarper/HEEPAnalyzer/interface/HEEPDebug.h"
+#include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
+#include "SHarper/HEEPAnalyzer/interface/HEEPEventHelper.h"
+#include "SHarper/HEEPAnalyzer/interface/HEEPEvent.h"
 #define PI 3.141592654
 #define TWOPI 6.283185308
 
@@ -56,8 +63,10 @@ etacorr(float eta, float pvz, float scz)
 }
 
 
-GsfCheckerTree::GsfCheckerTree(const edm::ParameterSet& iConfig)
+GsfCheckerTree::GsfCheckerTree(const edm::ParameterSet& iConfig):
+  evtHelper_(),heepEvt_(),nrPass_(0),nrFail_(0)
 {
+  evtHelper_.setup(iConfig);
   //now do what ever initialization is needed
   eventcounter = 0;
 
@@ -66,7 +75,21 @@ GsfCheckerTree::GsfCheckerTree(const edm::ParameterSet& iConfig)
   bJetPtMin_ = iConfig.getUntrackedParameter<double>("bJetPtMin", 10.);
   eleEtCut_ = iConfig.getUntrackedParameter<double>("electronEtCut", 0.);
   muPtCut_ = iConfig.getUntrackedParameter<double>("muonPtCut", 0.);
+
+  hcalCfg.hOverEConeSize = 0.15;
+  hcalCfg.useTowers = true;
+  hcalCfg.hcalTowers = edm::InputTag("towerMaker");
+  hcalCfg.hOverEPtMin = 0;
+
+  hcalHelper = new ElectronHcalHelper(hcalCfg);
+
+
 }
+
+
+
+
+
 
 
 GsfCheckerTree::~GsfCheckerTree()
@@ -80,6 +103,34 @@ GsfCheckerTree::~GsfCheckerTree()
 void
 GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
+
+
+//   //Test Laurent 
+//   evtHelper_.makeHeepEvent(iEvent,iSetup,heepEvt_);
+
+//   // std::cout <<"event pt hat "<<heepEvt_.genEventPtHat()<<std::endl;
+
+//   // std::cout <<"eh"<<std::endl;
+ 
+//   //do what ever you want
+//   //lets get the heep electrons and count the number that pass / fail cuts
+//   const std::vector<heep::Ele>& eles = heepEvt_.heepEles();
+//   for(size_t eleNr=0;eleNr<eles.size();eleNr++){
+//     if(eles[eleNr].cutCode()==0x0) nrPass_++;
+//     else nrFail_++;
+//   }
+//   cout << "nb fail "<< nrFail_ << endl; 
+//   //End test Laurent 
+
+  hcalHelper->checkSetup(iSetup);
+  hcalHelper->readEvent(iEvent);
+
+ 
+
+
+
+
+
   bool useGenData_ = !iEvent.isRealData(); 
   
   eventcounter++;
@@ -104,6 +155,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   int cntr = 0; 
   for(; gsfiterbis != gsfelectrons.end(); ++gsfiterbis) {
     cntr++; 
+
     if (cntr == 1) {
       gsfPtMax = gsfiterbis->caloEnergy()*sin(gsfiterbis->p4().theta());
     }
@@ -111,6 +163,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       gsfPtSecondMax = gsfiterbis->caloEnergy()*sin(gsfiterbis->p4().theta());
     }
   }
+  //Missing hits, Invariant Mass cut
 
   // Get MUONS
   edm::Handle<reco::MuonCollection> muonCollection;
@@ -132,10 +185,12 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
 
   // SKIMMING
-  if (!(gsfPtMax > eleEtCut_ && gsfPtSecondMax > eleEtCut_)
-      && !(gsfPtMax > eleEtCut_ && muonPtMax > muPtCut_)
-      && !(muonPtMax > muPtCut_ && muonPtSecondMax > muPtCut_)
-     ) return;
+//   if (!(gsfPtMax > eleEtCut_ && gsfPtSecondMax > eleEtCut_)
+//       && !(gsfPtMax > eleEtCut_ && muonPtMax > muPtCut_)
+//       && !(muonPtMax > muPtCut_ && muonPtSecondMax > muPtCut_)
+//      ) return;
+
+
 
   //rho variable
   rho = 0;
@@ -656,10 +711,15 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   gsf_hovere = new float [gsf_size];
   gsf_hdepth1overe = new float [gsf_size];
   gsf_hdepth2overe = new float [gsf_size];
+  gsf_hovere2012 = new float [gsf_size];
+  gsf_hdepth1overe2012 = new float [gsf_size];
+  gsf_hdepth2overe2012 = new float [gsf_size];
   gsf_trackiso = new float [gsf_size];
   gsf_ecaliso = new float [gsf_size];
   gsf_hcaliso1 = new float [gsf_size];
   gsf_hcaliso2 = new float [gsf_size];
+  gsf_hcaliso12012 = new float [gsf_size];
+  gsf_hcaliso22012 = new float [gsf_size];
   gsf_class = new float [gsf_size];
   gsf_isecaldriven = new int [gsf_size];
   gsf_istrackerdriven = new int [gsf_size];
@@ -762,10 +822,15 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   mytree->GetBranch("gsf_hovere")->SetAddress(gsf_hovere);
   mytree->GetBranch("gsf_hdepth1overe")->SetAddress(gsf_hdepth1overe);
   mytree->GetBranch("gsf_hdepth2overe")->SetAddress(gsf_hdepth2overe);
+  mytree->GetBranch("gsf_hovere2012")->SetAddress(gsf_hovere2012);
+  mytree->GetBranch("gsf_hdepth1overe2012")->SetAddress(gsf_hdepth1overe2012);
+  mytree->GetBranch("gsf_hdepth2overe2012")->SetAddress(gsf_hdepth2overe2012);
   mytree->GetBranch("gsf_trackiso")->SetAddress(gsf_trackiso);
   mytree->GetBranch("gsf_ecaliso")->SetAddress(gsf_ecaliso);
   mytree->GetBranch("gsf_hcaliso1")->SetAddress(gsf_hcaliso1);
   mytree->GetBranch("gsf_hcaliso2")->SetAddress(gsf_hcaliso2);
+  mytree->GetBranch("gsf_hcaliso12012")->SetAddress(gsf_hcaliso12012);
+  mytree->GetBranch("gsf_hcaliso22012")->SetAddress(gsf_hcaliso22012);
   mytree->GetBranch("gsf_class")->SetAddress(gsf_class);
   mytree->GetBranch("gsf_isecaldriven")->SetAddress(gsf_isecaldriven);
   mytree->GetBranch("gsf_istrackerdriven")->SetAddress(gsf_istrackerdriven);
@@ -823,6 +888,18 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       }
     }
 
+    //Adding the new H/E (2012) definition. See here : https://twiki.cern.ch/twiki/bin/viewauth/CMS/HoverE2012 
+    std::vector<CaloTowerDetId> hcalTowersBehindClusters = hcalHelper->hcalTowersBehindClusters(*(gsfiter->superCluster()));
+ 
+   
+    gsf_hdepth1overe2012[e] = hcalHelper->hcalESumDepth1BehindClusters(hcalTowersBehindClusters)/gsfiter->superCluster()->energy();
+    gsf_hdepth2overe2012[e] = hcalHelper->hcalESumDepth2BehindClusters(hcalTowersBehindClusters)/gsfiter->superCluster()->energy();
+    gsf_hovere2012[e] = gsf_hdepth1overe2012[e] + gsf_hdepth2overe2012[e] ; 
+    // The new H/E definition implies to also change the HCalIso definition 
+    gsf_hcaliso12012[e] = gsfiter->dr03HcalDepth1TowerSumEt() + ( gsfiter->hcalDepth1OverEcal()  - gsf_hdepth1overe2012[e] )*gsfiter->superCluster()->energy()/cosh(gsfiter->superCluster()->eta()); 
+    gsf_hcaliso22012[e] =  gsfiter->dr03HcalDepth2TowerSumEt() + ( gsfiter->hcalDepth2OverEcal()  - gsf_hdepth2overe2012[e] )*gsfiter->superCluster()->energy()/cosh(gsfiter->superCluster()->eta()); 
+
+
     //Fill the gsf related variables
     gsf_e[e] = gsfiter->energy();
     gsf_p[e] = gsfiter->p();
@@ -844,6 +921,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     gsf_ecaliso[e] = gsfiter->dr03EcalRecHitSumEt();
     gsf_hcaliso1[e] = gsfiter->dr03HcalDepth1TowerSumEt();
     gsf_hcaliso2[e] = gsfiter->dr03HcalDepth2TowerSumEt();
+
     gsf_charge[e] = gsfiter->charge();
     gsf_sigmaetaeta[e] = gsfiter->sigmaEtaEta();
     gsf_sigmaIetaIeta[e] = gsfiter->sigmaIetaIeta();
@@ -1055,10 +1133,15 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   delete [] gsf_hovere;
   delete [] gsf_hdepth1overe;
   delete [] gsf_hdepth2overe;
+  delete [] gsf_hovere2012;
+  delete [] gsf_hdepth1overe2012;
+  delete [] gsf_hdepth2overe2012;
   delete [] gsf_trackiso;
   delete [] gsf_ecaliso;
   delete [] gsf_hcaliso1;
   delete [] gsf_hcaliso2;
+  delete [] gsf_hcaliso12012;
+  delete [] gsf_hcaliso22012;											 		  
   delete [] gsf_class;
   delete [] gsf_isecaldriven;
   delete [] gsf_istrackerdriven;
@@ -1575,10 +1658,15 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gsf_hovere", gsf_hovere, "gsf_hovere[gsf_size]/F");
   mytree->Branch("gsf_hdepth1overe", gsf_hdepth1overe, "gsf_hdepth1overe[gsf_size]/F");
   mytree->Branch("gsf_hdepth2overe", gsf_hdepth2overe, "gsf_hdepth2overe[gsf_size]/F");
+  mytree->Branch("gsf_hovere2012", gsf_hovere2012, "gsf_hovere2012[gsf_size]/F");
+  mytree->Branch("gsf_hdepth1overe2012", gsf_hdepth1overe2012, "gsf_hdepth1overe2012[gsf_size]/F");
+  mytree->Branch("gsf_hdepth2overe2012", gsf_hdepth2overe2012, "gsf_hdepth2overe2012[gsf_size]/F");
   mytree->Branch("gsf_trackiso", gsf_trackiso, "gsf_trackiso[gsf_size]/F");
   mytree->Branch("gsf_ecaliso", gsf_ecaliso, "gsf_ecaliso[gsf_size]/F");
   mytree->Branch("gsf_hcaliso1", gsf_hcaliso1, "gsf_hcaliso1[gsf_size]/F");
   mytree->Branch("gsf_hcaliso2", gsf_hcaliso2, "gsf_hcaliso2[gsf_size]/F");
+  mytree->Branch("gsf_hcaliso12012", gsf_hcaliso12012, "gsf_hcaliso12012[gsf_size]/F");
+  mytree->Branch("gsf_hcaliso22012", gsf_hcaliso22012, "gsf_hcaliso22012[gsf_size]/F");
   mytree->Branch("gsf_class", gsf_class, "gsf_class[gsf_size]/F");
   mytree->Branch("gsf_isecaldriven", gsf_isecaldriven, "gsf_isecaldriven[gsf_size]/I");
   mytree->Branch("gsf_istrackerdriven", gsf_istrackerdriven, "gsf_istrackerdriven[gsf_size]/I");
@@ -2317,3 +2405,5 @@ GsfCheckerTree::BTagData(const edm::Event &event)
     }
   }
 } //END of BTagData
+
+DEFINE_FWK_MODULE(GsfCheckerTree);
