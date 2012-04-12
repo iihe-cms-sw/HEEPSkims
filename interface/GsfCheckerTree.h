@@ -16,7 +16,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.22 2012/03/02 15:26:19 treis Exp $
+// $Id: GsfCheckerTree.h,v 1.23 2012/04/02 12:28:44 lathomas Exp $
 //
 //
 
@@ -464,73 +464,68 @@ private:
   HLTConfigProvider hltConfig_;        // to get configuration for L1s/Pre
 
   //individual triggers
-  int HLT_Mu15;
-  int HLT_Mu30;
+  int HLT_Mu15_eta2p1;
+  int HLT_Mu24_eta2p1;
+  int HLT_Mu30_eta2p1;
   int HLT_Mu40_eta2p1;
-  int HLT_Mu15_Photon20_CaloIdL;
-  int HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
-  int HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
-
-  int HLT_Ele8;
-  int HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT;
+  int HLT_Mu50_eta2p1;
+  int HLT_Mu22_TkMu22;
+  int HLT_Mu22_Photon22_CaloIdL;
+  int HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
+  int HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
+  int HLT_Ele8_CaloIdL_CaloIsoVL;
+  int HLT_Ele27_CaloIdL_CaloIsoVL_TrkIdVL_TrkIsoVL;
   int HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL;
-  int HLT_Ele32_CaloIdL_CaloIsoVL_SC17;
-  int HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17;
+  int HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17_Mass50;
   int HLT_DoubleEle33_CaloIdL;
-  int HLT_DoubleEle33_CaloIdL_CaloIsoT;
+  int HLT_DoubleEle33_CaloIdL_GsfTrkIdVL;
   int HLT_DoubleEle33_CaloIdT;
-  int HLT_DoubleEle45_CaloIdL;
-
   int HLT_Photon20_CaloIdVL_IsoL;
   int HLT_Photon30_CaloIdVL;
   int HLT_Photon50_CaloIdVL;
   int HLT_Photon50_CaloIdVL_IsoL;
   int HLT_Photon75_CaloIdVL;
   int HLT_Photon90_CaloIdVL;
-  int HLT_Photon125;
   int HLT_Photon135;
-  int HLT_Photon200_NoHE;
-  int HLT_Photon225_NoHE;
+  int HLT_Photon150;
+  int HLT_Photon250_NoHE;
+  int HLT_Photon300_NoHE;
   int HLT_Photon26_Photon18;
   int HLT_Photon36_Photon22;
-  int HLT_DoublePhoton33;
-  int HLT_DoublePhoton60;
   int HLT_DoublePhoton70;
   int HLT_DoublePhoton80;
- 
-  int prescale_HLT_Mu15;
-  int prescale_HLT_Mu30;
+
+  int prescale_HLT_Mu15_eta2p1;
+  int prescale_HLT_Mu24_eta2p1;
+  int prescale_HLT_Mu30_eta2p1;
   int prescale_HLT_Mu40_eta2p1;
-  int prescale_HLT_Mu15_Photon20_CaloIdL;
-  int prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
-  int prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
-
-  int prescale_HLT_Ele8;
-  int prescale_HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT;
+  int prescale_HLT_Mu50_eta2p1;
+  int prescale_HLT_Mu22_TkMu22;
+  int prescale_HLT_Mu22_Photon22_CaloIdL;
+  int prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
+  int prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
+  int prescale_HLT_Ele8_CaloIdL_CaloIsoVL;
+  int prescale_HLT_Ele27_CaloIdL_CaloIsoVL_TrkIdVL_TrkIsoVL;
   int prescale_HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL;
-  int prescale_HLT_Ele32_CaloIdL_CaloIsoVL_SC17;
-  int prescale_HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17;
+  int prescale_HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17_Mass50;
   int prescale_HLT_DoubleEle33_CaloIdL;
-  int prescale_HLT_DoubleEle33_CaloIdL_CaloIsoT;
+  int prescale_HLT_DoubleEle33_CaloIdL_GsfTrkIdVL;
   int prescale_HLT_DoubleEle33_CaloIdT;
-  int prescale_HLT_DoubleEle45_CaloIdL;
-
   int prescale_HLT_Photon20_CaloIdVL_IsoL;
   int prescale_HLT_Photon30_CaloIdVL;
   int prescale_HLT_Photon50_CaloIdVL;
   int prescale_HLT_Photon50_CaloIdVL_IsoL;
   int prescale_HLT_Photon75_CaloIdVL;
   int prescale_HLT_Photon90_CaloIdVL;
-  int prescale_HLT_Photon125;
   int prescale_HLT_Photon135;
-  int prescale_HLT_Photon200_NoHE;
-  int prescale_HLT_Photon225_NoHE;
+  int prescale_HLT_Photon150;
+  int prescale_HLT_Photon250_NoHE;
+  int prescale_HLT_Photon300_NoHE;
   int prescale_HLT_Photon26_Photon18;
   int prescale_HLT_Photon36_Photon22;
-  int prescale_HLT_DoublePhoton33;
-  int prescale_HLT_DoublePhoton60;
   int prescale_HLT_DoublePhoton70;
   int prescale_HLT_DoublePhoton80;
+
 };
 #endif
 //define this as a plug-in
