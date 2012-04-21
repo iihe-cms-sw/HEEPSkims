@@ -16,7 +16,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.23 2012/04/02 12:28:44 lathomas Exp $
+// $Id: GsfCheckerTree.h,v 1.24 2012/04/12 10:17:47 treis Exp $
 //
 //
 
@@ -59,7 +59,7 @@ Implementation:
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
-
+#include "DataFormats/RecoCandidate/interface/IsoDeposit.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -91,6 +91,8 @@ private:
 public:
   explicit GsfCheckerTree(const edm::ParameterSet& iConfig);
   ~GsfCheckerTree();
+  typedef std::vector< edm::Handle< edm::ValueMap<reco::IsoDeposit> > > IsoDepositMaps;
+  typedef std::vector< edm::Handle< edm::ValueMap<double> > > IsoDepositVals;
 
 private:
   virtual void beginJob() ;
@@ -104,6 +106,13 @@ private:
   void METData(const edm::Event& iEvent);
   void JetData(const edm::Event& iEvent);
   void BTagData(const edm::Event& event);
+
+
+
+  std::vector<edm::InputTag> inputTagIsoDepElectrons_;
+  std::vector<edm::InputTag> inputTagIsoValElectronsNoPFId_;
+  std::vector<edm::InputTag> inputTagIsoValElectronsPFId_;   
+
 
   // ----------member data ---------------------------
 
@@ -383,6 +392,9 @@ private:
   float *gsf_hovere2012;
   float *gsf_hdepth1overe2012;
   float *gsf_hdepth2overe2012;
+  float *gsf_PFisocharged; 
+  float *gsf_PFisophoton;
+  float *gsf_PFisoneutral;
   float *gsf_trackiso;
   float *gsf_ecaliso;
   float *gsf_hcaliso1;

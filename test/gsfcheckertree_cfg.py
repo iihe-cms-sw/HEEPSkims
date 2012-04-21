@@ -10,8 +10,8 @@ process.load("RecoTracker.Configuration.RecoTracker_cff")
 
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 ##process.GlobalTag.globaltag = 'START42_V13::All'
-process.GlobalTag.globaltag = 'GR_R_42_V18::All'
-
+##process.GlobalTag.globaltag = 'GR_R_42_V18::All'
+process.GlobalTag.globaltag = 'START52_V8::All'
 readFiles = cms.untracked.vstring()
 secFiles = cms.untracked.vstring()
 process.load('FWCore.MessageService.MessageLogger_cfi')
@@ -19,7 +19,8 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.source = cms.Source("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
 
 readFiles.extend( [
-    'dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/lathomas/Photon/LaurentPhoton-Run2011BSkim2ElePt35/319d9d50ddc1c21c2a4623a85e06b6f6/output_77_2_49z.root'
+    'file:aodeventtest.root'
+##    'dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/lathomas/Photon/LaurentPhoton-Run2011BSkim2ElePt35/319d9d50ddc1c21c2a4623a85e06b6f6/output_77_2_49z.root'
 ##        '/store/data/Run2011A/DoubleMu/AOD/May10ReReco-v1/0000/06F51A88-807C-E011-AC86-001A92971ACE.root',
 ##        '/store/data/Run2011A/DoubleMu/AOD/May10ReReco-v1/0000/06CBB6AF-D28B-E011-B5EE-00248C0BE013.root',
 ##        '/store/data/Run2011A/DoubleMu/AOD/May10ReReco-v1/0000/0662A4B8-687C-E011-B2C4-003048678C3A.root',
@@ -111,9 +112,12 @@ process.kt6PFJets = process.kt4PFJets.clone( rParam = 0.6, doRhoFastjet = True )
 process.kt6PFJets.Rho_EtaMax = cms.double(2.5)
 
 
+from CommonTools.ParticleFlow.Tools.pfIsolation import setupPFElectronIso, setupPFMuonIso
+process.eleIsoSequence = setupPFElectronIso(process, 'gsfElectrons')
+process.muIsoSequence = setupPFMuonIso(process, 'muons')
 process.load("UserCode.HEEPSkims.gsfcheckertree_cfi")
 process.otherStuff = cms.Sequence( process.kt6PFJets )
 
 
-process.p1 = cms.Path(process.otherStuff   *process.noscraping * process.primaryVertexFilter * process.gsfcheckerjob) 
+process.p1 = cms.Path(process.otherStuff   *process.noscraping * process.primaryVertexFilter *  process.pfParticleSelectionSequence * process.eleIsoSequence *   process.muIsoSequence * process.gsfcheckerjob) 
 ##process.outpath = cms.EndPath(process.out)

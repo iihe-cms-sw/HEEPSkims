@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.23 2012/04/02 13:37:38 lathomas Exp $
+// $Id: GsfCheckerTree.cc,v 1.24 2012/04/12 10:17:44 treis Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -26,6 +26,9 @@ Implementation:
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 #include "SHarper/HEEPAnalyzer/interface/HEEPEventHelper.h"
 #include "SHarper/HEEPAnalyzer/interface/HEEPEvent.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
+#include "DataFormats/Common/interface/ValueMap.h"
 #define PI 3.141592654
 #define TWOPI 6.283185308
 
@@ -82,6 +85,9 @@ GsfCheckerTree::GsfCheckerTree(const edm::ParameterSet& iConfig):
   hcalCfg.hOverEPtMin = 0;
 
   hcalHelper = new ElectronHcalHelper(hcalCfg);
+  inputTagIsoDepElectrons_ = iConfig.getParameter< std::vector<edm::InputTag> >("IsoDepElectron");
+  inputTagIsoValElectronsPFId_   = iConfig.getParameter< std::vector<edm::InputTag> >("IsoValElectronPF");
+ 
 
 
 }
@@ -720,6 +726,9 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   gsf_hcaliso2 = new float [gsf_size];
   gsf_hcaliso12012 = new float [gsf_size];
   gsf_hcaliso22012 = new float [gsf_size];
+  gsf_PFisocharged = new float [gsf_size]; 
+  gsf_PFisophoton = new float [gsf_size];
+  gsf_PFisoneutral = new float [gsf_size];
   gsf_class = new float [gsf_size];
   gsf_isecaldriven = new int [gsf_size];
   gsf_istrackerdriven = new int [gsf_size];
@@ -831,6 +840,9 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   mytree->GetBranch("gsf_hcaliso2")->SetAddress(gsf_hcaliso2);
   mytree->GetBranch("gsf_hcaliso12012")->SetAddress(gsf_hcaliso12012);
   mytree->GetBranch("gsf_hcaliso22012")->SetAddress(gsf_hcaliso22012);
+  mytree->GetBranch("gsf_PFisocharged")->SetAddress(gsf_PFisocharged); 
+  mytree->GetBranch("gsf_PFisophoton")->SetAddress(gsf_PFisophoton) ;
+  mytree->GetBranch("gsf_PFisoneutral")->SetAddress(gsf_PFisoneutral);
   mytree->GetBranch("gsf_class")->SetAddress(gsf_class);
   mytree->GetBranch("gsf_isecaldriven")->SetAddress(gsf_isecaldriven);
   mytree->GetBranch("gsf_istrackerdriven")->SetAddress(gsf_istrackerdriven);
@@ -899,6 +911,28 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     gsf_hcaliso12012[e] = gsfiter->dr03HcalDepth1TowerSumEt() + ( gsfiter->hcalDepth1OverEcal()  - gsf_hdepth1overe2012[e] )*gsfiter->superCluster()->energy()/cosh(gsfiter->superCluster()->eta()); 
     gsf_hcaliso22012[e] =  gsfiter->dr03HcalDepth2TowerSumEt() + ( gsfiter->hcalDepth2OverEcal()  - gsf_hdepth2overe2012[e] )*gsfiter->superCluster()->energy()/cosh(gsfiter->superCluster()->eta()); 
 
+// get the iso deposits. 3 (charged hadrons, photons, neutral hadrons)
+  unsigned nTypes=3;
+  IsoDepositMaps electronIsoDep(nTypes);
+
+  for (size_t j = 0; j<inputTagIsoDepElectrons_.size(); ++j) {
+    iEvent.getByLabel(inputTagIsoDepElectrons_[j], electronIsoDep[j]);
+  }
+
+  IsoDepositVals electronIsoValPFId(nTypes);
+
+  // No longer needed. e/g recommendation (04/04/12)
+  //  IsoDepositVals electronIsoValNoPFId(nTypes);
+
+  for (size_t j = 0; j<inputTagIsoValElectronsPFId_.size(); ++j) {
+    iEvent.getByLabel(inputTagIsoValElectronsPFId_[j], electronIsoValPFId[j]);
+  }
+
+    const IsoDepositVals * electronIsoVals =  &electronIsoValPFId  ;
+    reco::GsfElectronRef myElectronRef(pGsfElectrons ,e);
+    gsf_PFisocharged[e] =  (*(*electronIsoVals)[0])[myElectronRef];
+    gsf_PFisophoton[e] =(*(*electronIsoVals)[1])[myElectronRef]  ;
+    gsf_PFisoneutral[e] = (*(*electronIsoVals)[2])[myElectronRef];
 
     //Fill the gsf related variables
     gsf_e[e] = gsfiter->energy();
@@ -1141,7 +1175,10 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   delete [] gsf_hcaliso1;
   delete [] gsf_hcaliso2;
   delete [] gsf_hcaliso12012;
-  delete [] gsf_hcaliso22012;											 		  
+  delete [] gsf_hcaliso22012;
+  delete [] gsf_PFisocharged; 
+  delete [] gsf_PFisophoton;
+  delete [] gsf_PFisoneutral;	  
   delete [] gsf_class;
   delete [] gsf_isecaldriven;
   delete [] gsf_istrackerdriven;
@@ -1663,6 +1700,9 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gsf_hcaliso2", gsf_hcaliso2, "gsf_hcaliso2[gsf_size]/F");
   mytree->Branch("gsf_hcaliso12012", gsf_hcaliso12012, "gsf_hcaliso12012[gsf_size]/F");
   mytree->Branch("gsf_hcaliso22012", gsf_hcaliso22012, "gsf_hcaliso22012[gsf_size]/F");
+  mytree->Branch("gsf_PFisocharged",gsf_PFisocharged,"gsf_PFisocharged[gsf_size]/F");
+  mytree->Branch("gsf_PFisophoton",gsf_PFisophoton,"gsf_PFisophoton[gsf_size]/F");
+  mytree->Branch("gsf_PFisoneutral",gsf_PFisoneutral,"gsf_PFisoneutral[gsf_size]/F");
   mytree->Branch("gsf_class", gsf_class, "gsf_class[gsf_size]/F");
   mytree->Branch("gsf_isecaldriven", gsf_isecaldriven, "gsf_isecaldriven[gsf_size]/I");
   mytree->Branch("gsf_istrackerdriven", gsf_istrackerdriven, "gsf_istrackerdriven[gsf_size]/I");
