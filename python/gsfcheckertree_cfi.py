@@ -6,7 +6,7 @@ gsfcheckerjob = cms.EDAnalyzer("GsfCheckerTree",
   heepEventPara,
   TriggerResultsTag = cms.InputTag("TriggerResults","","HLT"),
   #TriggerResultsTag = cms.InputTag("TriggerResults","","RECO"),
-  centerOfMassEnergy = cms.double(7000.),
+  centerOfMassEnergy = cms.double(8000.),
   bJetPtMin = cms.untracked.double(10.),
 
   # for skimming on 2ele, 1ele-1mu and 2mu
