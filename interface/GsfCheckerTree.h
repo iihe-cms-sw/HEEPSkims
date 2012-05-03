@@ -16,7 +16,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.24 2012/04/12 10:17:47 treis Exp $
+// $Id: GsfCheckerTree.h,v 1.25 2012/04/21 12:37:00 lathomas Exp $
 //
 //
 
@@ -121,8 +121,14 @@ private:
   double comEnergy_;
   double bJetPtMin_;
   // parameter for SKIMMING
-  double eleEtCut_;
-  double muPtCut_;
+  double ele1EtMin_;
+  double ele1EtMax_;
+  double ele2EtMin_;
+  double ele2EtMax_;
+  double mu1PtMin_;
+  double mu1PtMax_;
+  double mu2PtMin_;
+  double mu2PtMax_;
   // -------------------------------------------------
   
   TTree* mytree;

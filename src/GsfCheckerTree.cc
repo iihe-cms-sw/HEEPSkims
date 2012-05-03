@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.24 2012/04/12 10:17:44 treis Exp $
+// $Id: GsfCheckerTree.cc,v 1.25 2012/04/21 12:36:59 lathomas Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -76,8 +76,14 @@ GsfCheckerTree::GsfCheckerTree(const edm::ParameterSet& iConfig):
   hlTriggerResults_ = iConfig.getParameter<edm::InputTag>("TriggerResultsTag");
   comEnergy_ = iConfig.getParameter<double>("centerOfMassEnergy");
   bJetPtMin_ = iConfig.getUntrackedParameter<double>("bJetPtMin", 10.);
-  eleEtCut_ = iConfig.getUntrackedParameter<double>("electronEtCut", 0.);
-  muPtCut_ = iConfig.getUntrackedParameter<double>("muonPtCut", 0.);
+  ele1EtMin_ = iConfig.getUntrackedParameter<double>("electron1EtMin", 0.);
+  ele1EtMax_ = iConfig.getUntrackedParameter<double>("electron1EtMax", 1.E99);
+  ele2EtMin_ = iConfig.getUntrackedParameter<double>("electron2EtMin", 0.);
+  ele2EtMax_ = iConfig.getUntrackedParameter<double>("electron2EtMax", 1.E99);
+  mu1PtMin_ = iConfig.getUntrackedParameter<double>("muon1PtMin", 0.);
+  mu1PtMax_ = iConfig.getUntrackedParameter<double>("muon1PtMax", 1.E99);
+  mu2PtMin_ = iConfig.getUntrackedParameter<double>("muon2PtMin", 0.);
+  mu2PtMax_ = iConfig.getUntrackedParameter<double>("muon2PtMax", 1.E99);
 
   hcalCfg.hOverEConeSize = 0.15;
   hcalCfg.useTowers = true;
@@ -191,11 +197,11 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
 
   // SKIMMING
-  if (!(gsfPtMax > eleEtCut_ && gsfPtSecondMax > eleEtCut_)
-      && !(gsfPtMax > eleEtCut_ && muonPtMax > muPtCut_)
-      && !(muonPtMax > muPtCut_ && muonPtSecondMax > muPtCut_)
+  if (!(gsfPtMax > ele1EtMin_ && gsfPtSecondMax > ele2EtMin_)
+      && !(gsfPtMax > ele1EtMin_ && muonPtMax > mu1PtMin_)
+      && !(muonPtMax > mu1PtMin_ && muonPtSecondMax > mu2PtMin_)
      ) return;
-
+  if (gsfPtMax > ele1EtMax_ || gsfPtSecondMax > ele2EtMax_ || muonPtMax > mu1PtMax_ || muonPtSecondMax > mu2PtMax_) return;
 
 
   //rho variable
