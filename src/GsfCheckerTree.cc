@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.25 2012/04/21 12:36:59 lathomas Exp $
+// $Id: GsfCheckerTree.cc,v 1.26 2012/05/03 13:24:22 treis Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -46,18 +46,26 @@ gsfEtGreater(const reco::GsfElectron &gsf1,const reco::GsfElectron &gsf2)
 }
 
 bool 
-scEGreater(const reco::SuperCluster *sc1,const reco::SuperCluster *sc2) 
+scEtGreater(const reco::SuperCluster *sc1,const reco::SuperCluster *sc2) 
 {
-  return ((sc1->energy() + sc1->preshowerEnergy()) > (sc2->energy() + sc2->preshowerEnergy()));
+  return (((sc1->energy() + sc1->preshowerEnergy()) )/cosh((sc1)->eta()) >((sc2->energy() + sc2->preshowerEnergy()) )/cosh((sc2)->eta()) );
+	
 }
 
 
 bool 
-refScEGreater(reco::SuperClusterRef sc1,reco::SuperClusterRef sc2) 
+refScEtGreater(reco::SuperClusterRef sc1,reco::SuperClusterRef sc2) 
 {
-  return ((sc1->energy() + sc1->preshowerEnergy()) > (sc2->energy() + sc2->preshowerEnergy()));
+  return (((sc1->energy() + sc1->preshowerEnergy()) )/cosh((sc1)->eta()) >((sc2->energy() + sc2->preshowerEnergy()) )/cosh((sc2)->eta()));
+  
 }
 
+// bool 
+// MuonEtGreater(const reco::Muon *sc1,const reco::SuperCluster*sc2) 
+// {
+//   return (((sc1->energy() + sc1->preshowerEnergy()) )/cosh((*sc1)->eta()) >((sc2->energy() + sc2->preshowerEnergy()) )/cosh((*sc2)->eta()) );
+	
+// }
 
 float 
 etacorr(float eta, float pvz, float scz) 
@@ -75,7 +83,10 @@ GsfCheckerTree::GsfCheckerTree(const edm::ParameterSet& iConfig):
 
   hlTriggerResults_ = iConfig.getParameter<edm::InputTag>("TriggerResultsTag");
   comEnergy_ = iConfig.getParameter<double>("centerOfMassEnergy");
+  ScPtMin_ = iConfig.getUntrackedParameter<double>("ScPtMin", 10.);
   bJetPtMin_ = iConfig.getUntrackedParameter<double>("bJetPtMin", 10.);
+  GsfPtMin_ = iConfig.getUntrackedParameter<double>("GsfPtMin", 10.);
+  GsfTrackPtMin_= iConfig.getUntrackedParameter<double>("GsfTrackPtMin", 5.);
   ele1EtMin_ = iConfig.getUntrackedParameter<double>("electron1EtMin", 0.);
   ele1EtMax_ = iConfig.getUntrackedParameter<double>("electron1EtMax", 1.E99);
   ele2EtMin_ = iConfig.getUntrackedParameter<double>("electron2EtMin", 0.);
@@ -206,15 +217,15 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   //rho variable
   rho = 0;
-  rhoiso = 0;
+  //rhoiso = 0;
   edm::Handle<double> rho_;
-  edm::Handle<double> rhoiso_;
+  //edm::Handle<double> rhoiso_;
   bool isrho; 
-  bool isrhoiso;
+  //bool isrhoiso;
   isrho = iEvent.getByLabel(edm::InputTag("kt6PFJets:rho"),rho_);
-  isrhoiso =iEvent.getByLabel(edm::InputTag("kt6PFJetsIso:rho"),rhoiso_);
+  //isrhoiso =iEvent.getByLabel(edm::InputTag("kt6PFJetsIso:rho"),rhoiso_);
   if(isrho)   rho =*rho_;
-  if(isrhoiso) rhoiso =*rhoiso_;
+  //if(isrhoiso) rhoiso =*rhoiso_;
   //cout << "rho= " << rho << endl;
   //cout << "rhoiso= " << rhoiso << endl;
 
@@ -276,12 +287,13 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   L1TInfo(iEvent);
   HLTInfo(iEvent, iSetup);
-
+  //cout << "fine hltinfo" << endl;
   METData(iEvent);
-
+  //cout << "fine met" << endl; 
+  //OLDJetData(iEvent);
+  //cout << "fine jet" << endl; 
   JetData(iEvent);
-  BTagData(iEvent);
-
+  //cout << "fine bjet" << endl; 
   // get the beamspot from the Event:
   edm::Handle<reco::BeamSpot> theBeamSpot;
   iEvent.getByType(theBeamSpot);
@@ -317,7 +329,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   pvy = new float [pvsize];
   pvz = new float [pvsize];
   pv_isValid = new bool [pvsize];
-  pv_ndof = new float [pvsize];
+  pv_ndof = new int [pvsize];
   pv_nTracks = new int [pvsize];
   pv_normChi2 = new float [pvsize];
   pv_totTrackSize = new int [pvsize];
@@ -449,7 +461,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   mytree->GetBranch("muon_innerPosx")->SetAddress(muon_innerPosx);
   mytree->GetBranch("muon_innerPosy")->SetAddress(muon_innerPosy);
   mytree->GetBranch("muon_innerPosz")->SetAddress(muon_innerPosz);
-
+  //cout << "muons" << endl; 
   int index_mu = 0;
   //LOOP OVER MUONS
   for(reco::MuonCollection::const_iterator muIt = muons->begin(); muIt != muons->end(); ++muIt) {
@@ -544,19 +556,23 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   scsize = 0;
   
-  scsize = sclusters.size();
-  //cout << "scsize " << scsize << endl;
-  //cout << "refscsize " << refsclusters.size() << endl;
-  //sort all the refSC by energy
-  std::sort(refsclusters.begin(),refsclusters.end(),refScEGreater);
+  //scsize = sclusters.size();
 
-  for(std::vector<reco::SuperClusterRef>::const_iterator refsclustersiter = refsclusters.begin();refsclustersiter != refsclusters.end();refsclustersiter++) {
-
-  }
+  //cout << "sc" << endl;
+  //sort all the refSC by transverse energy
+  std::sort(refsclusters.begin(),refsclusters.end(),refScEtGreater);
  
-  //sort all the SC by energy
-  std::sort(sclusters.begin(),sclusters.end(),scEGreater);
+  
+  //sort all the SC by transverse energy
+  std::sort(sclusters.begin(),sclusters.end(),scEtGreater);
+  
+  std::vector<const reco::SuperCluster*>::const_iterator sciterforptcut=sclusters.begin();
 
+  for(; sciterforptcut!=sclusters.end(); ++sciterforptcut)
+  {
+    if( ((*sciterforptcut)->rawEnergy()+(*sciterforptcut)->preshowerEnergy())/cosh((*sciterforptcut)->eta())> ScPtMin_) scsize ++;
+  }
+  
   //scgsfmatched = new float [scsize];
   //scseedmatched = new float [scsize];
   scenergy = new float [scsize];
@@ -577,8 +593,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   mytree->GetBranch("scenergy")->SetAddress(scenergy);
   mytree->GetBranch("sceta")->SetAddress(sceta);
   mytree->GetBranch("scetacorr")->SetAddress(scetacorr);
-  mytree->GetBranch("sctheta")->SetAddress(sctheta);
-  mytree->GetBranch("scthetacorr")->SetAddress(scthetacorr);
+  //  mytree->GetBranch("sctheta")->SetAddress(sctheta);
+  // mytree->GetBranch("scthetacorr")->SetAddress(scthetacorr);
   mytree->GetBranch("scet")->SetAddress(scet);
   mytree->GetBranch("scphi")->SetAddress(scphi);
   mytree->GetBranch("scpx")->SetAddress(scpx);
@@ -593,6 +609,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   for(; sciter!=sclusters.end(); ++sciter)
   {
+    if( ((*sciter)->rawEnergy()+(*sciter)->preshowerEnergy())/cosh((*sciter)->eta())<= ScPtMin_) continue;
     sceta[counter] = (*sciter)->eta();
     scetacorr[counter] = etacorr( (*sciter)->eta(), pvz[0], (*sciter)->position().z() );
 
@@ -620,7 +637,14 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   iEvent.getByLabel("electronGsfTracks",gsfTracksH) ;
   const GsfTrackCollection *gsftracks = gsfTracksH.product();
 
-  gsftracksize = gsftracks->size();
+  gsftracksize = 0;
+  for(GsfTrackCollection::const_iterator gsftrackiterforptcut = gsftracks->begin(); 
+      gsftrackiterforptcut!=gsftracks->end();
+      ++gsftrackiterforptcut)
+  {
+    if(gsftrackiterforptcut->pt()<GsfTrackPtMin_) continue;
+    gsftracksize++;
+  } 
   //cout << "gsftracksize " <<gsftracksize << endl;
   gsftracketa = new float [gsftracksize];
   gsftrackphi = new float [gsftracksize];
@@ -642,6 +666,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       gsftrackiter!=gsftracks->end();
       ++gsftrackiter)
   {
+    if(gsftrackiter->pt()<GsfTrackPtMin_) continue;
     gsftracketa[v] = gsftrackiter->eta();
     gsftrackphi[v] = gsftrackiter->phi();  
     gsftrackp[v] = gsftrackiter->p();
@@ -659,11 +684,16 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   //To remove spikes (ECAL CLUSTER LAZY TOOLS)
   EcalClusterLazyTools lazytool(iEvent,iSetup,InputTag("reducedEcalRecHitsEB"),InputTag("reducedEcalRecHitsEE"));
 
-  gsf_size = gsfelectrons.size();
+  gsf_size = 0;
+  reco::GsfElectronCollection::const_iterator gsfiterforptcut = gsfelectrons.begin();
+  for(; gsfiterforptcut != gsfelectrons.end(); ++gsfiterforptcut) {
+    if( gsfiterforptcut->caloEnergy()*sin(gsfiterforptcut->p4().theta()) <GsfPtMin_ ) continue;
+    gsf_size++;
+  }
   //cout << "gsf_size " <<  gsf_size << endl;
 
-  gsf_isEB = new int [gsf_size];
-  gsf_isEE = new int [gsf_size];
+  gsf_isEB = new bool [gsf_size];
+  gsf_isEE = new bool [gsf_size];
   gsf_px = new float [gsf_size];
   gsf_py = new float [gsf_size];
   gsf_pz = new float [gsf_size];
@@ -736,8 +766,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   gsf_PFisophoton = new float [gsf_size];
   gsf_PFisoneutral = new float [gsf_size];
   gsf_class = new float [gsf_size];
-  gsf_isecaldriven = new int [gsf_size];
-  gsf_istrackerdriven = new int [gsf_size];
+  gsf_isecaldriven = new bool [gsf_size];
+  gsf_istrackerdriven = new bool [gsf_size];
   gsfsc_e = new float [gsf_size];
   gsfsc_pt = new float [gsf_size];
   gsfsc_eta = new float [gsf_size];
@@ -893,6 +923,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   int e=0;
   reco::GsfElectronCollection::const_iterator gsfiter = gsfelectrons.begin();
   for(; gsfiter != gsfelectrons.end(); ++gsfiter) {
+    if( gsfiter->caloEnergy()*sin(gsfiter->p4().theta()) <GsfPtMin_) continue;
     gsfsceta = gsfiter->superCluster()->eta();
     gsfscphi = gsfiter->superCluster()->phi();
     gsfscenergy = gsfiter->superCluster()->energy();
@@ -965,9 +996,9 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     gsf_charge[e] = gsfiter->charge();
     gsf_sigmaetaeta[e] = gsfiter->sigmaEtaEta();
     gsf_sigmaIetaIeta[e] = gsfiter->sigmaIetaIeta();
-    if(gsfiter->ecalDrivenSeed())  gsf_isecaldriven[e] = 1; 
+    if(gsfiter->ecalDrivenSeed())  gsf_isecaldriven[e] = true; 
     else{gsf_isecaldriven[e] = 0;}
-    if(gsfiter->trackerDrivenSeed()) gsf_istrackerdriven[e] = 1;
+    if(gsfiter->trackerDrivenSeed()) gsf_istrackerdriven[e] = true;
     else{gsf_istrackerdriven[e] = 0;}
     gsfsc_e[e] = gsfiter->superCluster()->rawEnergy()+gsfiter->superCluster()->preshowerEnergy();
     gsfsc_pt[e] = (gsfiter->superCluster()->rawEnergy()+gsfiter->superCluster()->preshowerEnergy())/cosh(gsfiter->superCluster()->eta());
@@ -1286,15 +1317,15 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   delete [] muon_innerPosy;
   delete [] muon_innerPosz;
 
-  delete [] jetAKT_eta;
-  delete [] jetAKT_pt;
-  delete [] jetAKT_phi;
-  delete [] jetAKT_em;
+//   delete [] jetAKT_eta;
+//   delete [] jetAKT_pt;
+//   delete [] jetAKT_phi;
+//   delete [] jetAKT_em;
 
-  delete [] bTagJet_et;
-  delete [] bTagJet_pt;
-  delete [] bTagJet_eta;
-  delete [] bTagJet_phi;
+//  delete [] Jet_em;
+  delete [] Jet_pt;
+  delete [] Jet_eta;
+  delete [] Jet_phi;
   delete [] tCHighEffBTags;
   delete [] tCHighPurBTags;
   delete [] jetProbBTags;
@@ -1430,20 +1461,21 @@ GsfCheckerTree::beginJob()
 
   //TRIGGERS
   mytree->Branch("hltCount",&hltCount,"hltCount/I");
-  mytree->Branch("L1trigger_size", &L1trigger_size, "L1trigger_size/I"); 
-  mytree->Branch("L1trigger_bool", L1trigger_bool, "L1trigger_bool[L1trigger_size]/I");
+  //mytree->Branch("L1trigger_size", &L1trigger_size, "L1trigger_size/I"); 
+  //mytree->Branch("L1trigger_bool", L1trigger_bool, "L1trigger_bool[L1trigger_size]/I");
   mytree->Branch("PhysDecl_bool", &PhysDecl_bool, "PhysDecl_bool/I");
-  mytree->Branch("HLTriggers", HLTriggers, "HLTriggers[hltCount]/I");
+
   mytree->Branch("nWasRun_",&nWasRun_,"nWasRun_/I");
   mytree->Branch("nAccept_",&nAccept_,"nAccept_/I");
   mytree->Branch("nErrors_",&nErrors_,"nErrors_/I");
-  mytree->Branch("hlWasRun_",&hlWasRun_,"hlWasRun_/I");
-  mytree->Branch("hlWasRunTab",hlWasRunTab,"hlWasRunTab[400]/I");
-  mytree->Branch("hlAccept_",&hlAccept_);
-  mytree->Branch("hlAcceptTab",hlAcceptTab,"hlAcceptTab[400]/I");
-  mytree->Branch("hlErrorTab",hlErrorTab,"hlErrorTab[200]/I");
-  mytree->Branch("hlNamesTab",&hlNamesTab,"hlNamesTab/C");
-  mytree->Branch("hlNames_",&hlNames_);
+  //mytree->Branch("hlWasRun_",&hlWasRun_,"hlWasRun_/I");
+  //mytree->Branch("hlWasRunTab",hlWasRunTab,"hlWasRunTab[400]/I");
+  //mytree->Branch("hlAccept_",&hlAccept_);
+  //mytree->Branch("hlAcceptTab",hlAcceptTab,"hlAcceptTab[400]/I");
+  //mytree->Branch("hlErrorTab",hlErrorTab,"hlErrorTab[200]/I");
+  //mytree->Branch("hlNamesTab",&hlNamesTab,"hlNamesTab/C");
+  // mytree->Branch("hlNames_",&hlNames_);
+  //mytree->Branch("HLTriggers", HLTriggers, "HLTriggers[hltCount]/I");
   mytree->Branch("HLT_Mu15_eta2p1",&HLT_Mu15_eta2p1,"HLT_Mu15_eta2p1/I");
   mytree->Branch("HLT_Mu24_eta2p1",&HLT_Mu24_eta2p1,"HLT_Mu24_eta2p1/I");
   mytree->Branch("HLT_Mu30_eta2p1",&HLT_Mu30_eta2p1,"HLT_Mu30_eta2p1/I");
@@ -1506,13 +1538,11 @@ GsfCheckerTree::beginJob()
 
   //GLOBAL PHYSICAL INFO 
   mytree->Branch("rho", &rho, "rho/F");
-  mytree->Branch("rhoiso", &rhoiso, "rhoiso/F");
+  //  mytree->Branch("rhoiso", &rhoiso, "rhoiso/F");
   mytree->Branch("calomet", &calomet, "calomet/F");
-  mytree->Branch("calomet_eta", &calomet_eta, "calomet_eta/F");
   mytree->Branch("calomet_phi", &calomet_phi, "calomet_phi/F");
   mytree->Branch("met", &met, "met/F");
   mytree->Branch("pfmet", &pfmet, "pfmet/F");
-  mytree->Branch("pfmet_eta", &pfmet_eta, "pfmet_eta/F");
   mytree->Branch("pfmet_phi", &pfmet_phi, "pfmet_phi/F");
   //Beam spot variables
   mytree->Branch("sigmaZ",&sigmaZ,"sigmaZ/F");
@@ -1527,18 +1557,19 @@ GsfCheckerTree::beginJob()
   mytree->Branch("pvy", pvy, "pvy[pvsize]/F");
   mytree->Branch("pvz", pvz, "pvz[pvsize]/F");
   mytree->Branch("pv_isValid", pv_isValid, "pv_isValid[pvsize]/O");
-  mytree->Branch("pv_ndof", pv_ndof, "pv_ndof[pvsize]/F");
+  mytree->Branch("pv_ndof", pv_ndof, "pv_ndof[pvsize]/I");
   mytree->Branch("pv_nTracks", pv_nTracks, "pv_nTracks[pvsize]/I");
   mytree->Branch("pv_normChi2", pv_normChi2, "pv_normChi2[pvsize]/F");
   mytree->Branch("pv_totTrackSize", pv_totTrackSize, "pv_totTrackSize[pvsize]/I"); 
  
   //AKT JETS 
-  mytree->Branch("jetAKT_size", &jetAKT_size, "jetAKT_size/I");
-  mytree->Branch("jetAKT_pt", jetAKT_pt, "jetAKT_pt[jetAKT_size]/F");
-  mytree->Branch("jetAKT_eta", jetAKT_eta, "jetAKT_eta[jetAKT_size]/F");
-  mytree->Branch("jetAKT_phi", jetAKT_phi, "jetAKT_phi[jetAKT_size]/F");
-  mytree->Branch("jetAKT_em", jetAKT_em, "jetAKT_em[jetAKT_size]/F");
-  mytree->Branch("nJetsAKT_pt15", &nJetsAKT_pt15, "nJetsAKT_pt15/I");
+//   mytree->Branch("jetAKT_size", &jetAKT_size, "jetAKT_size/I");
+//   mytree->Branch("jetAKT_pt", jetAKT_pt, "jetAKT_pt[jetAKT_size]/F");
+//   mytree->Branch("jetAKT_eta", jetAKT_eta, "jetAKT_eta[jetAKT_size]/F");
+//   mytree->Branch("jetAKT_phi", jetAKT_phi, "jetAKT_phi[jetAKT_size]/F");
+//   mytree->Branch("jetAKT_em", jetAKT_em, "jetAKT_em[jetAKT_size]/F");
+//   mytree->Branch("nJetsAKT_pt15", &nJetsAKT_pt15, "nJetsAKT_pt15/I");
+
   //IC5
   //  mytree->Branch("jetIC5_size", &jetIC5_size, "jetIC5_size/I");
   //   mytree->Branch("jetIC5_pt", jetIC5_pt, "jetIC5_pt[jetIC5_size]/F");
@@ -1547,25 +1578,25 @@ GsfCheckerTree::beginJob()
   //   mytree->Branch("jetIC5_em", jetIC5_em, "jetIC5_em[jetIC5_size]/F");
  
   //BTAG
-  mytree->Branch("bTagJetColl_size", &bTagJetColl_size, "bTagJetColl_size/I");
-  mytree->Branch("bTagJet_et", bTagJet_et, "bTagJet_et[bTagJetColl_size]/F");
-  mytree->Branch("bTagJet_pt", bTagJet_pt, "bTagJet_pt[bTagJetColl_size]/F");
-  mytree->Branch("bTagJet_eta", bTagJet_eta, "bTagJet_eta[bTagJetColl_size]/F");
-  mytree->Branch("bTagJet_phi", bTagJet_phi, "bTagJet_phi[bTagJetColl_size]/F");
-  mytree->Branch("tCHighEffBTags", tCHighEffBTags, "tCHighEffBTags[bTagJetColl_size]/F");
-  mytree->Branch("tCHighPurBTags", tCHighPurBTags, "tCHighPurBTags[bTagJetColl_size]/F");
-  mytree->Branch("jetProbBTags", jetProbBTags, "jetProbBTags[bTagJetColl_size]/F");
-  mytree->Branch("jetBProbBTags", jetBProbBTags, "jetBProbBTags[bTagJetColl_size]/F");
-  mytree->Branch("sSecVertHighEffBTags", sSecVertHighEffBTags, "sSecVertHighEffBTags[bTagJetColl_size]/F");
-  mytree->Branch("sSecVertHighPurBTags", sSecVertHighPurBTags, "sSecVertHighPurBTags[bTagJetColl_size]/F");
-  mytree->Branch("cSecVertBTags", cSecVertBTags, "cSecVertBTags[bTagJetColl_size]/F");
-  mytree->Branch("cSecVertMVABTags", cSecVertMVABTags, "cSecVertMVABTags[bTagJetColl_size]/F");
-  mytree->Branch("ghostTrkBTags", ghostTrkBTags, "ghostTrkBTags[bTagJetColl_size]/F");
-  mytree->Branch("softEleIP3dBTags", softEleIP3dBTags, "softEleIP3dBTags[bTagJetColl_size]/F");
-  mytree->Branch("softElePtBTags", softElePtBTags, "softElePtBTags[bTagJetColl_size]/F");
-  mytree->Branch("softMuBTags", softMuBTags, "softMuBTags[bTagJetColl_size]/F");
-  mytree->Branch("softMuIP3dBTags", softMuIP3dBTags, "softMuIP3dBTags[bTagJetColl_size]/F");
-  mytree->Branch("softMuPtBTags", softMuPtBTags, "softMuPtBTags[bTagJetColl_size]/F");
+  mytree->Branch("JetColl_size", &JetColl_size, "JetColl_size/I");
+  mytree->Branch("Jet_pt", Jet_pt, "Jet_pt[JetColl_size]/F");
+  mytree->Branch("Jet_eta", Jet_eta, "Jet_eta[JetColl_size]/F");
+  mytree->Branch("Jet_phi", Jet_phi, "Jet_phi[JetColl_size]/F");
+  //  mytree->Branch("Jet_em", Jet_em, "Jet_em[JetColl_size]/F");
+  mytree->Branch("tCHighEffBTags", tCHighEffBTags, "tCHighEffBTags[JetColl_size]/F");
+  mytree->Branch("tCHighPurBTags", tCHighPurBTags, "tCHighPurBTags[JetColl_size]/F");
+  mytree->Branch("jetProbBTags", jetProbBTags, "jetProbBTags[JetColl_size]/F");
+  mytree->Branch("jetBProbBTags", jetBProbBTags, "jetBProbBTags[JetColl_size]/F");
+  mytree->Branch("sSecVertHighEffBTags", sSecVertHighEffBTags, "sSecVertHighEffBTags[JetColl_size]/F");
+  mytree->Branch("sSecVertHighPurBTags", sSecVertHighPurBTags, "sSecVertHighPurBTags[JetColl_size]/F");
+  mytree->Branch("cSecVertBTags", cSecVertBTags, "cSecVertBTags[JetColl_size]/F");
+  mytree->Branch("cSecVertMVABTags", cSecVertMVABTags, "cSecVertMVABTags[JetColl_size]/F");
+  mytree->Branch("ghostTrkBTags", ghostTrkBTags, "ghostTrkBTags[JetColl_size]/F");
+  mytree->Branch("softEleIP3dBTags", softEleIP3dBTags, "softEleIP3dBTags[JetColl_size]/F");
+  mytree->Branch("softElePtBTags", softElePtBTags, "softElePtBTags[JetColl_size]/F");
+  mytree->Branch("softMuBTags", softMuBTags, "softMuBTags[JetColl_size]/F");
+  mytree->Branch("softMuIP3dBTags", softMuIP3dBTags, "softMuIP3dBTags[JetColl_size]/F");
+  mytree->Branch("softMuPtBTags", softMuPtBTags, "softMuPtBTags[JetColl_size]/F");
   
 
   //MUONS
@@ -1628,8 +1659,8 @@ GsfCheckerTree::beginJob()
   mytree->Branch("scenergy",scenergy,"scenergy[scsize]/F");
   mytree->Branch("sceta",sceta,"sceta[scsize]/F");
   mytree->Branch("scetacorr",scetacorr,"scetacorr[scsize]/F");
-  mytree->Branch("sctheta",sctheta,"sctheta[scsize]/F");
-  mytree->Branch("scthetacorr",scthetacorr,"scthetacorr[scsize]/F");
+  //  mytree->Branch("sctheta",sctheta,"sctheta[scsize]/F");
+  //mytree->Branch("scthetacorr",scthetacorr,"scthetacorr[scsize]/F");
   mytree->Branch("scet",scet,"scet[scsize]/F");
   mytree->Branch("scphi",scphi,"scphi[scsize]/F");
   mytree->Branch("scpx",scpx,"scpx[scsize]/F");
@@ -1642,8 +1673,8 @@ GsfCheckerTree::beginJob()
 
   //GSF VARIABLES
   mytree->Branch("gsf_size",&gsf_size, "gsf_size/I");
-  mytree->Branch("gsf_isEB", gsf_isEB, "gsf_isEB[gsf_size]/I");
-  mytree->Branch("gsf_isEE", gsf_isEE, "gsf_isEE[gsf_size]/I");
+  mytree->Branch("gsf_isEB", gsf_isEB, "gsf_isEB[gsf_size]/O");
+  mytree->Branch("gsf_isEE", gsf_isEE, "gsf_isEE[gsf_size]/O");
   mytree->Branch("gsf_px", gsf_px, "gsf_px[gsf_size]/F");
   mytree->Branch("gsf_py", gsf_py, "gsf_py[gsf_size]/F");
   mytree->Branch("gsf_pz", gsf_pz, "gsf_pz[gsf_size]/F");
@@ -1710,8 +1741,8 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gsf_PFisophoton",gsf_PFisophoton,"gsf_PFisophoton[gsf_size]/F");
   mytree->Branch("gsf_PFisoneutral",gsf_PFisoneutral,"gsf_PFisoneutral[gsf_size]/F");
   mytree->Branch("gsf_class", gsf_class, "gsf_class[gsf_size]/F");
-  mytree->Branch("gsf_isecaldriven", gsf_isecaldriven, "gsf_isecaldriven[gsf_size]/I");
-  mytree->Branch("gsf_istrackerdriven", gsf_istrackerdriven, "gsf_istrackerdriven[gsf_size]/I");
+  mytree->Branch("gsf_isecaldriven", gsf_isecaldriven, "gsf_isecaldriven[gsf_size]/O");
+  mytree->Branch("gsf_istrackerdriven", gsf_istrackerdriven, "gsf_istrackerdriven[gsf_size]/O");
   mytree->Branch("gsfsc_e", gsfsc_e, "gsfsc_e[gsf_size]/F");
   mytree->Branch("gsfsc_pt", gsfsc_pt, "gsfsc_pt[gsf_size]/F");
   mytree->Branch("gsfsc_eta", gsfsc_eta, "gsfsc_eta[gsf_size]/F");
@@ -1763,42 +1794,42 @@ GsfCheckerTree::beginJob()
   mytree->Branch("genparticles_size", &genparticles_size, "genparticles_size/I");
   //GEN INFO FOR ELE and POSI (after FSR)
   
-  mytree->Branch("genele_e", genele_e, "genele_e[genparticles_size]/D");
-  mytree->Branch("genele_eta", genele_eta, "genele_eta[genparticles_size]/D");
-  mytree->Branch("genele_phi", genele_phi, "genele_phi[genparticles_size]/D");
-  mytree->Branch("genele_pt", genele_pt, "genele_pt[genparticles_size]/D");
-  mytree->Branch("genele_px", genele_px, "genele_px[genparticles_size]/D");
-  mytree->Branch("genele_py", genele_py, "genele_py[genparticles_size]/D");
-  mytree->Branch("genele_pz", genele_pz, "genele_pz[genparticles_size]/D");
+  mytree->Branch("genele_e", genele_e, "genele_e[genparticles_size]/F");
+  mytree->Branch("genele_eta", genele_eta, "genele_eta[genparticles_size]/F");
+  mytree->Branch("genele_phi", genele_phi, "genele_phi[genparticles_size]/F");
+  mytree->Branch("genele_pt", genele_pt, "genele_pt[genparticles_size]/F");
+  mytree->Branch("genele_px", genele_px, "genele_px[genparticles_size]/F");
+  mytree->Branch("genele_py", genele_py, "genele_py[genparticles_size]/F");
+  mytree->Branch("genele_pz", genele_pz, "genele_pz[genparticles_size]/F");
   mytree->Branch("genele_charge", genele_charge, "genele_charge[genparticles_size]/I");
   
   //generated variables for the tree (before FSR)   
-  mytree->Branch("unstableGenEle_e", unstableGenEle_e, "unstableGenEle_e[genparticles_size]/D");
-  mytree->Branch("unstableGenEle_eta", unstableGenEle_eta, "unstableGenEle_eta[genparticles_size]/D");
-  mytree->Branch("unstableGenEle_phi", unstableGenEle_phi, "unstableGenEle_phi[genparticles_size]/D");
-  mytree->Branch("unstableGenEle_pt", unstableGenEle_pt, "unstableGenEle_pt[genparticles_size]/D");
-  mytree->Branch("unstableGenEle_px", unstableGenEle_px, "unstableGenEle_px[genparticles_size]/D");
-  mytree->Branch("unstableGenEle_py", unstableGenEle_py, "unstableGenEle_py[genparticles_size]/D");
-  mytree->Branch("unstableGenEle_pz", unstableGenEle_pz, "unstableGenEle_pz[genparticles_size]/D");
+  mytree->Branch("unstableGenEle_e", unstableGenEle_e, "unstableGenEle_e[genparticles_size]/F");
+  mytree->Branch("unstableGenEle_eta", unstableGenEle_eta, "unstableGenEle_eta[genparticles_size]/F");
+  mytree->Branch("unstableGenEle_phi", unstableGenEle_phi, "unstableGenEle_phi[genparticles_size]/F");
+  mytree->Branch("unstableGenEle_pt", unstableGenEle_pt, "unstableGenEle_pt[genparticles_size]/F");
+  mytree->Branch("unstableGenEle_px", unstableGenEle_px, "unstableGenEle_px[genparticles_size]/F");
+  mytree->Branch("unstableGenEle_py", unstableGenEle_py, "unstableGenEle_py[genparticles_size]/F");
+  mytree->Branch("unstableGenEle_pz", unstableGenEle_pz, "unstableGenEle_pz[genparticles_size]/F");
   mytree->Branch("unstableGenEle_charge", unstableGenEle_charge, "unstableGenEle_charge[genparticles_size]/I");
   
   //generated variables for the tree (Z variables)
-  mytree->Branch("genelemom_e", genelemom_e, "genelemom_e[genparticles_size]/D");
-  mytree->Branch("genelemom_eta", genelemom_eta, "genelemom_eta[genparticles_size]/D");
-  mytree->Branch("genelemom_phi", genelemom_phi, "genelemom_phi[genparticles_size]/D");
-  mytree->Branch("genelemom_pt", genelemom_pt, "genelemom_pt[genparticles_size]/D");
-  mytree->Branch("genelemom_px", genelemom_px, "genelemom_px[genparticles_size]/D");
-  mytree->Branch("genelemom_py", genelemom_py, "genelemom_py[genparticles_size]/D");
-  mytree->Branch("genelemom_pz", genelemom_pz, "genelemom_pz[genparticles_size]/D");
+  mytree->Branch("genelemom_e", genelemom_e, "genelemom_e[genparticles_size]/F");
+  mytree->Branch("genelemom_eta", genelemom_eta, "genelemom_eta[genparticles_size]/F");
+  mytree->Branch("genelemom_phi", genelemom_phi, "genelemom_phi[genparticles_size]/F");
+  mytree->Branch("genelemom_pt", genelemom_pt, "genelemom_pt[genparticles_size]/F");
+  mytree->Branch("genelemom_px", genelemom_px, "genelemom_px[genparticles_size]/F");
+  mytree->Branch("genelemom_py", genelemom_py, "genelemom_py[genparticles_size]/F");
+  mytree->Branch("genelemom_pz", genelemom_pz, "genelemom_pz[genparticles_size]/F");
   mytree->Branch("genelemom_charge", genelemom_charge, "genelemom_charge[genparticles_size]/I");
   mytree->Branch("genelemom_pdgid", genelemom_pdgid, "genelemom_pdgid[genparticles_size]/I");
-  mytree->Branch("genelemom_mass", genelemom_mass, "genelemom_mass[genparticles_size]/D");
+  mytree->Branch("genelemom_mass", genelemom_mass, "genelemom_mass[genparticles_size]/F");
   
   //x1 and x2
   mytree->Branch("x1quark", x1quark, "x1quark[genparticles_size]/F");
   mytree->Branch("x2quark", x2quark, "x2quark[genparticles_size]/F");
 
-  mytree->Branch("trueNVtx", &trueNVtx, "trueNVtx/F");
+  mytree->Branch("trueNVtx", &trueNVtx, "trueNVtx/I");
   mytree->Branch("nVtxBefore", &nVtxBefore, "nVtxBefore/I");
   mytree->Branch("nVtxNow", &nVtxNow, "nVtxNow/I");
   mytree->Branch("nVtxAfter", &nVtxAfter, "nVtxAfter/I");
@@ -1820,31 +1851,31 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
 
   genparticles_size = genParticles->size();
 
-  genele_e = new double [genparticles_size];
-  genele_pt = new double [genparticles_size];
-  genele_px = new double [genparticles_size];
-  genele_py = new double [genparticles_size];
-  genele_pz = new double [genparticles_size];
-  genele_eta = new double [genparticles_size];
-  genele_phi = new double [genparticles_size];
+  genele_e = new float [genparticles_size];
+  genele_pt = new float [genparticles_size];
+  genele_px = new float [genparticles_size];
+  genele_py = new float [genparticles_size];
+  genele_pz = new float [genparticles_size];
+  genele_eta = new float [genparticles_size];
+  genele_phi = new float [genparticles_size];
   genele_charge = new int [genparticles_size];
-  unstableGenEle_e = new double [genparticles_size];
-  unstableGenEle_pt = new double [genparticles_size];
-  unstableGenEle_px = new double [genparticles_size];
-  unstableGenEle_py = new double [genparticles_size];
-  unstableGenEle_pz = new double [genparticles_size];
-  unstableGenEle_eta = new double [genparticles_size];
-  unstableGenEle_phi = new double [genparticles_size];
+  unstableGenEle_e = new float [genparticles_size];
+  unstableGenEle_pt = new float [genparticles_size];
+  unstableGenEle_px = new float [genparticles_size];
+  unstableGenEle_py = new float [genparticles_size];
+  unstableGenEle_pz = new float [genparticles_size];
+  unstableGenEle_eta = new float [genparticles_size];
+  unstableGenEle_phi = new float [genparticles_size];
   unstableGenEle_charge = new int [genparticles_size];
-  genelemom_e = new double [genparticles_size];
-  genelemom_pt = new double [genparticles_size];
-  genelemom_px = new double [genparticles_size];
-  genelemom_py = new double [genparticles_size];
-  genelemom_pz = new double [genparticles_size];
-  genelemom_eta = new double [genparticles_size];
-  genelemom_phi = new double [genparticles_size];
+  genelemom_e = new float [genparticles_size];
+  genelemom_pt = new float [genparticles_size];
+  genelemom_px = new float [genparticles_size];
+  genelemom_py = new float [genparticles_size];
+  genelemom_pz = new float [genparticles_size];
+  genelemom_eta = new float [genparticles_size];
+  genelemom_phi = new float [genparticles_size];
   genelemom_charge = new int [genparticles_size];
-  genelemom_mass = new double [genparticles_size];
+  genelemom_mass = new float [genparticles_size];
   genelemom_pdgid = new int [genparticles_size];
   x1quark = new float [genparticles_size];
   x2quark = new float [genparticles_size];
@@ -1945,7 +1976,7 @@ GsfCheckerTree::L1TInfo(const edm::Event &iEvent)
   //cout << "L1trigger_size " << L1trigger_size << endl;
 
   L1trigger_bool = new int [L1trigger_size];
-  mytree->GetBranch("L1trigger_bool")->SetAddress(L1trigger_bool);
+  //  mytree->GetBranch("L1trigger_bool")->SetAddress(L1trigger_bool);
 
   for (unsigned int i = 0; i < technicalTriggerWordBeforeMask.size(); ++i) {
     bool bit = technicalTriggerWordBeforeMask.at(i);
@@ -2034,7 +2065,7 @@ GsfCheckerTree::HLTInfo(const edm::Event &iEvent, const edm::EventSetup& iSetup)
   if (HLTR.isValid()) {
     hltCount = HLTR->size();
     HLTriggers = new int [hltCount];
-    mytree->GetBranch("HLTriggers")->SetAddress(HLTriggers);
+    //mytree->GetBranch("HLTriggers")->SetAddress(HLTriggers);
     for (int i = 0; i < hltCount; ++i) HLTriggers[i]  = -10;
 
     for(int i = 0; i < hltCount; ++i) {
@@ -2176,6 +2207,7 @@ GsfCheckerTree::HLTInfo(const edm::Event &iEvent, const edm::EventSetup& iSetup)
       HLTR->accept(i) ? HLT_DoublePhoton80 = 1 : HLT_DoublePhoton80 = 0;
       prescale_HLT_DoublePhoton80 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
     }
+    
   }
 
   for (unsigned int i = 0; i != n; ++i) {
@@ -2203,6 +2235,7 @@ GsfCheckerTree::HLTInfo(const edm::Event &iEvent, const edm::EventSetup& iSetup)
       if (index > posPre_[i]) hltPre_[i]++;
     }
   }
+  
 } // END of HLTInfo
 
 //
@@ -2210,11 +2243,9 @@ void
 GsfCheckerTree::METData(const edm::Event &iEvent)
 {
   calomet = -1.;
-  calomet_eta = -1000.; 
   calomet_phi = -1000.;
   met = -1.;
   pfmet = -1.;
-  pfmet_eta = -1000.; 
   pfmet_phi = -1000.;
 
   edm::Handle<CaloMETCollection> pCaloMET;
@@ -2233,7 +2264,6 @@ GsfCheckerTree::METData(const edm::Event &iEvent)
   if (calometisvalid) {
     for (CaloMETCollection::const_iterator calometiter = caloMET->begin(); calometiter != caloMET->end(); ++calometiter) {
       calomet = calometiter->et();
-      calomet_eta = calometiter->eta(); 
       calomet_phi = calometiter->phi();
     }
   }  
@@ -2247,7 +2277,6 @@ GsfCheckerTree::METData(const edm::Event &iEvent)
   if (pfmetisvalid) {
     for(PFMETCollection::const_iterator pfmetiter = PFMET->begin(); pfmetiter != PFMET->end(); ++pfmetiter) {
       pfmet = pfmetiter->et();  
-      pfmet_eta = pfmetiter->eta(); 
       pfmet_phi = pfmetiter->phi();
     }
   } 
@@ -2255,7 +2284,7 @@ GsfCheckerTree::METData(const edm::Event &iEvent)
 
 //
 void
-GsfCheckerTree::JetData(const edm::Event &iEvent)
+GsfCheckerTree::OLDJetData(const edm::Event &iEvent)
 {
   //IC5
   //  nJetsIC5_pt15 = -1;
@@ -2331,7 +2360,7 @@ GsfCheckerTree::JetData(const edm::Event &iEvent)
 
 //
 void
-GsfCheckerTree::BTagData(const edm::Event &event)
+GsfCheckerTree::JetData(const edm::Event &event)
 {
   edm::Handle<reco::JetTagCollection> tCHighEffBTagHandle;
   event.getByLabel("trackCountingHighEffBJetTags", tCHighEffBTagHandle);
@@ -2377,28 +2406,37 @@ GsfCheckerTree::BTagData(const edm::Event &event)
   const reco::JetTagCollection &softMuPtBTag = *(softMuPtBTagHandle.product());
   //cout << "tCHighEffBTag.size() " << tCHighEffBTag.size() << endl;
 
-  bTagJet_et = new float [tCHighEffBTag.size()];
-  bTagJet_pt = new float [tCHighEffBTag.size()];
-  bTagJet_eta = new float [tCHighEffBTag.size()];
-  bTagJet_phi = new float [tCHighEffBTag.size()];
-  tCHighEffBTags = new float [tCHighEffBTag.size()];
-  tCHighPurBTags = new float [tCHighEffBTag.size()];
-  jetProbBTags = new float [tCHighEffBTag.size()];
-  jetBProbBTags = new float [tCHighEffBTag.size()];
-  sSecVertHighEffBTags = new float [tCHighEffBTag.size()];
-  sSecVertHighPurBTags = new float [tCHighEffBTag.size()];
-  cSecVertBTags = new float [tCHighEffBTag.size()];
-  cSecVertMVABTags = new float [tCHighEffBTag.size()];
-  ghostTrkBTags = new float [tCHighEffBTag.size()];
-  softEleIP3dBTags = new float [tCHighEffBTag.size()];
-  softElePtBTags = new float [tCHighEffBTag.size()];
-  softMuBTags = new float [tCHighEffBTag.size()];
-  softMuIP3dBTags = new float [tCHighEffBTag.size()];
-  softMuPtBTags = new float [tCHighEffBTag.size()];
-  mytree->GetBranch("bTagJet_et")->SetAddress(bTagJet_et);
-  mytree->GetBranch("bTagJet_pt")->SetAddress(bTagJet_pt);
-  mytree->GetBranch("bTagJet_eta")->SetAddress(bTagJet_eta);
-  mytree->GetBranch("bTagJet_phi")->SetAddress(bTagJet_phi);
+  
+  JetColl_size = 0;
+  for (unsigned int i = 0; i < tCHighEffBTag.size(); ++i) {
+    if (tCHighEffBTag[i].first->pt() > bJetPtMin_ && fabs(tCHighEffBTag[i].first->eta()) < 3.) {
+      JetColl_size++;
+    }
+  }
+  
+
+  Jet_pt = new float [JetColl_size];
+  Jet_eta = new float [JetColl_size];
+  Jet_phi = new float [JetColl_size];
+  //  Jet_em = new float [JetColl_size];
+  tCHighEffBTags = new float [JetColl_size];
+  tCHighPurBTags = new float [JetColl_size];
+  jetProbBTags = new float [JetColl_size];
+  jetBProbBTags = new float [JetColl_size];
+  sSecVertHighEffBTags = new float [JetColl_size];
+  sSecVertHighPurBTags = new float [JetColl_size];
+  cSecVertBTags = new float [JetColl_size];
+  cSecVertMVABTags = new float [JetColl_size];
+  ghostTrkBTags = new float [JetColl_size];
+  softEleIP3dBTags = new float [JetColl_size];
+  softElePtBTags = new float [JetColl_size];
+  softMuBTags = new float [JetColl_size];
+  softMuIP3dBTags = new float [JetColl_size];
+  softMuPtBTags = new float [JetColl_size];
+  //  mytree->GetBranch("Jet_em")->SetAddress(Jet_em);
+  mytree->GetBranch("Jet_pt")->SetAddress(Jet_pt);
+  mytree->GetBranch("Jet_eta")->SetAddress(Jet_eta);
+  mytree->GetBranch("Jet_phi")->SetAddress(Jet_phi);
   mytree->GetBranch("tCHighEffBTags")->SetAddress(tCHighEffBTags);
   mytree->GetBranch("tCHighPurBTags")->SetAddress(tCHighPurBTags);
   mytree->GetBranch("jetProbBTags")->SetAddress(jetProbBTags);
@@ -2414,30 +2452,30 @@ GsfCheckerTree::BTagData(const edm::Event &event)
   mytree->GetBranch("softMuIP3dBTags")->SetAddress(softMuIP3dBTags);
   mytree->GetBranch("softMuPtBTags")->SetAddress(softMuPtBTags);
 
-  bTagJetColl_size = 0;
+  int btagiter = 0; 
   for (unsigned int i = 0; i < tCHighEffBTag.size(); ++i) {
     if (tCHighEffBTag[i].first->pt() > bJetPtMin_ && fabs(tCHighEffBTag[i].first->eta()) < 3.) {
-      bTagJet_et[bTagJetColl_size] = tCHighEffBTag[i].first->et();
-      bTagJet_pt[bTagJetColl_size] = tCHighEffBTag[i].first->pt();
-      bTagJet_eta[bTagJetColl_size] = tCHighEffBTag[i].first->eta();
-      bTagJet_phi[bTagJetColl_size] = tCHighEffBTag[i].first->phi();
+      
+      Jet_pt[btagiter] = tCHighEffBTag[i].first->pt();
+      Jet_eta[btagiter] = tCHighEffBTag[i].first->eta();
+      Jet_phi[btagiter] = tCHighEffBTag[i].first->phi();
+      //      Jet_em[btagiter] = tCHighEffBTag[i].first->emEnergyFraction();
+      tCHighEffBTags[btagiter] = tCHighEffBTag[i].second;
+      tCHighPurBTags[btagiter] = tCHighPurBTag[i].second;
+      jetProbBTags[btagiter] = jetProbBTag[i].second;
+      jetBProbBTags[btagiter] = jetBProbBTag[i].second;
+      sSecVertHighEffBTags[btagiter] = sSecVertHighEffBTag[i].second;
+      sSecVertHighPurBTags[btagiter] = sSecVertHighPurBTag[i].second;
+      cSecVertBTags[btagiter] = cSecVertBTag[i].second;
+      cSecVertMVABTags[btagiter] = cSecVertMVABTag[i].second;
+      ghostTrkBTags[btagiter] = ghostTrkBTag[i].second;
+      softEleIP3dBTags[btagiter] = softEleIP3dBTag[i].second;
+      softElePtBTags[btagiter] = softElePtBTag[i].second;
+      softMuBTags[btagiter] = softMuBTag[i].second;
+      softMuIP3dBTags[btagiter] = softMuIP3dBTag[i].second;
+      softMuPtBTags[btagiter] = softMuPtBTag[i].second;
 
-      tCHighEffBTags[bTagJetColl_size] = tCHighEffBTag[i].second;
-      tCHighPurBTags[bTagJetColl_size] = tCHighPurBTag[i].second;
-      jetProbBTags[bTagJetColl_size] = jetProbBTag[i].second;
-      jetBProbBTags[bTagJetColl_size] = jetBProbBTag[i].second;
-      sSecVertHighEffBTags[bTagJetColl_size] = sSecVertHighEffBTag[i].second;
-      sSecVertHighPurBTags[bTagJetColl_size] = sSecVertHighPurBTag[i].second;
-      cSecVertBTags[bTagJetColl_size] = cSecVertBTag[i].second;
-      cSecVertMVABTags[bTagJetColl_size] = cSecVertMVABTag[i].second;
-      ghostTrkBTags[bTagJetColl_size] = ghostTrkBTag[i].second;
-      softEleIP3dBTags[bTagJetColl_size] = softEleIP3dBTag[i].second;
-      softElePtBTags[bTagJetColl_size] = softElePtBTag[i].second;
-      softMuBTags[bTagJetColl_size] = softMuBTag[i].second;
-      softMuIP3dBTags[bTagJetColl_size] = softMuIP3dBTag[i].second;
-      softMuPtBTags[bTagJetColl_size] = softMuPtBTag[i].second;
-
-      ++bTagJetColl_size;
+      btagiter ++;
     }
   }
 } //END of BTagData

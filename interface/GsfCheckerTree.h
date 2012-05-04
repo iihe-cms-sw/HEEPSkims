@@ -16,7 +16,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.25 2012/04/21 12:37:00 lathomas Exp $
+// $Id: GsfCheckerTree.h,v 1.26 2012/05/03 13:24:22 treis Exp $
 //
 //
 
@@ -104,8 +104,8 @@ private:
   void L1TInfo(const edm::Event& iEvent);
   void HLTInfo(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   void METData(const edm::Event& iEvent);
-  void JetData(const edm::Event& iEvent);
-  void BTagData(const edm::Event& event);
+  void OLDJetData(const edm::Event& iEvent);// Not used anymore
+  void JetData(const edm::Event& event);
 
 
 
@@ -119,7 +119,10 @@ private:
   // config parameters -------------------------------
   edm::InputTag  hlTriggerResults_ ;
   double comEnergy_;
+  double ScPtMin_;
   double bJetPtMin_;
+  double GsfPtMin_;
+  double GsfTrackPtMin_;
   // parameter for SKIMMING
   double ele1EtMin_;
   double ele1EtMax_;
@@ -145,13 +148,10 @@ private:
   
   //GLOBAL
   float rho;
-  float rhoiso;
   float calomet;
-  float calomet_eta;
   float calomet_phi;
   float met;
   float pfmet; 
-  float pfmet_eta;
   float pfmet_phi;
   float mass;
 
@@ -170,11 +170,11 @@ private:
 //   float jetIC5_em[NbJets];
 
   //BTAG
-  int bTagJetColl_size;
-  float *bTagJet_et;
-  float *bTagJet_pt;
-  float *bTagJet_eta;
-  float *bTagJet_phi;
+  int JetColl_size;
+  float *Jet_em;
+  float *Jet_pt;
+  float *Jet_eta;
+  float *Jet_phi;
   float *tCHighEffBTags;
   float *tCHighPurBTags;
   float *jetProbBTags;
@@ -259,39 +259,39 @@ private:
 
   int genparticles_size;
   //Generated variables (after FSR)
-  double *genele_e;
-  double *genele_pt;
-  double *genele_px; 
-  double *genele_py; 
-  double *genele_pz; 
-  double *genele_eta; 
-  double *genele_phi;
+  float *genele_e;
+  float *genele_pt;
+  float *genele_px; 
+  float *genele_py; 
+  float *genele_pz; 
+  float *genele_eta; 
+  float *genele_phi;
   int *genele_charge;
   //Generated variables (before FSR)
-  double *unstableGenEle_e;
-  double *unstableGenEle_pt;
-  double *unstableGenEle_px;
-  double *unstableGenEle_py;
-  double *unstableGenEle_pz; 
-  double *unstableGenEle_eta;
-  double *unstableGenEle_phi; 
+  float *unstableGenEle_e;
+  float *unstableGenEle_pt;
+  float *unstableGenEle_px;
+  float *unstableGenEle_py;
+  float *unstableGenEle_pz; 
+  float *unstableGenEle_eta;
+  float *unstableGenEle_phi; 
   int *unstableGenEle_charge;
   //Generated variables (Z variables)
-  double *genelemom_e; 
-  double *genelemom_pt; 
-  double *genelemom_px;
-  double *genelemom_py; 
-  double *genelemom_pz; 
-  double *genelemom_eta;  
-  double *genelemom_phi; 
+  float *genelemom_e; 
+  float *genelemom_pt; 
+  float *genelemom_px;
+  float *genelemom_py; 
+  float *genelemom_pz; 
+  float *genelemom_eta;  
+  float *genelemom_phi; 
   int *genelemom_charge;
-  double *genelemom_mass;
+  float *genelemom_mass;
   int *genelemom_pdgid;
 
   float *x1quark;
   float *x2quark;
 
-  float trueNVtx;
+  int trueNVtx;
   int nVtxBefore;
   int nVtxNow;
   int nVtxAfter;
@@ -310,7 +310,7 @@ private:
   float *pvy;
   float *pvz;
   bool *pv_isValid;
-  float *pv_ndof;
+  int *pv_ndof;
   int *pv_nTracks;
   float *pv_normChi2;
   int *pv_totTrackSize;
@@ -334,8 +334,8 @@ private:
   float *scz;
 
   int gsf_size;
-  int *gsf_isEB;
-  int *gsf_isEE;
+  bool *gsf_isEB;
+  bool *gsf_isEE;
   float *gsf_px;
   float *gsf_py;
   float *gsf_pz;
@@ -408,8 +408,8 @@ private:
   float *gsf_hcaliso12012;
   float *gsf_hcaliso22012;
   float *gsf_class;
-  int *gsf_isecaldriven;
-  int *gsf_istrackerdriven;
+  bool *gsf_isecaldriven;
+  bool *gsf_istrackerdriven;
   float *gsfsc_e;
   float *gsfsc_pt;
   float *gsfsc_eta;
