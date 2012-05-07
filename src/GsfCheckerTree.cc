@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.27 2012/05/04 16:19:38 lathomas Exp $
+// $Id: GsfCheckerTree.cc,v 1.28 2012/05/07 12:05:41 lathomas Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -91,10 +91,8 @@ GsfCheckerTree::GsfCheckerTree(const edm::ParameterSet& iConfig):
   ele1EtMax_ = iConfig.getUntrackedParameter<double>("electron1EtMax", 1.E99);
   ele2EtMin_ = iConfig.getUntrackedParameter<double>("electron2EtMin", 0.);
   ele2EtMax_ = iConfig.getUntrackedParameter<double>("electron2EtMax", 1.E99);
-  mu1PtMin_ = iConfig.getUntrackedParameter<double>("muon1PtMin", 0.);
-  mu1PtMax_ = iConfig.getUntrackedParameter<double>("muon1PtMax", 1.E99);
-  mu2PtMin_ = iConfig.getUntrackedParameter<double>("muon2PtMin", 0.);
-  mu2PtMax_ = iConfig.getUntrackedParameter<double>("muon2PtMax", 1.E99);
+  muPtMin_ = iConfig.getUntrackedParameter<double>("muonPtMin", 0.);
+  muPtMax_ = iConfig.getUntrackedParameter<double>("muonPtMax", 1.E99);
 
   hcalCfg.hOverEConeSize = 0.15;
   hcalCfg.useTowers = true;
@@ -194,25 +192,18 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   const reco::MuonCollection* muons = muonCollection.product();
 
   float muonPtMax = 0.;
-  float muonPtSecondMax = 0.;
   // get the two highes pt muons
   for(reco::MuonCollection::const_iterator muIt = muons->begin(); muIt < muons->end(); ++muIt){
     if (muIt->isGlobalMuon()) {
       if (muIt->globalTrack()->pt() > muonPtMax) {
-        muonPtSecondMax = muonPtMax;
         muonPtMax = muIt->globalTrack()->pt();
       }
-      else if (muIt->globalTrack()->pt() > muonPtSecondMax) 
-        muonPtSecondMax = muIt->globalTrack()->pt();
     }
   }
 
   // SKIMMING
-  if (!(gsfPtMax > ele1EtMin_ && gsfPtSecondMax > ele2EtMin_)
-      && !(gsfPtMax > ele1EtMin_ && muonPtMax > mu1PtMin_)
-      && !(muonPtMax > mu1PtMin_ && muonPtSecondMax > mu2PtMin_)
-     ) return;
-  if (gsfPtMax > ele1EtMax_ || gsfPtSecondMax > ele2EtMax_ || muonPtMax > mu1PtMax_ || muonPtSecondMax > mu2PtMax_) return;
+  if (!(gsfPtMax > ele1EtMin_ && gsfPtSecondMax > ele2EtMin_) && !(gsfPtMax > ele1EtMin_ && muonPtMax > muPtMin_)) return;
+  if (gsfPtMax > ele1EtMax_ || gsfPtSecondMax > ele2EtMax_ || muonPtMax > muPtMax_) return;
 
 
   //rho variable

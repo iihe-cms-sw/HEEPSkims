@@ -16,7 +16,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.26 2012/05/03 13:24:22 treis Exp $
+// $Id: GsfCheckerTree.h,v 1.27 2012/05/04 16:19:39 lathomas Exp $
 //
 //
 
@@ -128,10 +128,8 @@ private:
   double ele1EtMax_;
   double ele2EtMin_;
   double ele2EtMax_;
-  double mu1PtMin_;
-  double mu1PtMax_;
-  double mu2PtMin_;
-  double mu2PtMax_;
+  double muPtMin_;
+  double muPtMax_;
   // -------------------------------------------------
   
   TTree* mytree;
