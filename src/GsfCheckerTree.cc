@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.28 2012/05/07 12:05:41 lathomas Exp $
+// $Id: GsfCheckerTree.cc,v 1.29 2012/05/07 14:56:12 treis Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -103,8 +103,8 @@ GsfCheckerTree::GsfCheckerTree(const edm::ParameterSet& iConfig):
   inputTagIsoDepElectrons_ = iConfig.getParameter< std::vector<edm::InputTag> >("IsoDepElectron");
   inputTagIsoValElectronsPFId_   = iConfig.getParameter< std::vector<edm::InputTag> >("IsoValElectronPF");
  
-
-
+  EcalHcal1EffAreaEndcaps_ = iConfig.getUntrackedParameter<double>("EcalHcal1EffAreaEndcaps", 0.);
+  EcalHcal1EffAreaBarrel_ = iConfig.getUntrackedParameter<double>("EcalHcal1EffAreaBarrel", 0.);
 }
 
 
@@ -1040,9 +1040,9 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 //     gsf_eBottom[e] = lazytool.eBottom(*seed);
 //     gsf_e2nd[e] = lazytool.e2nd(*seed);
 
-    // HEEP selection v3.2  - 24/10/2011 Thomas
+    // HEEP selection v4.0  - 07/05/2012 Laurent 
     bool gsfetbarrel = gsf_gsfet[e] > 35.;
-    bool gsfetendcap = gsf_gsfet[e] > 40.;
+    bool gsfetendcap = gsf_gsfet[e] > 35.;
     bool barrelsc = fabs(gsfsc_eta[e]) < 1.442;
     bool endcapsc = (fabs(gsfsc_eta[e]) > 1.56) && (fabs(gsfsc_eta[e]) < 2.5);
     bool deltaetabarrel = fabs(gsf_deltaeta[e]) < 0.005;
@@ -1055,13 +1055,13 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     bool sigmaIetaIetaendcap  = gsf_sigmaIetaIeta[e] < 0.03;
     bool e2x5overe5x5barrel  = (gsf_e2x5overe5x5[e] > 0.94) || (gsf_e1x5overe5x5[e] > 0.83);
     bool e2x5overe5x5endcap  = true;
-    bool ecalisobarrel = (gsf_ecaliso[e]+gsf_hcaliso1[e]) < (2.+0.03*gsf_gsfet[e]);
+    bool ecalisobarrel = (gsf_ecaliso[e]+gsf_hcaliso1[e]) < (2.+0.03*gsf_gsfet[e] + rho*EcalHcal1EffAreaBarrel_);
     bool ecalisoendcap = true;
     if(gsf_gsfet[e] < 50.) {
-      ecalisoendcap = (gsf_ecaliso[e]+gsf_hcaliso1[e]) < 2.5;
+      ecalisoendcap = (gsf_ecaliso[e]+gsf_hcaliso1[e]) < 2.5+ rho*EcalHcal1EffAreaEndcaps_;
     }
     else {
-      ecalisoendcap = (gsf_ecaliso[e]+gsf_hcaliso1[e]) < (2.5+0.03*(gsf_gsfet[e]-50.));
+      ecalisoendcap = (gsf_ecaliso[e]+gsf_hcaliso1[e]) < (2.5+0.03*(gsf_gsfet[e]-50.)+ rho*EcalHcal1EffAreaEndcaps_ );
     }
     bool hcaliso2barrel  = true;
     bool hcaliso2endcap  = true;

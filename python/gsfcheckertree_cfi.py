@@ -22,6 +22,11 @@ gsfcheckerjob = cms.EDAnalyzer("GsfCheckerTree",
   muonPtMin = cms.untracked.double(35),
   muonPtMax = cms.untracked.double(1.E99),                        
 
+  # Effective areas
+  EcalHcal1EffAreaEndcaps=cms.untracked.double(0.28),
+  EcalHcal1EffAreaBarrel=cms.untracked.double(0.28),
+
+                               
   IsoDepElectron = cms.VInputTag(cms.InputTag('elPFIsoDepositChargedPFIso'),
                    cms.InputTag('elPFIsoDepositGammaPFIso'),
                    cms.InputTag('elPFIsoDepositNeutralPFIso')),
