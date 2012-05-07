@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.26 2012/05/03 13:24:22 treis Exp $
+// $Id: GsfCheckerTree.cc,v 1.27 2012/05/04 16:19:38 lathomas Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -1000,7 +1000,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     else{gsf_isecaldriven[e] = 0;}
     if(gsfiter->trackerDrivenSeed()) gsf_istrackerdriven[e] = true;
     else{gsf_istrackerdriven[e] = 0;}
-    gsfsc_e[e] = gsfiter->superCluster()->rawEnergy()+gsfiter->superCluster()->preshowerEnergy();
+    gsfsc_e[e] = gsfiter->superCluster()->energy();//gsfiter->superCluster()->rawEnergy()+gsfiter->superCluster()->preshowerEnergy();
     gsfsc_pt[e] = (gsfiter->superCluster()->rawEnergy()+gsfiter->superCluster()->preshowerEnergy())/cosh(gsfiter->superCluster()->eta());
     gsfsc_eta[e] = gsfiter->superCluster()->eta();
     gsfsc_phi[e] = gsfiter->superCluster()->phi();
