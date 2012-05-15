@@ -16,7 +16,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.28 2012/05/07 14:56:18 treis Exp $
+// $Id: GsfCheckerTree.h,v 1.29 2012/05/07 17:06:03 lathomas Exp $
 //
 //
 
@@ -63,6 +63,7 @@ Implementation:
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "TFile.h"
 #include "TTree.h"
+#include "TLorentzVector.h"
 #include "RecoEgamma/EgammaElectronAlgos/interface/ElectronHcalHelper.h"
 
 class TH1;
@@ -100,6 +101,7 @@ private:
   virtual void endJob() ;
   virtual void beginRun(edm::Run const&, edm::EventSetup const&);
 
+  float CalcInvariantMass(const int&, const int&);
   void DataGenPart(const edm::Event& e);
   void L1TInfo(const edm::Event& iEvent);
   void HLTInfo(const edm::Event& iEvent, const edm::EventSetup& iSetup);
@@ -444,6 +446,8 @@ private:
   bool *gsfpass_HEEP;
   bool *gsfpass_ID;
   bool *gsfpass_ISO;
+
+  float heepHeepMass;
 
   //charge information
   int *scpixcharge;

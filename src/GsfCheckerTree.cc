@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.29 2012/05/07 14:56:12 treis Exp $
+// $Id: GsfCheckerTree.cc,v 1.30 2012/05/07 17:06:03 lathomas Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -40,8 +40,10 @@ using namespace edm;
 bool 
 gsfEtGreater(const reco::GsfElectron &gsf1,const reco::GsfElectron &gsf2)
 {
-  float et1 = gsf1.caloEnergy() * sin(gsf1.p4().theta());
-  float et2 = gsf2.caloEnergy() * sin(gsf2.p4().theta());
+  float et1 = gsf1.superCluster()->energy() * sin(gsf1.theta());
+  float et2 = gsf2.superCluster()->energy() * sin(gsf2.theta());
+  //float et1 = gsf1.caloEnergy() * sin(gsf1.p4().theta());
+  //float et2 = gsf2.caloEnergy() * sin(gsf2.p4().theta());
   return (et1 > et2);
 }
 
@@ -73,6 +75,20 @@ etacorr(float eta, float pvz, float scz)
   return asinh(sinh(eta) * (1. - pvz/scz));
 }
 
+float
+GsfCheckerTree::CalcInvariantMass(const int& iEle1, const int& iEle2)
+{
+  TLorentzVector ele1;
+  TLorentzVector ele2;
+
+  float et1 = gsfsc_e[iEle1] * sin(gsf_theta[iEle1]);
+  float et2 = gsfsc_e[iEle2] * sin(gsf_theta[iEle2]);
+
+  ele1.SetPtEtaPhiE(et1, gsf_eta[iEle1], gsf_phi[iEle1], (et1 * cosh(gsf_eta[iEle1])));
+  ele2.SetPtEtaPhiE(et2, gsf_eta[iEle2], gsf_phi[iEle2], (et2 * cosh(gsf_eta[iEle2])));
+
+  return (ele1+ele2).Mag();
+}
 
 GsfCheckerTree::GsfCheckerTree(const edm::ParameterSet& iConfig):
   evtHelper_(),heepEvt_(),nrPass_(0),nrFail_(0)
@@ -178,10 +194,12 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     cntr++; 
 
     if (cntr == 1) {
-      gsfPtMax = gsfiterbis->caloEnergy()*sin(gsfiterbis->p4().theta());
+      gsfPtMax = gsfiterbis->superCluster()->energy() * sin(gsfiterbis->theta());
+      //gsfPtMax = gsfiterbis->caloEnergy()*sin(gsfiterbis->p4().theta());
     }
     if (cntr == 2) {
-      gsfPtSecondMax = gsfiterbis->caloEnergy()*sin(gsfiterbis->p4().theta());
+      gsfPtSecondMax = gsfiterbis->superCluster()->energy() * sin(gsfiterbis->theta());
+      //gsfPtSecondMax = gsfiterbis->caloEnergy()*sin(gsfiterbis->p4().theta());
     }
   }
   //Missing hits, Invariant Mass cut
@@ -204,7 +222,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   // SKIMMING
   if (!(gsfPtMax > ele1EtMin_ && gsfPtSecondMax > ele2EtMin_) && !(gsfPtMax > ele1EtMin_ && muonPtMax > muPtMin_)) return;
   if (gsfPtMax > ele1EtMax_ || gsfPtSecondMax > ele2EtMax_ || muonPtMax > muPtMax_) return;
-
 
   //rho variable
   rho = 0;
@@ -912,6 +929,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   mytree->GetBranch("gsfctfconsistent")->SetAddress(gsfctfconsistent);
 
   int e=0;
+  int nHeepEle = 0;
   reco::GsfElectronCollection::const_iterator gsfiter = gsfelectrons.begin();
   for(; gsfiter != gsfelectrons.end(); ++gsfiter) {
     if( gsfiter->caloEnergy()*sin(gsfiter->p4().theta()) <GsfPtMin_) continue;
@@ -1091,7 +1109,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     gsfpass_ISO[e] = (gsfpass_ISOLEMHADDEPTH1[e] && gsfpass_ISOLHADDEPTH2[e] && gsfpass_ISOLPTTRKS[e]);
 
     gsfpass_HEEP[e] = gsfpass_ET[e] && gsfpass_DETAIN[e] && gsfpass_DPHIIN[e] && gsfpass_HADEM[e] && gsfpass_SIGMAIETAIETA[e] && gsfpass_E2X5OVER5X5[e] && gsfpass_ISOLEMHADDEPTH1[e] && gsfpass_ISOLHADDEPTH2[e] && gsfpass_ISOLPTTRKS[e] && gsfpass_NOMISSINGHITS[e];
-    
+    if (gsfpass_HEEP[e]) ++nHeepEle;
+
     //charge info
     scpixcharge[e] = gsfiter->scPixCharge();
     if(gsfiter->closestCtfTrackRef().isNonnull()) ctfcharge[e] = gsfiter->closestCtfTrackRef()->charge();
@@ -1102,6 +1121,31 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     //increment index for gsf
     e++;
+  }
+
+  // calculate the invariant mass of two heep electrons if there are any
+  heepHeepMass = -100.;
+  if (nHeepEle > 1) {
+    // first find the two highes et heep electrons
+    int iHeep1 = -1;
+    int iHeep2 = -1;
+    float highestHeepEt = 0;
+    for (int n = 0; n < gsf_size; ++n) {
+      if (highestHeepEt < gsfsc_e[n] * sin(gsf_theta[n]) && gsfpass_HEEP[n]) {
+        iHeep1 = n;
+        highestHeepEt = gsfsc_e[n] * sin(gsf_theta[n]);
+      }
+    }
+    highestHeepEt = 0;
+    for (int m = 0; m < gsf_size; ++m) {
+      if (highestHeepEt < gsfsc_e[m] * sin(gsf_theta[m]) && gsfpass_HEEP[m] && m != iHeep1) {
+        iHeep2 = m;
+        highestHeepEt = gsfsc_e[m] * sin(gsf_theta[m]);
+      }
+    }
+    // then calculate the invariant mass
+    heepHeepMass = CalcInvariantMass(iHeep1, iHeep2); 
+    std::cout << "MASS: " << heepHeepMass << std::endl;
   }
 
   mytree->Fill();
@@ -1773,6 +1817,7 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gsfpass_ID", gsfpass_ID, "gsfpass_ID[gsf_size]/O");  
   mytree->Branch("gsfpass_ISO", gsfpass_ISO, "gsfpass_ISO[gsf_size]/O");
   
+  mytree->Branch("heepHeepMass", &heepHeepMass, "heepHeepMass/F");
 
   //CHARGE INFO
   mytree->Branch("scpixcharge", scpixcharge, "scpixcharge[gsf_size]/I");
