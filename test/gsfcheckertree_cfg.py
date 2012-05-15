@@ -56,7 +56,7 @@ process.hltPhysicsDeclared = cms.EDFilter('HLTPhysicsDeclared',
 process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
                                            vertexCollection = cms.InputTag('offlinePrimaryVertices'),
                                            minimumNDOF = cms.uint32 (4),
-                                           maxAbsZ = cms.double (15),
+                                           maxAbsZ = cms.double (24),
                                            maxd0 = cms.double (2)
                                            )
 process.primaryVertexPath = cms.Path(process.primaryVertexFilter)
