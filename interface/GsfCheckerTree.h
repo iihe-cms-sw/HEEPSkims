@@ -16,7 +16,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.29 2012/05/07 17:06:03 lathomas Exp $
+// $Id: GsfCheckerTree.h,v 1.30 2012/05/15 17:39:32 treis Exp $
 //
 //
 
@@ -501,7 +501,7 @@ private:
   int HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
   int HLT_Ele8_CaloIdL_CaloIsoVL;
   int HLT_Ele27_CaloIdL_CaloIsoVL_TrkIdVL_TrkIsoVL;
-  int HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL;
+  int HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
   int HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17_Mass50;
   int HLT_DoubleEle33_CaloIdL;
   int HLT_DoubleEle33_CaloIdL_GsfTrkIdVL;
@@ -532,7 +532,7 @@ private:
   int prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
   int prescale_HLT_Ele8_CaloIdL_CaloIsoVL;
   int prescale_HLT_Ele27_CaloIdL_CaloIsoVL_TrkIdVL_TrkIsoVL;
-  int prescale_HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL;
+  int prescale_HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
   int prescale_HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17_Mass50;
   int prescale_HLT_DoubleEle33_CaloIdL;
   int prescale_HLT_DoubleEle33_CaloIdL_GsfTrkIdVL;
