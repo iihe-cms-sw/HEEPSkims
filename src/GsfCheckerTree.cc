@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.31 2012/05/15 17:39:31 treis Exp $
+// $Id: GsfCheckerTree.cc,v 1.32 2012/05/16 14:36:44 treis Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -305,7 +305,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   // get the beamspot from the Event:
   edm::Handle<reco::BeamSpot> theBeamSpot;
   iEvent.getByType(theBeamSpot);
-  const BeamSpot bs = *theBeamSpot;
 
   // get all beam spot info
   sigmaZ=theBeamSpot->sigmaZ();
@@ -721,7 +720,13 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   gsf_eOVERp = new float [gsf_size];
   //gsf_ptOVERetsc = new float [gsf_size];
   gsf_dxy = new float [gsf_size];
+  gsf_dxy_beamSpot = new float [gsf_size];
+  gsf_dxy_firstPVtx = new float [gsf_size];
+  gsf_dxyError = new float [gsf_size];
   gsf_dz = new float [gsf_size];
+  gsf_dz_beamSpot = new float [gsf_size];
+  gsf_dz_firstPVtx = new float [gsf_size];
+  gsf_dzError = new float [gsf_size];
   gsf_vz = new float [gsf_size];
   gsf_nHits = new int [gsf_size];
   gsf_nLostInnerHits = new int [gsf_size];
@@ -835,7 +840,13 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   mytree->GetBranch("gsf_eOVERp")->SetAddress(gsf_eOVERp);
   //mytree->GetBranch("gsf_ptOVERetsc")->SetAddress(gsf_ptOVERetsc);
   mytree->GetBranch("gsf_dxy")->SetAddress(gsf_dxy);
+  mytree->GetBranch("gsf_dxy_beamSpot")->SetAddress(gsf_dxy_beamSpot);
+  mytree->GetBranch("gsf_dxy_firstPVtx")->SetAddress(gsf_dxy_firstPVtx);
+  mytree->GetBranch("gsf_dxyError")->SetAddress(gsf_dxyError);
   mytree->GetBranch("gsf_dz")->SetAddress(gsf_dz);
+  mytree->GetBranch("gsf_dz_beamSpot")->SetAddress(gsf_dz_beamSpot);
+  mytree->GetBranch("gsf_dz_firstPVtx")->SetAddress(gsf_dz_firstPVtx);
+  mytree->GetBranch("gsf_dzError")->SetAddress(gsf_dzError);
   mytree->GetBranch("gsf_vz")->SetAddress(gsf_vz);
   mytree->GetBranch("gsf_nHits")->SetAddress(gsf_nHits);
   mytree->GetBranch("gsf_nLostInnerHits")->SetAddress(gsf_nLostInnerHits);
@@ -1025,7 +1036,13 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     gsf_ecalEnergy[e] = gsfiter->ecalEnergy();
     gsf_eOVERp[e] = gsfiter->eSuperClusterOverP();
     gsf_dxy[e] = gsfiter->gsfTrack()->dxy();
+    gsf_dxy_beamSpot[e] = gsfiter->gsfTrack()->dxy(beamspot);
+    gsf_dxy_firstPVtx[e] = gsfiter->gsfTrack()->dxy(firstpvertex);
+    gsf_dxyError[e] = gsfiter->gsfTrack()->dxyError();
     gsf_dz[e] = gsfiter->gsfTrack()->dz(); 
+    gsf_dz_beamSpot[e] = gsfiter->gsfTrack()->dz(beamspot); 
+    gsf_dz_firstPVtx[e] = gsfiter->gsfTrack()->dz(firstpvertex); 
+    gsf_dzError[e] = gsfiter->gsfTrack()->dzError(); 
     gsf_vz[e] = gsfiter->gsfTrack()->vz();
     gsf_nHits[e] = gsfiter->gsfTrack()->numberOfValidHits();   
     gsf_nLostInnerHits[e] = gsfiter->gsfTrack()->trackerExpectedHitsInner().numberOfLostHits();   
@@ -1198,7 +1215,13 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   delete [] gsf_eOVERp;
   //delete [] gsf_ptOVERetsc;
   delete [] gsf_dxy;
+  delete [] gsf_dxy_beamSpot;
+  delete [] gsf_dxy_firstPVtx;
+  delete [] gsf_dxyError;
   delete [] gsf_dz;
+  delete [] gsf_dz_beamSpot;
+  delete [] gsf_dz_firstPVtx;
+  delete [] gsf_dzError;
   delete [] gsf_vz;
   delete [] gsf_nHits;
   delete [] gsf_nLostInnerHits;
@@ -1724,7 +1747,13 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gsf_ecalEnergy", gsf_ecalEnergy, "gsf_ecalEnergy[gsf_size]/F");
   mytree->Branch("gsf_eOVERp", gsf_eOVERp, "gsf_eOVERp[gsf_size]/F");
   mytree->Branch("gsf_dxy", gsf_dxy, "gsf_dxy[gsf_size]/F");
+  mytree->Branch("gsf_dxy_beamSpot", gsf_dxy_beamSpot, "gsf_dxy_beamSpot[gsf_size]/F");
+  mytree->Branch("gsf_dxy_firstPVtx", gsf_dxy_firstPVtx, "gsf_dxy_firstPVtx[gsf_size]/F");
+  mytree->Branch("gsf_dxyError", gsf_dxyError, "gsf_dxyError[gsf_size]/F");
   mytree->Branch("gsf_dz", gsf_dz, "gsf_dz[gsf_size]/F");
+  mytree->Branch("gsf_dz_beamSpot", gsf_dz_beamSpot, "gsf_dz_beamSpot[gsf_size]/F");
+  mytree->Branch("gsf_dz_firstPVtx", gsf_dz_firstPVtx, "gsf_dz_firstPVtx[gsf_size]/F");
+  mytree->Branch("gsf_dzError", gsf_dzError, "gsf_dzError[gsf_size]/F");
   mytree->Branch("gsf_vz", gsf_vz, "gsf_vz[gsf_size]/F");
   mytree->Branch("gsf_nHits", gsf_nHits, "gsf_nHits[gsf_size]/I");
   mytree->Branch("gsf_nLostInnerHits", gsf_nLostInnerHits, "gsf_nLostInnerHits[gsf_size]/I");

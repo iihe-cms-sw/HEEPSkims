@@ -16,7 +16,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.30 2012/05/15 17:39:32 treis Exp $
+// $Id: GsfCheckerTree.h,v 1.31 2012/05/16 14:36:45 treis Exp $
 //
 //
 
@@ -361,7 +361,13 @@ private:
   float *gsf_eOVERp;
   //float *gsf_ptOVERetsc;
   float *gsf_dxy;
+  float *gsf_dxy_beamSpot;
+  float *gsf_dxy_firstPVtx;
+  float *gsf_dxyError;
   float *gsf_dz;
+  float *gsf_dz_beamSpot;
+  float *gsf_dz_firstPVtx;
+  float *gsf_dzError;
   float *gsf_vz;
   int *gsf_nHits;
   int *gsf_nLostInnerHits;
