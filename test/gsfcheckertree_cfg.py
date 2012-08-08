@@ -3,23 +3,27 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("gsfcheckertree")
 
 process.load("Configuration.StandardSequences.MagneticField_cff")
-process.load("Configuration.StandardSequences.Geometry_cff")
+process.load("Configuration.Geometry.GeometryIdeal_cff")
 process.load("Configuration.EventContent.EventContent_cff")
 process.load("RecoTracker.Configuration.RecoTracker_cff")
 
 
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
-#process.GlobalTag.globaltag = 'START52_V8::All'
-process.GlobalTag.globaltag = 'GR_R_52_V7::All'
+#process.GlobalTag.globaltag = 'START53_V7A::All'
+process.GlobalTag.globaltag = 'GR_P_V39_AN1::All'  # this one for run2012A and B
+#process.GlobalTag.globaltag = 'GR_P_V40_AN1::All'  # this one for run2012C with cmssw version < 533
+#process.GlobalTag.globaltag = 'GR_P_V41_AN1::All'  # this one for run2012C with cmssw version >= 533
 
 
 readFiles = cms.untracked.vstring()
 secFiles = cms.untracked.vstring()
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
+#process.MessageLogger.cerr.INFO.limit = 100000
 process.source = cms.Source("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
 
 readFiles.extend( [
+#    'file:/user/treis/heep/CMSSW_5_3_2_patch4/src/DyToEE_madgraph_pu.root'
     '/store/mc/Summer12/DYToEE_M_20_TuneZ2star_8TeV_pythia6/AODSIM/PU_S7_START50_V15-v1/0000/FCCBFAC4-847E-E111-A077-002618943829.root'
 ##    'dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/lathomas/Photon/LaurentPhoton-Run2011BSkim2ElePt35/319d9d50ddc1c21c2a4623a85e06b6f6/output_77_2_49z.root'
        ##   '/store/mc/Fall11/TTJets_TuneZ2_7TeV-madgraph-tauola/AODSIM/PU_S6_START42_V14B-v1/0000/380EDCD0-CFFA-E011-8B63-002618943834.root',
@@ -34,7 +38,8 @@ process.out = cms.OutputModule("PoolOutputModule",
 
 process.options = cms.untracked.PSet(
     #fileMode = cms.untracked.string('NOMERGE')
-    SkipEvent = cms.untracked.vstring('ProductNotFound')
+    SkipEvent = cms.untracked.vstring('ProductNotFound'),
+    #wantSummary = cms.untracked.bool(True)
 )
 
 process.maxEvents = cms.untracked.PSet(
