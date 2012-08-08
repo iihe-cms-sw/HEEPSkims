@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.32 2012/05/16 14:36:44 treis Exp $
+// $Id: GsfCheckerTree.cc,v 1.33 2012/07/10 10:15:58 treis Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -131,7 +131,7 @@ GsfCheckerTree::GsfCheckerTree(const edm::ParameterSet& iConfig):
 
 GsfCheckerTree::~GsfCheckerTree()
 {
-  cout<<"GsfCheckerTree::~GsfCheckerTree"<<endl; 
+  //cout<<"GsfCheckerTree::~GsfCheckerTree"<<endl; 
   // do anything here that needs to be done at destruction time
   // (e.g. close files, deallocate resources etc.)
 }
@@ -220,7 +220,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
 
   // SKIMMING
-  if (!(gsfPtMax > ele1EtMin_ && gsfPtSecondMax > ele2EtMin_) && !(gsfPtMax > ele1EtMin_ && muonPtMax > muPtMin_)) return;
+  if (!(gsfPtMax >= ele1EtMin_ && gsfPtSecondMax >= ele2EtMin_) && !(gsfPtMax >= ele1EtMin_ && muonPtMax >= muPtMin_)) return;
   if (gsfPtMax > ele1EtMax_ || gsfPtSecondMax > ele2EtMax_ || muonPtMax > muPtMax_) return;
 
   //rho variable
@@ -1434,7 +1434,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 void 
 GsfCheckerTree::beginRun(edm::Run const& iRun, edm::EventSetup const& iSetup)
 {
-  cout<<"dans beginrun run number"<<iRun.id()<<" and n = "<<hlNames_.size()<<endl;
+  edm::LogVerbatim("beginRunHlt")<<"dans beginrun run number"<<iRun.id()<<" and n = "<<hlNames_.size();
 
   bool changed (true);
   if (hltConfig_.init(iRun,iSetup,hlTriggerResults_.process(),changed)) {
@@ -1455,12 +1455,12 @@ GsfCheckerTree::beginRun(edm::Run const& iRun, edm::EventSetup const& iSetup)
       hlErrors_.resize(n);
       posL1s_.resize(n);
       posPre_.resize(n);
-      cout << "HLT menu: " << hltConfig_.tableName() << endl;
+      edm::LogVerbatim("beginRunHlt") << "HLT menu: " << hltConfig_.tableName();
       for (unsigned int i = 0; i < n; ++i) {
  	hlWasRunTab[i]=0;
 	hlAcceptTab[i]=0;
 	hlErrorTab[i]=0;
-        cout << "hlNames(" << i << ") = " << hlNames_.at(i) << endl;
+        edm::LogVerbatim("beginRunHlt") << "hlNames(" << i << ") = " << hlNames_.at(i);
         hlWasRun_[i]=0;
         hltL1s_[i]=0;
         hltPre_[i]=0;
@@ -2279,7 +2279,7 @@ GsfCheckerTree::HLTInfo(const edm::Event &iEvent, const edm::EventSetup& iSetup)
       hlWasRun_[i]++;
       hlWasRunTab[i] = 1;
     } else {
-      cout<<"hlNames(i) = "<<i<<", "<<hlNames_.at(i)<<endl;
+      edm::LogVerbatim("HltNotRun") << "hlNames(" << i << ") = " << hlNames_.at(i);
     }
 
     if (HLTR->accept(i)) {
