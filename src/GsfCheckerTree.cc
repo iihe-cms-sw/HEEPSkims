@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.33 2012/07/10 10:15:58 treis Exp $
+// $Id: GsfCheckerTree.cc,v 1.34 2012/08/08 12:27:52 treis Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -291,6 +291,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
   } else {
     genparticles_size = 0;
+    genquarks_size = 0;
+    gengluons_size = 0;
   }
 
   L1TInfo(iEvent);
@@ -1399,6 +1401,29 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   delete [] softMuPtBTags;
 
   if (useGenData_) {
+    
+    
+    delete [] genquark_e;
+    delete [] genquark_pt;
+    delete [] genquark_px; 
+    delete [] genquark_py; 
+    delete [] genquark_pz; 
+    delete [] genquark_eta; 
+    delete [] genquark_phi;
+    delete [] genquark_charge;
+    delete [] genquark_pdgid;
+
+    delete [] gengluon_e;
+    delete [] gengluon_pt;
+    delete [] gengluon_px; 
+    delete [] gengluon_py; 
+    delete [] gengluon_pz; 
+    delete [] gengluon_eta; 
+    delete [] gengluon_phi;
+    delete [] gengluon_charge;
+    delete [] gengluon_pdgid;
+
+
     delete [] genele_e;
     delete [] genele_pt;
     delete [] genele_px;
@@ -1856,8 +1881,31 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gsfctfconsistent", gsfctfconsistent, "gsfctfconsistent[gsf_size]/O");
 
   mytree->Branch("genparticles_size", &genparticles_size, "genparticles_size/I");
+  mytree->Branch("genquarks_size", &genquarks_size, "genquarks_size/I");
+  mytree->Branch("gengluons_size", &gengluons_size, "gengluons_size/I");
   //GEN INFO FOR ELE and POSI (after FSR)
   
+
+  mytree->Branch("genquark_e", genquark_e, "genquark_e[genquarks_size]/F");
+  mytree->Branch("genquark_eta", genquark_eta, "genquark_eta[genquarks_size]/F");
+  mytree->Branch("genquark_phi", genquark_phi, "genquark_phi[genquarks_size]/F");
+  mytree->Branch("genquark_pt", genquark_pt, "genquark_pt[genquarks_size]/F");
+  mytree->Branch("genquark_px", genquark_px, "genquark_px[genquarks_size]/F");
+  mytree->Branch("genquark_py", genquark_py, "genquark_py[genquarks_size]/F");
+  mytree->Branch("genquark_pz", genquark_pz, "genquark_pz[genquarks_size]/F");
+  mytree->Branch("genquark_charge", genquark_charge, "genquark_charge[genquarks_size]/I");
+  mytree->Branch("genquark_pdgid", genquark_pdgid, "genquark_pdgid[genquarks_size]/I");
+  mytree->Branch("gengluon_e", gengluon_e, "gengluon_e[gengluons_size]/F");
+  mytree->Branch("gengluon_eta", gengluon_eta, "gengluon_eta[gengluons_size]/F");
+  mytree->Branch("gengluon_phi", gengluon_phi, "gengluon_phi[gengluons_size]/F");
+  mytree->Branch("gengluon_pt", gengluon_pt, "gengluon_pt[gengluons_size]/F");
+  mytree->Branch("gengluon_px", gengluon_px, "gengluon_px[gengluons_size]/F");
+  mytree->Branch("gengluon_py", gengluon_py, "gengluon_py[gengluons_size]/F");
+  mytree->Branch("gengluon_pz", gengluon_pz, "gengluon_pz[gengluons_size]/F");
+  mytree->Branch("gengluon_charge", gengluon_charge, "gengluon_charge[gengluons_size]/I");
+  mytree->Branch("gengluon_pdgid", gengluon_pdgid, "gengluon_pdgid[gengluons_size]/I");
+
+
   mytree->Branch("genele_e", genele_e, "genele_e[genparticles_size]/F");
   mytree->Branch("genele_eta", genele_eta, "genele_eta[genparticles_size]/F");
   mytree->Branch("genele_phi", genele_phi, "genele_phi[genparticles_size]/F");
@@ -1914,6 +1962,29 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
   //cout <<"genParticles->size() " << genParticles->size() << endl;
 
   genparticles_size = genParticles->size();
+  genquarks_size = genParticles->size();
+  gengluons_size = genParticles->size();
+
+
+
+  genquark_e = new float [genquarks_size];
+  genquark_pt = new float [genquarks_size];
+  genquark_px = new float [genquarks_size];
+  genquark_py = new float [genquarks_size];
+  genquark_pz = new float [genquarks_size];
+  genquark_eta = new float [genquarks_size];
+  genquark_phi = new float [genquarks_size];
+  genquark_charge = new int [genquarks_size];
+  genquark_pdgid = new int [genquarks_size];
+  gengluon_e = new float [gengluons_size];
+  gengluon_pt = new float [gengluons_size];
+  gengluon_px = new float [gengluons_size];
+  gengluon_py = new float [gengluons_size];
+  gengluon_pz = new float [gengluons_size];
+  gengluon_eta = new float [gengluons_size];
+  gengluon_phi = new float [gengluons_size];
+  gengluon_charge = new int [gengluons_size];
+  gengluon_pdgid = new int [gengluons_size];
 
   genele_e = new float [genparticles_size];
   genele_pt = new float [genparticles_size];
@@ -1943,6 +2014,27 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
   genelemom_pdgid = new int [genparticles_size];
   x1quark = new float [genparticles_size];
   x2quark = new float [genparticles_size];
+
+  mytree->GetBranch("genquark_e")->SetAddress(genquark_e);
+  mytree->GetBranch("genquark_pt")->SetAddress(genquark_pt);
+  mytree->GetBranch("genquark_px")->SetAddress(genquark_px);
+  mytree->GetBranch("genquark_py")->SetAddress(genquark_py);
+  mytree->GetBranch("genquark_pz")->SetAddress(genquark_pz);
+  mytree->GetBranch("genquark_eta")->SetAddress(genquark_eta);
+  mytree->GetBranch("genquark_phi")->SetAddress(genquark_phi);
+  mytree->GetBranch("genquark_charge")->SetAddress(genquark_charge);
+  mytree->GetBranch("genquark_pdgid")->SetAddress(genquark_pdgid);
+
+  mytree->GetBranch("gengluon_e")->SetAddress(gengluon_e);
+  mytree->GetBranch("gengluon_pt")->SetAddress(gengluon_pt);
+  mytree->GetBranch("gengluon_px")->SetAddress(gengluon_px);
+  mytree->GetBranch("gengluon_py")->SetAddress(gengluon_py);
+  mytree->GetBranch("gengluon_pz")->SetAddress(gengluon_pz);
+  mytree->GetBranch("gengluon_eta")->SetAddress(gengluon_eta);
+  mytree->GetBranch("gengluon_phi")->SetAddress(gengluon_phi);
+  mytree->GetBranch("gengluon_charge")->SetAddress(gengluon_charge);
+  mytree->GetBranch("gengluon_pdgid")->SetAddress(gengluon_pdgid);
+
   mytree->GetBranch("genele_e")->SetAddress(genele_e);
   mytree->GetBranch("genele_pt")->SetAddress(genele_pt);
   mytree->GetBranch("genele_px")->SetAddress(genele_px);
@@ -1972,13 +2064,61 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
   mytree->GetBranch("x1quark")->SetAddress(x1quark);
   mytree->GetBranch("x2quark")->SetAddress(x2quark);
 
-  unsigned int counter = 0; 
+  unsigned int counter = 0;
+  unsigned int counterquark = 0; 
+  unsigned int countergluon = 0; 
   for (size_t i = 0; i < genParticles->size(); ++i) {
- 
+    
     const GenParticle & p = (*genParticles)[i];
     int id = p.pdgId();
     int st = p.status(); 
+    
+    // Taking incoming partons info
+    
+    
+    bool ispartafterisr=true;
+    int nbdaughters = p.numberOfDaughters();
+    for(int dghtit = 0; dghtit < nbdaughters; ++ dghtit) {
+      const Candidate * quarkdaughter = p.daughter( dghtit );
+      int qdid = quarkdaughter->pdgId();
+      //if(fabs(qdid) == 22 || fabs(qdid) == 23 || fabs(qdid) == 24 || fabs(qdid) == 32 || fabs(qdid) == 33 || fabs(qdid) == 39)     ispartafterisr =true;
+      if(fabs(qdid)<=8) ispartafterisr =false;
+    }
+    if(ispartafterisr){
+      if(fabs(id) >=1 &&fabs(id) <=8 && st ==3 ) {//Quarks info (Drell-Yan, Z') 
+	genquark_e[counterquark] = p.energy(); 
+	genquark_pt[counterquark] = p.pt();
+	genquark_px[counterquark] = p.px();
+	genquark_py[counterquark] = p.py();
+	genquark_pz[counterquark] = p.pz();
+	genquark_eta[counterquark] = p.eta(); 
+	genquark_phi[counterquark] = p.phi();
+	genquark_charge[counterquark]= p.charge();
+	genquark_pdgid[counterquark]= p.pdgId();
+	counterquark++;
+      }
+      if(id ==21  && st ==3 ) { // For graviton, incoming partons are gluons 
+	gengluon_e[countergluon] = p.energy(); 
+	gengluon_pt[countergluon] = p.pt();
+	gengluon_px[countergluon] = p.px();
+	gengluon_py[countergluon] = p.py();
+	gengluon_pz[countergluon] = p.pz();
+	gengluon_eta[countergluon] = p.eta(); 
+	gengluon_phi[countergluon] = p.phi();
+	gengluon_charge[countergluon]= p.charge();
+	gengluon_pdgid[countergluon]= p.pdgId();
+	countergluon++;
+      }
+      
+      
+    }
+  
+  
 
+    
+ 
+    
+    
     if (fabs(id) == 11 && st == 1) {
       const Candidate * unstableGenEle = p.clone(); // stable = unstable at the beginning
       const Candidate * mom = p.mother();
@@ -2026,6 +2166,8 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
     }
   }  
   genparticles_size=counter;
+  genquarks_size = counterquark; 
+  gengluons_size = countergluon; 
 }//end of DataGenPart
 
 //

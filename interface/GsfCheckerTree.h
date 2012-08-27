@@ -16,7 +16,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.32 2012/07/10 10:15:58 treis Exp $
+// $Id: GsfCheckerTree.h,v 1.33 2012/08/08 12:27:51 treis Exp $
 //
 //
 
@@ -265,6 +265,32 @@ private:
   float weight;
 
   int genparticles_size;
+  int genquarks_size;
+  int gengluons_size;
+  
+  //Generated variables for quarks (before ISR)
+  float *genquark_e;
+  float *genquark_pt;
+  float *genquark_px; 
+  float *genquark_py; 
+  float *genquark_pz; 
+  float *genquark_eta; 
+  float *genquark_phi;
+  int *genquark_charge;
+  int *genquark_pdgid;
+
+ //Generated variables for gluons (before ISR)
+  float *gengluon_e;
+  float *gengluon_pt;
+  float *gengluon_px; 
+  float *gengluon_py; 
+  float *gengluon_pz; 
+  float *gengluon_eta; 
+  float *gengluon_phi;
+  int *gengluon_charge;
+  int *gengluon_pdgid;
+
+
   //Generated variables (after FSR)
   float *genele_e;
   float *genele_pt;
@@ -274,6 +300,7 @@ private:
   float *genele_eta; 
   float *genele_phi;
   int *genele_charge;
+
   //Generated variables (before FSR)
   float *unstableGenEle_e;
   float *unstableGenEle_pt;
