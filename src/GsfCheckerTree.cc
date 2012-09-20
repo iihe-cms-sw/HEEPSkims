@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.34 2012/08/08 12:27:52 treis Exp $
+// $Id: GsfCheckerTree.cc,v 1.35 2012/08/27 07:10:25 lathomas Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -194,12 +194,12 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     cntr++; 
 
     if (cntr == 1) {
-      gsfPtMax = gsfiterbis->superCluster()->energy() * sin(gsfiterbis->theta());
-      //gsfPtMax = gsfiterbis->caloEnergy()*sin(gsfiterbis->p4().theta());
+      //gsfPtMax = gsfiterbis->superCluster()->energy() * sin(gsfiterbis->theta());
+      gsfPtMax = gsfiterbis->caloEnergy()*sin(gsfiterbis->p4().theta());
     }
     if (cntr == 2) {
-      gsfPtSecondMax = gsfiterbis->superCluster()->energy() * sin(gsfiterbis->theta());
-      //gsfPtSecondMax = gsfiterbis->caloEnergy()*sin(gsfiterbis->p4().theta());
+      //gsfPtSecondMax = gsfiterbis->superCluster()->energy() * sin(gsfiterbis->theta());
+      gsfPtSecondMax = gsfiterbis->caloEnergy()*sin(gsfiterbis->p4().theta());
     }
   }
   //Missing hits, Invariant Mass cut
