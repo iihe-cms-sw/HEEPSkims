@@ -8,7 +8,6 @@
 <use     name="DataFormats/L1Trigger"/>
 <use     name="HLTrigger/HLTcore"/>
 <use     name="L1Trigger/RegionalCaloTrigger"/>
-<use   name="FWCore/Framework"/>
 <use   name="FWCore/Utilities"/>
 <use   name="clhep"/>
 <use   name="MagneticField/Engine"/>
@@ -21,6 +20,7 @@
 <use   name="DataFormats/MuonReco"/>
 <use   name="DataFormats/MuonDetId"/>
 <use   name="DataFormats/Candidate"/>
+<use   name="DataFormats/EcalRecHit"/>
 <use   name="DataFormats/EgammaReco"/>
 <use   name="DataFormats/EgammaCandidates"/>
 <use   name="DataFormats/HepMCCandidate"/>
@@ -37,6 +37,7 @@
 <use   name="TrackingTools/GsfTools"/>
 <use   name="RecoTracker/TrackProducer"/>
 <use   name="Geometry/CaloGeometry"/>
+<use   name="Geometry/CaloTopology"/>
 <use   name="DataFormats/HcalRecHit"/>
 <use   name="RecoCaloTools/Selectors"/>
 <use   name="RecoCaloTools/MetaCollections"/>
@@ -46,12 +47,11 @@
 <use   name="RecoEgamma/EgammaElectronAlgos"/>
 <use   name="CommonTools/UtilAlgos"/>
 <use   name="PhysicsTools/IsolationAlgos"/>
-<use   name="DataFormats/L1GlobalTrigger"/>
 <use   name="DataFormats/Common"/>
 <use   name="hepmc"/>
-<use   name="DataFormats/HepMCCandidate"/>
 <use   name="root"/>
 <use   name="SHarper/HEEPAnalyzer"/>
+<use   name="DataFormats/Luminosity"/>
 <flags   EDM_PLUGIN="1"/>
 <export>
   <lib   name="1"/>
