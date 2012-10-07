@@ -1,4 +1,4 @@
-// -*- C++ -*-
+ // -*- C++ -*-
 //
 // Package:    GsfCheckerTree
 // Class:      GsfCheckerTree
@@ -13,10 +13,11 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.35 2012/08/27 07:10:25 lathomas Exp $
+// $Id: GsfCheckerTree.cc,v 1.36 2012/09/20 13:04:08 lathomas Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/LuminosityBlock.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "UserCode/HEEPSkims/interface/GsfCheckerTree.h"
@@ -24,11 +25,34 @@ Implementation:
 #include "DataFormats/RecoCandidate/interface/IsoDeposit.h"
 #include "SHarper/HEEPAnalyzer/interface/HEEPDebug.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
+#include "DataFormats/TrackReco/interface/HitPattern.h"
 #include "SHarper/HEEPAnalyzer/interface/HEEPEventHelper.h"
 #include "SHarper/HEEPAnalyzer/interface/HEEPEvent.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
 #include "DataFormats/Common/interface/ValueMap.h"
+#include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
+#include "DataFormats/EgammaCandidates/interface/Conversion.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/EgammaReco/interface/SuperCluster.h"
+
+//ECAL 
+#include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
+#include "DataFormats/EcalRecHit/interface/EcalRecHit.h"
+#include "DataFormats/EgammaReco/interface/BasicCluster.h"
+#include "DataFormats/EgammaReco/interface/BasicClusterFwd.h"
+#include "DataFormats/EcalDetId/interface/EBDetId.h"
+#include "DataFormats/DetId/interface/DetId.h"
+
+
+#include "Geometry/CaloGeometry/interface/CaloGeometry.h"
+#include "Geometry/CaloTopology/interface/CaloTopology.h"
+#include "Geometry/Records/interface/CaloGeometryRecord.h"
+#include "Geometry/Records/interface/CaloTopologyRecord.h"
+
+
+
+#include <TMath.h>
 #define PI 3.141592654
 #define TWOPI 6.283185308
 
@@ -41,7 +65,7 @@ bool
 gsfEtGreater(const reco::GsfElectron &gsf1,const reco::GsfElectron &gsf2)
 {
   float et1 = gsf1.superCluster()->energy() * sin(gsf1.theta());
-  float et2 = gsf2.superCluster()->energy() * sin(gsf2.theta());
+  float et2 = gsf1.superCluster()->energy() * sin(gsf2.theta());
   //float et1 = gsf1.caloEnergy() * sin(gsf1.p4().theta());
   //float et2 = gsf2.caloEnergy() * sin(gsf2.p4().theta());
   return (et1 > et2);
@@ -101,7 +125,7 @@ GsfCheckerTree::GsfCheckerTree(const edm::ParameterSet& iConfig):
   comEnergy_ = iConfig.getParameter<double>("centerOfMassEnergy");
   ScPtMin_ = iConfig.getUntrackedParameter<double>("ScPtMin", 10.);
   bJetPtMin_ = iConfig.getUntrackedParameter<double>("bJetPtMin", 10.);
-  GsfPtMin_ = iConfig.getUntrackedParameter<double>("GsfPtMin", 10.);
+  GsfPtMin_ = iConfig.getUntrackedParameter<double>("GsfPtMin", 5.);
   GsfTrackPtMin_= iConfig.getUntrackedParameter<double>("GsfTrackPtMin", 5.);
   ele1EtMin_ = iConfig.getUntrackedParameter<double>("electron1EtMin", 0.);
   ele1EtMax_ = iConfig.getUntrackedParameter<double>("electron1EtMax", 1.E99);
@@ -175,8 +199,9 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   //Run and event number
   runnumber = iEvent.id().run();
   eventnumber = iEvent.id().event();
-  luminosityBlock = iEvent.id().luminosityBlock(); 
-
+  luminosityBlock = iEvent.id().luminosityBlock();
+  
+ 
   // for skim on pt 
   //Final GSF Electron collection
   edm::Handle<reco::GsfElectronCollection> pGsfElectrons;
@@ -188,11 +213,11 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   float gsfPtMax = 0.;
   float gsfPtSecondMax = 0.; 
-  reco::GsfElectronCollection::const_iterator gsfiterbis = gsfelectrons.begin();
+ 
   int cntr = 0; 
-  for(; gsfiterbis != gsfelectrons.end(); ++gsfiterbis) {
+  for( reco::GsfElectronCollection::const_iterator gsfiterbis = gsfelectrons.begin(); gsfiterbis != gsfelectrons.end(); ++gsfiterbis) {
     cntr++; 
-
+    
     if (cntr == 1) {
       //gsfPtMax = gsfiterbis->superCluster()->energy() * sin(gsfiterbis->theta());
       gsfPtMax = gsfiterbis->caloEnergy()*sin(gsfiterbis->p4().theta());
@@ -209,6 +234,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   iEvent.getByLabel("muons",muonCollection);
   const reco::MuonCollection* muons = muonCollection.product();
 
+
   float muonPtMax = 0.;
   // get the two highes pt muons
   for(reco::MuonCollection::const_iterator muIt = muons->begin(); muIt < muons->end(); ++muIt){
@@ -220,9 +246,9 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
 
   // SKIMMING
-  if (!(gsfPtMax >= ele1EtMin_ && gsfPtSecondMax >= ele2EtMin_) && !(gsfPtMax >= ele1EtMin_ && muonPtMax >= muPtMin_)) return;
-  if (gsfPtMax > ele1EtMax_ || gsfPtSecondMax > ele2EtMax_ || muonPtMax > muPtMax_) return;
-
+  if (!(gsfPtMax >= ele1EtMin_ && gsfPtSecondMax >= ele2EtMin_) && !(gsfPtMax >= ele1EtMin_ && muonPtMax >= muPtMin_)) {return;}
+  if (gsfPtMax > ele1EtMax_ || gsfPtSecondMax > ele2EtMax_ || muonPtMax > muPtMax_) {return;}
+  
   //rho variable
   rho = 0;
   //rhoiso = 0;
@@ -234,8 +260,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   //isrhoiso =iEvent.getByLabel(edm::InputTag("kt6PFJetsIso:rho"),rhoiso_);
   if(isrho)   rho =*rho_;
   //if(isrhoiso) rhoiso =*rhoiso_;
-  //cout << "rho= " << rho << endl;
-  //cout << "rhoiso= " << rhoiso << endl;
 
   //beam spot variables
   sigmaZ = -5000.;
@@ -272,7 +296,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
     
     DataGenPart(iEvent);
-
+    
     // pile up info
     edm::InputTag pileupSrc_("addPileupInfo");
     Handle<std::vector<PileupSummaryInfo> > puInfo;
@@ -293,6 +317,9 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     genparticles_size = 0;
     genquarks_size = 0;
     gengluons_size = 0;
+
+   
+    
   }
 
   L1TInfo(iEvent);
@@ -304,10 +331,13 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   //cout << "fine jet" << endl; 
   JetData(iEvent);
   //cout << "fine bjet" << endl; 
-  // get the beamspot from the Event:
+
+
+
+// get the beamspot from the Event:
   edm::Handle<reco::BeamSpot> theBeamSpot;
   iEvent.getByType(theBeamSpot);
-
+  
   // get all beam spot info
   sigmaZ=theBeamSpot->sigmaZ();
   sigmaZ0Error=theBeamSpot->sigmaZ0Error();
@@ -333,7 +363,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
   
   pvsize = pvcoll->size();
-
+  
   pvx = new float [pvsize];
   pvy = new float [pvsize];
   pvz = new float [pvsize];
@@ -535,39 +565,35 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
   }
   muon_size = index_mu;
-  //cout << "muon_size " << muon_size << endl;
+  //  cout << "muon_size " << muon_size << endl;
   //Get a Handle on different collections
   //Get the superclusters
   edm::Handle<reco::SuperClusterCollection> pHybridSuperClusters;
   edm::Handle<reco::SuperClusterCollection> pIslandSuperClusters;
+  
   try
     {
       iEvent.getByLabel("correctedHybridSuperClusters","",pHybridSuperClusters);
       iEvent.getByLabel("correctedMulti5x5SuperClustersWithPreshower","",pIslandSuperClusters);
-    }
+      }
   catch(cms::Exception &ex){}
-
   const reco::SuperClusterCollection *hybridSuperClusters = pHybridSuperClusters.product();
   const reco::SuperClusterCollection *islandSuperClusters = pIslandSuperClusters.product();
-
   //Merge these two supercluster collections into one (sclusters collection)
   std::vector<const reco::SuperCluster*> sclusters;
   for (reco::SuperClusterCollection::const_iterator hsc = hybridSuperClusters->begin(); 
        hsc != hybridSuperClusters->end(); hsc++ ){sclusters.push_back(&(*hsc));}
   for (reco::SuperClusterCollection::const_iterator isc = islandSuperClusters->begin(); 
        isc != islandSuperClusters->end(); isc++ ){sclusters.push_back(&(*isc));}
-
   std::vector<reco::SuperClusterRef> refsclusters;
   for(unsigned int i = 0;i<hybridSuperClusters->size();i++)
     {reco::SuperClusterRef hrefsc(reco::SuperClusterRef(pHybridSuperClusters,i));refsclusters.push_back(hrefsc);}
   for(unsigned int i = 0;i<islandSuperClusters->size();i++)
     {reco::SuperClusterRef irefsc(reco::SuperClusterRef(pIslandSuperClusters,i));refsclusters.push_back(irefsc);}
-
   scsize = 0;
   
   //scsize = sclusters.size();
-
-  //cout << "sc" << endl;
+  
   //sort all the refSC by transverse energy
   std::sort(refsclusters.begin(),refsclusters.end(),refScEtGreater);
  
@@ -639,7 +665,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    
     counter++;
   }
-
+  
   //trying to see if the sc is seed associated
   
   edm::Handle<GsfTrackCollection> gsfTracksH ;
@@ -694,11 +720,99 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   EcalClusterLazyTools lazytool(iEvent,iSetup,InputTag("reducedEcalRecHitsEB"),InputTag("reducedEcalRecHitsEE"));
 
   gsf_size = 0;
-  reco::GsfElectronCollection::const_iterator gsfiterforptcut = gsfelectrons.begin();
-  for(; gsfiterforptcut != gsfelectrons.end(); ++gsfiterforptcut) {
-    if( gsfiterforptcut->caloEnergy()*sin(gsfiterforptcut->p4().theta()) <GsfPtMin_ ) continue;
+  gsf0_crystal_size=0; 
+  gsf1_crystal_size=0; 
+
+
+   // rechits test Laurent
+
+   ESHandle<CaloGeometry> pG;
+   iSetup.get<CaloGeometryRecord>().get(pG);
+   const CaloGeometry* geo=pG.product();
+   edm::ESHandle<CaloTopology> pTopology;
+   iSetup.get<CaloTopologyRecord>().get(pTopology);
+   
+   Handle<EcalRecHitCollection> EBhits;
+   //  event.getByLabel(ebhitcoll_,EBhits);
+   iEvent.getByLabel("reducedEcalRecHitsEB",EBhits);
+   //const EcalRecHitCollection *ebRecHits=EBhits.product();
+   Handle<EcalRecHitCollection> EEhits;
+   iEvent.getByLabel("reducedEcalRecHitsEE",EEhits);
+   // const EcalRecHitCollection *eeRecHits=EEhits.product();
+ 
+   for( reco::GsfElectronCollection::const_iterator gsfiterforptcut = gsfelectrons.begin(); gsfiterforptcut != gsfelectrons.end(); ++gsfiterforptcut) {
+     if( gsfiterforptcut->caloEnergy()*sin(gsfiterforptcut->p4().theta()) <GsfPtMin_ ) continue;
+    
+    
+    if(fabs((*gsfiterforptcut).superCluster()->eta())<1.479){//First : Barrel
+      for(reco::CaloCluster_iterator bcIt = (*gsfiterforptcut).superCluster()->clustersBegin();
+	  bcIt != (*gsfiterforptcut).superCluster()->clustersEnd();
+	  ++bcIt) { 
+	for(std::vector< std::pair<DetId, float> >::const_iterator rhIt = (*bcIt)->hitsAndFractions().begin();
+	    rhIt != (*bcIt)->hitsAndFractions().end(); 
+	    ++rhIt) { //loop over rec hits in basic cluster
+    	  for(EcalRecHitCollection::const_iterator it = EBhits->begin();
+	      it !=  EBhits->end(); 
+	      ++it) { //loop over all rec hits to find the right ones
+	    if  (rhIt->first ==  (*it).id() ) { //found the matching rechit
+	      if(gsf_size==0) {
+		gsf0_crystal_size++; 
+	      }
+	      if(gsf_size==1) {
+		gsf1_crystal_size++; 
+	      }
+	    }
+	    
+    	  }
+	}
+      }
+    }
+    //Now looking at endcaps rechits
+    else{
+      for(reco::CaloCluster_iterator bcIt = (*gsfiterforptcut).superCluster()->clustersBegin();
+	  bcIt != (*gsfiterforptcut).superCluster()->clustersEnd(); 
+	  ++bcIt) {
+	for(std::vector< std::pair<DetId, float> >::const_iterator rhIt = (*bcIt)->hitsAndFractions().begin();
+	    rhIt != (*bcIt)->hitsAndFractions().end(); ++rhIt) { //loop over rec hits in basic cluster
+	  for(EcalRecHitCollection::const_iterator it = EEhits->begin();
+	      it !=  EEhits->end(); ++it) { //loop over all rec hits to find the right ones
+	    if  (rhIt->first ==  (*it).id() ) { //found the matching rechit
+	      if(gsf_size==0) {
+		gsf0_crystal_size++; 
+	      }
+	      if(gsf_size==1) {
+		gsf1_crystal_size++; 
+	      }
+	    }
+	  }
+	}
+      }
+    }
     gsf_size++;
   }
+  
+   conv_size = 0;
+  
+  edm::Handle<reco::ConversionCollection> hConversions;
+  iEvent.getByLabel("allConversions", hConversions);
+   for (reco::ConversionCollection::const_iterator conv = hConversions->begin(); conv!= hConversions->end(); ++conv) {
+     reco::Vertex vtx = conv->conversionVertex();
+      if (vtx.isValid()) {
+
+	for(reco::GsfElectronCollection::const_iterator gsfiterforconv = gsfelectrons.begin(); gsfiterforconv!=gsfelectrons.end(); ++gsfiterforconv) {
+	  if (ConversionTools::matchesConversion(*gsfiterforconv, *conv)) {
+	    conv_size++;
+	    break;
+	  }
+	}
+      }
+   }
+   
+   
+
+
+
+
   //cout << "gsf_size " <<  gsf_size << endl;
 
   gsf_isEB = new bool [gsf_size];
@@ -820,7 +934,23 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   gsfctfscpixconsistent = new bool [gsf_size];
   gsfscpixconsistent = new bool [gsf_size];
   gsfctfconsistent = new bool [gsf_size];
- 
+
+  //Crystal info
+  gsf0_crystal_ietaorix = new int [gsf0_crystal_size]; 
+  gsf0_crystal_iphioriy = new int [gsf0_crystal_size];   
+  gsf0_crystal_energy = new float [gsf0_crystal_size]; 
+  gsf0_crystal_eta = new float [gsf0_crystal_size]; 
+  gsf1_crystal_ietaorix = new int [gsf1_crystal_size]; 
+  gsf1_crystal_iphioriy = new int [gsf1_crystal_size];   
+  gsf1_crystal_energy = new float [gsf1_crystal_size]; 
+  gsf1_crystal_eta = new float [gsf1_crystal_size];
+
+  //conversion information
+  conv_vtxProb = new float [conv_size];
+  conv_lxy = new float [conv_size];
+  conv_nHitsMax = new int [conv_size];
+  conv_eleind = new int [conv_size];
+
   mytree->GetBranch("gsf_isEB")->SetAddress(gsf_isEB);
   mytree->GetBranch("gsf_isEE")->SetAddress(gsf_isEE);
   mytree->GetBranch("gsf_px")->SetAddress(gsf_px);
@@ -913,6 +1043,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   mytree->GetBranch("gsf_e2x5overe5x5")->SetAddress(gsf_e2x5overe5x5);
   mytree->GetBranch("gsf_e1x5overe5x5")->SetAddress(gsf_e1x5overe5x5);
   mytree->GetBranch("gsf_gsfet")->SetAddress(gsf_gsfet);
+  mytree->GetBranch("gsf_hitsinfo")->SetAddress(gsf_hitsinfo);
   mytree->GetBranch("scindexforgsf")->SetAddress(scindexforgsf);
   mytree->GetBranch("gsfpass_ET")->SetAddress(gsfpass_ET); 
   mytree->GetBranch("gsfpass_PT")->SetAddress(gsfpass_PT); 
@@ -941,6 +1072,25 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   mytree->GetBranch("gsfscpixconsistent")->SetAddress(gsfscpixconsistent);
   mytree->GetBranch("gsfctfconsistent")->SetAddress(gsfctfconsistent);
 
+  //Crystal info
+ 
+  mytree->GetBranch("gsf0_crystal_ietaorix")->SetAddress(gsf0_crystal_ietaorix);
+  mytree->GetBranch("gsf0_crystal_iphioriy")->SetAddress(gsf0_crystal_iphioriy);
+  mytree->GetBranch("gsf0_crystal_energy")->SetAddress(gsf0_crystal_energy);
+  mytree->GetBranch("gsf0_crystal_eta")->SetAddress(gsf0_crystal_eta);
+  mytree->GetBranch("gsf1_crystal_ietaorix")->SetAddress(gsf1_crystal_ietaorix);
+  mytree->GetBranch("gsf1_crystal_iphioriy")->SetAddress(gsf1_crystal_iphioriy);
+  mytree->GetBranch("gsf1_crystal_energy")->SetAddress(gsf1_crystal_energy);
+  mytree->GetBranch("gsf1_crystal_eta")->SetAddress(gsf1_crystal_eta);
+
+
+  //Conversion information 
+  // mytree->GetBranch("conv_size")->SetAddress(conv_size); 
+  mytree->GetBranch("conv_vtxProb")->SetAddress(conv_vtxProb); 
+  mytree->GetBranch("conv_lxy")->SetAddress(conv_lxy); 
+  mytree->GetBranch("conv_nHitsMax")->SetAddress(conv_nHitsMax); 
+  mytree->GetBranch("conv_eleind")->SetAddress(conv_eleind);
+ 
   int e=0;
   int nHeepEle = 0;
   reco::GsfElectronCollection::const_iterator gsfiter = gsfelectrons.begin();
@@ -987,6 +1137,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     iEvent.getByLabel(inputTagIsoValElectronsPFId_[j], electronIsoValPFId[j]);
   }
 
+
     const IsoDepositVals * electronIsoVals =  &electronIsoValPFId  ;
     reco::GsfElectronRef myElectronRef(pGsfElectrons ,e);
     gsf_PFisocharged[e] =  (*(*electronIsoVals)[0])[myElectronRef];
@@ -1030,6 +1181,178 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     gsfsc_py[e] = gsfsc_pt[e]*sin(gsfsc_phi[e]);
     gsfsc_pz[e] = (gsfiter->superCluster()->rawEnergy()+gsfiter->superCluster()->preshowerEnergy())*tanh(gsfiter->superCluster()->eta());
     gsf_gsfet[e] = gsfiter->caloEnergy()*sin(gsfiter->p4().theta());
+    
+    //Laurent SuperStar (if it works)
+    //Test Laurent track hits info 
+    //http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/DataFormats/TrackReco/interface/HitPattern.h?revision=1.32&view=markup
+
+    reco::HitPattern kfHitPattern = gsfiter->gsfTrack()->hitPattern();
+    nbtrackhits = kfHitPattern.numberOfHits(); 
+   
+        
+    for(int hititer =0; hititer<25;hititer++){
+      if(e>1) continue;
+      if(hititer<nbtrackhits){
+	unsigned int myhitbin = kfHitPattern.getHitPattern(hititer);
+    gsf_hitsinfo[e][hititer]=myhitbin;
+
+    for (int j=10; j>=0; j--) {
+      int bit = (myhitbin >> j) & 0x1;
+    }
+    int NValPixelHit = kfHitPattern.numberOfValidPixelHits();
+    int nhits = gsfiter->gsfTrack()->hitPattern().trackerLayersWithMeasurement();
+    
+      }
+      else{
+      gsf_hitsinfo[e][hititer]=0;
+      }
+     
+    }
+    //Try to add info about rechit in the SC 
+    //strongly inspired from : http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/DaveC/src/printPhoton.cc
+
+    if(fabs((*gsfiter).superCluster()->eta())<1.479){//First : Barrel
+      int iebhit = -1, nclust = 0;
+      double amplitot = 0.0;
+      double clustot = 0.0;
+      
+      for(reco::CaloCluster_iterator bcIt = (*gsfiter).superCluster()->clustersBegin();
+	  bcIt != (*gsfiter).superCluster()->clustersEnd();
+	  ++bcIt) { //loop over basic clusters in SC
+	// bcIt seems to be a pointer to a pointer !!!!!!!!!!!!!!!
+	 
+	double clusterEnergy = (*bcIt)->energy();
+	clustot += clusterEnergy;
+	nclust +=1;
+	for(std::vector< std::pair<DetId, float> >::const_iterator rhIt = (*bcIt)->hitsAndFractions().begin();
+	    rhIt != (*bcIt)->hitsAndFractions().end(); 
+	    ++rhIt) { //loop over rec hits in basic cluster
+    
+	  for(EcalRecHitCollection::const_iterator it = EBhits->begin();
+	      it !=  EBhits->end(); 
+	      ++it) { //loop over all rec hits to find the right ones
+	    if  (rhIt->first ==  (*it).id() ) { //found the matching rechit
+	 
+	      iebhit +=1; 
+	      EcalRecHit hit = (*it);
+	      EBDetId det    = hit.id(); 
+	      const DetId det2     = hit.id(); 
+	      float ampli    = hit.energy();
+
+
+	      
+	      amplitot += ampli;
+	      //float time     = hit.time()-toffset; NO OFFSET DECLARED
+	      float time     = hit.time();
+	      float toversig =0;
+	      int   ebflag   = hit.recoFlag();
+	      int sm         = det.ism();
+	      float_t chi2   = hit.chi2();
+	      float_t chi2oot= hit.outOfTimeChi2();
+	      
+	      GlobalPoint poseb=geo->getPosition(hit.detid());
+	      float eta_eb=poseb.eta();
+	      float phi_eb=poseb.phi();
+	      float pf=1.0/cosh(eta_eb);
+	      float eteb=ampli*pf;
+	      int ieta=det.ieta();      
+	      int iphi=det.iphi();
+	      
+	      if(e==0) {
+		gsf0_crystal_energy[iebhit]=ampli;
+		gsf0_crystal_ietaorix[iebhit]=ieta;
+		gsf0_crystal_iphioriy[iebhit]=iphi;
+		gsf0_crystal_eta[iebhit]=eta_eb;
+	      }
+	      if(e==1) {
+		gsf1_crystal_energy[iebhit]=ampli;
+		gsf1_crystal_ietaorix[iebhit]=ieta;
+		gsf1_crystal_iphioriy[iebhit]=iphi;
+		gsf1_crystal_eta[iebhit]=eta_eb;
+	      }
+	      //cout << "Barrel electron hit " << iebhit << ", ieta=" << ieta << " iphi= " << iphi << " et=" << eteb << " ampli=" << ampli << " eta = "<< eta_eb<<  endl;
+
+
+
+
+	    }
+    
+	  }
+
+
+	}
+      }
+
+      //cout <<  "nb of good hits Barrel : " <<iebhit << endl; 
+    }
+
+    //Now looking at endcaps rechits
+    else{
+      int ieehit = -1, nclustee = 0;
+      double amplitotee = 0.0, clustotee = 0.0;
+      for(reco::CaloCluster_iterator bcIt = (*gsfiter).superCluster()->clustersBegin();
+	  bcIt != (*gsfiter).superCluster()->clustersEnd(); ++bcIt) { //loop over basic clusters in SC
+	nclustee +=1;
+	//CaloCluster cluster = (*bcIt).superCluster();
+	//double clusterEnergyee = cluster.energy();
+	
+	// bcIt seems to be a pointer to a pointer !!!!!!!!!!!!!!!
+	double clusterEnergyee = (*bcIt)->energy();
+	clustotee += clusterEnergyee;
+	
+		
+	for(std::vector< std::pair<DetId, float> >::const_iterator rhIt = (*bcIt)->hitsAndFractions().begin();
+	    rhIt != (*bcIt)->hitsAndFractions().end(); ++rhIt) { //loop over rec hits in basic cluster
+	  
+	  for(EcalRecHitCollection::const_iterator it = EEhits->begin();
+	      it !=  EEhits->end(); ++it) { //loop over all rec hits to find the right ones
+	    
+	    if  (rhIt->first ==  (*it).id() ) { //found the matching rechit
+	      ieehit += 1;
+	      EcalRecHit hit = (*it);
+	      EEDetId det = hit.id(); 
+	      
+	      int dee=0;
+	      float ampli = hit.energy();
+	     
+	      amplitotee += ampli;
+	      //float time     = hit.time()-toffset;
+	      float time     = hit.time();
+	      int   ebflag   = hit.recoFlag();
+	      
+	      GlobalPoint posee=geo->getPosition(hit.detid());
+	      float eta_ee=posee.eta();
+	      float phi_ee=posee.phi();
+	      float pf=1.0/cosh(eta_ee);
+	      float etee=ampli*pf;
+	      int ix=det.ix();
+	      int iy=det.iy();
+	      int side=det.zside();
+	      int iz=0;
+
+      	      if(e==0) {
+		gsf0_crystal_energy[ieehit]=ampli;
+		gsf0_crystal_ietaorix[ieehit]=ix;
+		gsf0_crystal_iphioriy[ieehit]=iy;
+		gsf0_crystal_eta[ieehit]=eta_ee;
+	      }
+	      if(e==1) {
+		gsf1_crystal_energy[ieehit]=ampli;
+		gsf1_crystal_ietaorix[ieehit]=ix;
+		gsf1_crystal_iphioriy[ieehit]=iy;
+		gsf1_crystal_eta[ieehit]=eta_ee;
+	      }
+     
+	      //cout << "Endcaps electron hit " << ieehit << ", ix=" << ix << " iy= " << iy << " et=" << etee << " ampli=" << ampli << " eta = "<< eta_ee<<  endl;
+
+
+	    }
+	  }
+	}
+      }
+      //      cout <<  "nb of good hits Endcaps : " <<ieehit << endl; 
+    }
+
     gsf_theta[e] = gsfiter->theta();
     gsf_isEB[e] = gsfiter->isEB();
     gsf_isEE[e] = gsfiter->isEE();
@@ -1137,10 +1460,59 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     gsfctfscpixconsistent[e] = gsfiter->isGsfCtfScPixChargeConsistent();
     gsfscpixconsistent[e] = gsfiter->isGsfScPixChargeConsistent();
     gsfctfconsistent[e] = gsfiter->isGsfCtfChargeConsistent();
+    
+    
+    
+
+  
+    
+    
+    
+    
+    
 
     //increment index for gsf
     e++;
   }
+
+
+    //Conversion info : https://twiki.cern.ch/twiki/bin/viewauth/CMS/ConversionTools
+    
+  
+  const reco::BeamSpot &bspot = *theBeamSpot.product();
+
+    
+  int iconv=-1;
+  for (reco::ConversionCollection::const_iterator conv = hConversions->begin(); conv!= hConversions->end(); ++conv) {
+     
+      reco::Vertex vtx = conv->conversionVertex();
+      if (vtx.isValid()) {
+	int iel=-1;
+
+	for(reco::GsfElectronCollection::const_iterator gsfiterforconv = gsfelectrons.begin(); gsfiterforconv!=gsfelectrons.end(); ++gsfiterforconv) {
+	  iel++;
+	  bool passconversionveto = !ConversionTools::hasMatchedConversion(*gsfiterforconv,hConversions,bspot.position());
+
+        if (ConversionTools::matchesConversion(*gsfiterforconv, *conv)) {
+	   iconv++;
+          conv_eleind[iconv] = iel;
+          conv_vtxProb[iconv] = (float)TMath::Prob( vtx.chi2(), vtx.ndof() );
+          math::XYZVector mom(conv->refittedPairMomentum());
+          double dbsx = vtx.x() - bspot.position().x();   
+          double dbsy = vtx.y() - bspot.position().y();
+          conv_lxy[iconv] = (float)((mom.x()*dbsx + mom.y()*dbsy)/mom.rho());
+          conv_nHitsMax[iconv]=0;
+	  for (std::vector<uint8_t>::const_iterator it = conv->nHitsBeforeVtx().begin(); it!=conv->nHitsBeforeVtx().end(); ++it) {
+            if ((*it)>conv_nHitsMax[iconv]) conv_nHitsMax[iconv] = (int)(*it);
+          }
+          break;
+        }
+      }
+      }
+     
+  }
+    //End of conversion info
+
 
   // calculate the invariant mass of two heep electrons if there are any
   heepHeepMass = -100.;
@@ -1165,8 +1537,10 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     // then calculate the invariant mass
     heepHeepMass = CalcInvariantMass(iHeep1, iHeep2); 
   }
+ 
 
   mytree->Fill();
+ 
 
   delete [] L1trigger_bool;
   delete [] HLTriggers;
@@ -1322,6 +1696,22 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   delete [] gsftrackpx;
   delete [] gsftrackpy;
   delete [] gsftrackpz;
+
+
+  delete [] gsf0_crystal_ietaorix;
+  delete [] gsf0_crystal_iphioriy;
+  delete [] gsf0_crystal_energy;
+  delete [] gsf0_crystal_eta ;
+  delete [] gsf1_crystal_ietaorix;
+  delete [] gsf1_crystal_iphioriy;
+  delete [] gsf1_crystal_energy;
+  delete [] gsf1_crystal_eta ;
+
+
+  delete [] conv_vtxProb;
+  delete [] conv_lxy;
+  delete [] conv_nHitsMax;
+  delete [] conv_eleind;
   
   delete [] muon_pt;
   delete [] muon_ptError;
@@ -1452,6 +1842,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     delete [] genelemom_pdgid;
     delete [] x1quark;
     delete [] x2quark;
+
+
   }
  }//end of analyze method
 
@@ -1841,6 +2233,7 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gsf_e2x5overe5x5", gsf_e2x5overe5x5, "gsf_e2x5overe5x5[gsf_size]/F");
   mytree->Branch("gsf_e1x5overe5x5", gsf_e1x5overe5x5, "gsf_e1x5overe5x5[gsf_size]/F");
   mytree->Branch("gsf_gsfet", gsf_gsfet, "gsf_gsfet[gsf_size]/F");
+  mytree->Branch("gsf_hitsinfo", gsf_hitsinfo, "gsf_hitsinfo[2][25]/i");
   mytree->Branch("scindexforgsf", scindexforgsf, "scindexforgsf[gsf_size]/I");
   mytree->Branch("gsftracksize", &gsftracksize, "gsftracksize/I");
   mytree->Branch("gsftracketa", gsftracketa, "gsftracketa[gsftracksize]/F");
@@ -1883,6 +2276,26 @@ GsfCheckerTree::beginJob()
   mytree->Branch("genparticles_size", &genparticles_size, "genparticles_size/I");
   mytree->Branch("genquarks_size", &genquarks_size, "genquarks_size/I");
   mytree->Branch("gengluons_size", &gengluons_size, "gengluons_size/I");
+
+
+  // Conversion info 
+  mytree->Branch("conv_size",&conv_size,"conv_size/I");
+  mytree->Branch("conv_vtxProb",conv_vtxProb,"conv_vtxProb[conv_size]/F");
+  mytree->Branch("conv_lxy",conv_lxy,"conv_lxy[conv_size]/F");
+  mytree->Branch("conv_nHitsMax",conv_nHitsMax,"conv_nHitsMax[conv_size]/I");
+  mytree->Branch("conv_eleind",conv_eleind,"conv_eleind[conv_size]/I");
+
+  // Crystal info 
+  mytree->Branch("gsf0_crystal_size",&gsf0_crystal_size,"gsf0_crystal_size/I");
+  mytree->Branch("gsf0_crystal_ietaorix",gsf0_crystal_ietaorix,"gsf0_crystal_ietaorix[gsf0_crystal_size]/I");
+  mytree->Branch("gsf0_crystal_iphioriy",gsf0_crystal_iphioriy,"gsf0_crystal_iphioriy[gsf0_crystal_size]/I");
+  mytree->Branch("gsf0_crystal_energy",gsf0_crystal_energy,"gsf0_crystal_energy[gsf0_crystal_size]/F");
+  mytree->Branch("gsf0_crystal_eta",gsf0_crystal_eta,"gsf0_crystal_eta[gsf0_crystal_size]/F");
+  mytree->Branch("gsf1_crystal_size",&gsf1_crystal_size,"gsf1_crystal_size/I");
+  mytree->Branch("gsf1_crystal_ietaorix",gsf1_crystal_ietaorix,"gsf1_crystal_ietaorix[gsf1_crystal_size]/I");
+  mytree->Branch("gsf1_crystal_iphioriy",gsf1_crystal_iphioriy,"gsf1_crystal_iphioriy[gsf1_crystal_size]/I");
+  mytree->Branch("gsf1_crystal_energy",gsf1_crystal_energy,"gsf1_crystal_energy[gsf1_crystal_size]/F");
+  mytree->Branch("gsf1_crystal_eta",gsf1_crystal_eta,"gsf1_crystal_eta[gsf1_crystal_size]/F");
   //GEN INFO FOR ELE and POSI (after FSR)
   
 

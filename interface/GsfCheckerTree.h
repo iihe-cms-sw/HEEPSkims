@@ -16,7 +16,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.33 2012/08/08 12:27:51 treis Exp $
+// $Id: GsfCheckerTree.h,v 1.34 2012/08/27 07:10:26 lathomas Exp $
 //
 //
 
@@ -368,6 +368,8 @@ private:
   float *scz;
 
   int gsf_size;
+  int conv_size;
+  int nbtrackhits;
   bool *gsf_isEB;
   bool *gsf_isEE;
   float *gsf_px;
@@ -460,6 +462,10 @@ private:
   float *gsf_e2x5overe5x5;
   float *gsf_e1x5overe5x5;
   float *gsf_gsfet;
+  unsigned int gsf_hitsinfo[2][25];
+  float crystal_e[2][250];
+//  unsigned int ** mymultidarray;
+  //  unsigned int * mymultidarray[20];
   int *scindexforgsf;
   bool *gsfpass_ET; 
   bool *gsfpass_PT; 
@@ -500,6 +506,27 @@ private:
   float *gsftrackpx;
   float *gsftrackpy;
   float *gsftrackpz;
+
+
+  //Crystal variable 
+  int gsf0_crystal_size; 
+  int *gsf0_crystal_ietaorix; 
+  int *gsf0_crystal_iphioriy;   
+  float *gsf0_crystal_energy; 
+  float *gsf0_crystal_eta; 
+  int gsf1_crystal_size; 
+  int *gsf1_crystal_ietaorix; 
+  int *gsf1_crystal_iphioriy;   
+  float *gsf1_crystal_energy; 
+  float *gsf1_crystal_eta; 
+ 
+  //Conversion information 
+
+
+  float  *conv_vtxProb;
+  float *conv_lxy;
+  int *conv_nHitsMax;
+  int *conv_eleind;
 
   unsigned int  nEvents_;           // number of events processed
 
