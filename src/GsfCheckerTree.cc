@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.36 2012/09/20 13:04:08 lathomas Exp $
+// $Id: GsfCheckerTree.cc,v 1.37 2012/10/07 22:48:02 lathomas Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -127,12 +127,32 @@ GsfCheckerTree::GsfCheckerTree(const edm::ParameterSet& iConfig):
   bJetPtMin_ = iConfig.getUntrackedParameter<double>("bJetPtMin", 10.);
   GsfPtMin_ = iConfig.getUntrackedParameter<double>("GsfPtMin", 5.);
   GsfTrackPtMin_= iConfig.getUntrackedParameter<double>("GsfTrackPtMin", 5.);
+  muPtMin_ = iConfig.getUntrackedParameter<double>("muPtMin", 5.);
   ele1EtMin_ = iConfig.getUntrackedParameter<double>("electron1EtMin", 0.);
   ele1EtMax_ = iConfig.getUntrackedParameter<double>("electron1EtMax", 1.E99);
   ele2EtMin_ = iConfig.getUntrackedParameter<double>("electron2EtMin", 0.);
   ele2EtMax_ = iConfig.getUntrackedParameter<double>("electron2EtMax", 1.E99);
-  muPtMin_ = iConfig.getUntrackedParameter<double>("muonPtMin", 0.);
-  muPtMax_ = iConfig.getUntrackedParameter<double>("muonPtMax", 1.E99);
+  muonPtMin_ = iConfig.getUntrackedParameter<double>("muonPtMin", 0.);
+  muonPtMax_ = iConfig.getUntrackedParameter<double>("muonPtMax", 1.E99);
+
+  // sanity check for cuts
+  if (ele1EtMin_ > ele1EtMax_) {
+    double helper = ele1EtMax_;
+    ele1EtMax_ = ele1EtMin_;
+    ele1EtMin_ = helper;
+  }
+  if (ele2EtMin_ > ele2EtMax_) {
+    double helper = ele2EtMax_;
+    ele2EtMax_ = ele2EtMin_;
+    ele2EtMin_ = helper;
+  }
+  if (muonPtMin_ > muonPtMax_) {
+    double helper = muonPtMax_;
+    muonPtMax_ = muonPtMin_;
+    muonPtMin_ = helper;
+  }
+  if (GsfPtMin_ > ele1EtMin_ || GsfPtMin_ > ele2EtMin_) GsfPtMin_ = (ele2EtMin_ > ele1EtMin_) ? ele1EtMin_ : ele2EtMin_;
+  if (muPtMin_ > muonPtMin_) muPtMin_ = muonPtMin_;
 
   hcalCfg.hOverEConeSize = 0.15;
   hcalCfg.useTowers = true;
@@ -239,15 +259,17 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   // get the two highes pt muons
   for(reco::MuonCollection::const_iterator muIt = muons->begin(); muIt < muons->end(); ++muIt){
     if (muIt->isGlobalMuon()) {
-      if (muIt->globalTrack()->pt() > muonPtMax) {
-        muonPtMax = muIt->globalTrack()->pt();
+      // get TeV optimized track
+      reco::Muon::MuonTrackTypePair tevOptMuTrk = muon::tevOptimized(*muIt);
+      if (tevOptMuTrk.first->pt() > muonPtMax) {
+        muonPtMax = tevOptMuTrk.first->pt();
       }
     }
   }
 
   // SKIMMING
-  if (!(gsfPtMax >= ele1EtMin_ && gsfPtSecondMax >= ele2EtMin_) && !(gsfPtMax >= ele1EtMin_ && muonPtMax >= muPtMin_)) {return;}
-  if (gsfPtMax > ele1EtMax_ || gsfPtSecondMax > ele2EtMax_ || muonPtMax > muPtMax_) {return;}
+  if (!(gsfPtMax >= ele1EtMin_ && gsfPtSecondMax >= ele2EtMin_) && !(gsfPtMax >= ele1EtMin_ && muonPtMax >= muonPtMin_)) {return;}
+  if (gsfPtMax > ele1EtMax_ || gsfPtSecondMax > ele2EtMax_ || muonPtMax > muonPtMax_) {return;}
   
   //rho variable
   rho = 0;
@@ -398,6 +420,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   muon_size = muons->size();
   muon_pt = new float [muon_size];
   muon_ptError = new float [muon_size];
+  muon_gTrk_pt = new float [muon_size];
+  muon_gTrk_ptError = new float [muon_size];
   muon_eta = new float [muon_size];
   muon_etaError = new float [muon_size];
   muon_phi = new float [muon_size];
@@ -420,6 +444,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   muon_nlosthits = new int [muon_size];
   muon_nSegmentMatch = new int [muon_size];
   muon_isTrackerMuon = new bool [muon_size];
+  muon_isPFMuon = new bool [muon_size];
+  muon_isPFIsolationValid = new bool [muon_size];
   muon_chi2 = new float [muon_size];
   muon_ndof = new int [muon_size];
   muon_normChi2 = new float [muon_size];
@@ -450,6 +476,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   muon_innerPosz = new float [muon_size];
   mytree->GetBranch("muon_pt")->SetAddress(muon_pt);
   mytree->GetBranch("muon_ptError")->SetAddress(muon_ptError);
+  mytree->GetBranch("muon_gTrk_pt")->SetAddress(muon_gTrk_pt);
+  mytree->GetBranch("muon_gTrk_ptError")->SetAddress(muon_gTrk_ptError);
   mytree->GetBranch("muon_eta")->SetAddress(muon_eta);
   mytree->GetBranch("muon_etaError")->SetAddress(muon_etaError);
   mytree->GetBranch("muon_phi")->SetAddress(muon_phi);
@@ -472,6 +500,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   mytree->GetBranch("muon_nlosthits")->SetAddress(muon_nlosthits);
   mytree->GetBranch("muon_nSegmentMatch")->SetAddress(muon_nSegmentMatch);
   mytree->GetBranch("muon_isTrackerMuon")->SetAddress(muon_isTrackerMuon);
+  mytree->GetBranch("muon_isPFMuon")->SetAddress(muon_isPFMuon);
+  mytree->GetBranch("muon_isPFIsolationValid")->SetAddress(muon_isPFIsolationValid);
   mytree->GetBranch("muon_chi2")->SetAddress(muon_chi2);
   mytree->GetBranch("muon_ndof")->SetAddress(muon_ndof);
   mytree->GetBranch("muon_normChi2")->SetAddress(muon_normChi2);
@@ -506,45 +536,52 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   for(reco::MuonCollection::const_iterator muIt = muons->begin(); muIt != muons->end(); ++muIt) {
     
     if (muIt->isGlobalMuon()) {
+      // get TeV optimized track
+      reco::Muon::MuonTrackTypePair tevOptMuTrk = muon::tevOptimized(*muIt);
+
+      if (tevOptMuTrk.first->pt() < muPtMin_) continue;
   
-      if (muIt->globalTrack()->pt() > muonPtMax) muonPtMax = muIt->globalTrack()->pt();
-      muon_pt[index_mu] = muIt->globalTrack()->pt();
-      muon_ptError[index_mu] = muIt->globalTrack()->ptError();
-      muon_eta[index_mu] = muIt->globalTrack()->eta();
-      muon_etaError[index_mu] = muIt->globalTrack()->etaError();
-      muon_phi[index_mu] = muIt->globalTrack()->phi();
-      muon_phiError[index_mu] = muIt->globalTrack()->phiError();
-      muon_theta[index_mu] = muIt->globalTrack()->theta();
-      muon_thetaError[index_mu] = muIt->globalTrack()->thetaError();      
+      muon_pt[index_mu] = tevOptMuTrk.first->pt();
+      muon_ptError[index_mu] = tevOptMuTrk.first->ptError();
+      muon_gTrk_pt[index_mu] = muIt->globalTrack()->pt();
+      muon_gTrk_ptError[index_mu] = muIt->globalTrack()->ptError();
+      muon_eta[index_mu] = tevOptMuTrk.first->eta();
+      muon_etaError[index_mu] = tevOptMuTrk.first->etaError();
+      muon_phi[index_mu] = tevOptMuTrk.first->phi();
+      muon_phiError[index_mu] = tevOptMuTrk.first->phiError();
+      muon_theta[index_mu] = tevOptMuTrk.first->theta();
+      muon_thetaError[index_mu] = tevOptMuTrk.first->thetaError();      
       muon_outerPt[index_mu] = muIt->globalTrack()->outerPt();
       muon_outerEta[index_mu] = muIt->globalTrack()->outerEta();
       muon_outerPhi[index_mu] = muIt->globalTrack()->outerPhi();
       muon_outerTheta[index_mu] = muIt->globalTrack()->outerTheta();      
-      muon_px[index_mu] = muIt->globalTrack()->px();
-      muon_py[index_mu] = muIt->globalTrack()->py();
-      muon_pz[index_mu] = muIt->globalTrack()->pz();      
-      muon_charge[index_mu] = muIt->globalTrack()->charge();
-      muon_nhitspixel[index_mu] = muIt->globalTrack()->hitPattern().numberOfValidPixelHits();
-      muon_nhitstrack[index_mu] = muIt->globalTrack()->hitPattern().numberOfValidTrackerHits();
-      muon_nhitsmuons[index_mu] = muIt->globalTrack()->hitPattern().numberOfValidMuonHits();
-      muon_nhitstotal[index_mu] = muIt->globalTrack()->numberOfValidHits();
-      muon_nlayerswithhits[index_mu] = muIt->globalTrack()->hitPattern().trackerLayersWithMeasurement();
-      muon_nlosthits[index_mu] = muIt->globalTrack()->numberOfLostHits();
+      muon_px[index_mu] = tevOptMuTrk.first->px();
+      muon_py[index_mu] = tevOptMuTrk.first->py();
+      muon_pz[index_mu] = tevOptMuTrk.first->pz();      
+      muon_charge[index_mu] = tevOptMuTrk.first->charge();
+      muon_nhitspixel[index_mu] = tevOptMuTrk.first->hitPattern().numberOfValidPixelHits();
+      muon_nhitstrack[index_mu] = tevOptMuTrk.first->hitPattern().numberOfValidTrackerHits();
+      muon_nhitsmuons[index_mu] = tevOptMuTrk.first->hitPattern().numberOfValidMuonHits();
+      muon_nhitstotal[index_mu] = tevOptMuTrk.first->numberOfValidHits();
+      muon_nlayerswithhits[index_mu] = tevOptMuTrk.first->hitPattern().trackerLayersWithMeasurement();
+      muon_nlosthits[index_mu] = tevOptMuTrk.first->numberOfLostHits();
       muon_nSegmentMatch[index_mu] = muIt->numberOfMatches();
       muon_isTrackerMuon[index_mu] = muIt->isTrackerMuon();
-      muon_chi2[index_mu] = muIt->globalTrack()->chi2();
-      muon_ndof[index_mu] = muIt->globalTrack()->ndof();
-      muon_normChi2[index_mu] = muIt->globalTrack()->normalizedChi2();
-      muon_d0[index_mu] = muIt->globalTrack()->d0();
-      muon_d0Error[index_mu] = muIt->globalTrack()->d0Error();
-      muon_dz_cmsCenter[index_mu] = muIt->globalTrack()->dz();
-      muon_dz_beamSpot[index_mu] = muIt->globalTrack()->dz(beamspot);
-      muon_dz_firstPVtx[index_mu] = muIt->globalTrack()->dz(firstpvertex);
-      muon_dzError[index_mu] = muIt->globalTrack()->dzError();
-      muon_dxy_cmsCenter[index_mu] = muIt->globalTrack()->dxy();
-      muon_dxy_beamSpot[index_mu] = muIt->globalTrack()->dxy(beamspot);
-      muon_dxy_firstPVtx[index_mu] = muIt->globalTrack()->dxy(firstpvertex);
-      muon_dxyError[index_mu] = muIt->globalTrack()->dxyError();
+      muon_isPFMuon[index_mu] = muIt->isPFMuon();
+      muon_isPFIsolationValid[index_mu] = muIt->isPFIsolationValid();
+      muon_chi2[index_mu] = tevOptMuTrk.first->chi2();
+      muon_ndof[index_mu] = tevOptMuTrk.first->ndof();
+      muon_normChi2[index_mu] = tevOptMuTrk.first->normalizedChi2();
+      muon_d0[index_mu] = tevOptMuTrk.first->d0();
+      muon_d0Error[index_mu] = tevOptMuTrk.first->d0Error();
+      muon_dz_cmsCenter[index_mu] = tevOptMuTrk.first->dz();
+      muon_dz_beamSpot[index_mu] = tevOptMuTrk.first->dz(beamspot);
+      muon_dz_firstPVtx[index_mu] = tevOptMuTrk.first->dz(firstpvertex);
+      muon_dzError[index_mu] = tevOptMuTrk.first->dzError();
+      muon_dxy_cmsCenter[index_mu] = tevOptMuTrk.first->dxy();
+      muon_dxy_beamSpot[index_mu] = tevOptMuTrk.first->dxy(beamspot);
+      muon_dxy_firstPVtx[index_mu] = tevOptMuTrk.first->dxy(firstpvertex);
+      muon_dxyError[index_mu] = tevOptMuTrk.first->dxyError();
       muon_innerPosx[index_mu] = muIt->globalTrack()->innerPosition().X();
       muon_innerPosy[index_mu] = muIt->globalTrack()->innerPosition().Y();
       muon_innerPosz[index_mu] = muIt->globalTrack()->innerPosition().Z();
@@ -1095,7 +1132,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   int nHeepEle = 0;
   reco::GsfElectronCollection::const_iterator gsfiter = gsfelectrons.begin();
   for(; gsfiter != gsfelectrons.end(); ++gsfiter) {
-    if( gsfiter->caloEnergy()*sin(gsfiter->p4().theta()) <GsfPtMin_) continue;
+    if( gsfiter->caloEnergy()*sin(gsfiter->p4().theta()) < GsfPtMin_) continue;
     gsfsceta = gsfiter->superCluster()->eta();
     gsfscphi = gsfiter->superCluster()->phi();
     gsfscenergy = gsfiter->superCluster()->energy();
@@ -1120,22 +1157,22 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     gsf_hcaliso12012[e] = gsfiter->dr03HcalDepth1TowerSumEt() + ( gsfiter->hcalDepth1OverEcal()  - gsf_hdepth1overe2012[e] )*gsfiter->superCluster()->energy()/cosh(gsfiter->superCluster()->eta()); 
     gsf_hcaliso22012[e] =  gsfiter->dr03HcalDepth2TowerSumEt() + ( gsfiter->hcalDepth2OverEcal()  - gsf_hdepth2overe2012[e] )*gsfiter->superCluster()->energy()/cosh(gsfiter->superCluster()->eta()); 
 
-// get the iso deposits. 3 (charged hadrons, photons, neutral hadrons)
-  unsigned nTypes=3;
-  IsoDepositMaps electronIsoDep(nTypes);
+    // get the iso deposits. 3 (charged hadrons, photons, neutral hadrons)
+    unsigned nTypes=3;
+    IsoDepositMaps electronIsoDep(nTypes);
 
-  for (size_t j = 0; j<inputTagIsoDepElectrons_.size(); ++j) {
-    iEvent.getByLabel(inputTagIsoDepElectrons_[j], electronIsoDep[j]);
-  }
+    for (size_t j = 0; j<inputTagIsoDepElectrons_.size(); ++j) {
+      iEvent.getByLabel(inputTagIsoDepElectrons_[j], electronIsoDep[j]);
+    }
 
-  IsoDepositVals electronIsoValPFId(nTypes);
+    IsoDepositVals electronIsoValPFId(nTypes);
 
-  // No longer needed. e/g recommendation (04/04/12)
-  //  IsoDepositVals electronIsoValNoPFId(nTypes);
+    // No longer needed. e/g recommendation (04/04/12)
+    //  IsoDepositVals electronIsoValNoPFId(nTypes);
 
-  for (size_t j = 0; j<inputTagIsoValElectronsPFId_.size(); ++j) {
-    iEvent.getByLabel(inputTagIsoValElectronsPFId_[j], electronIsoValPFId[j]);
-  }
+    for (size_t j = 0; j<inputTagIsoValElectronsPFId_.size(); ++j) {
+      iEvent.getByLabel(inputTagIsoValElectronsPFId_[j], electronIsoValPFId[j]);
+    }
 
 
     const IsoDepositVals * electronIsoVals =  &electronIsoValPFId  ;
@@ -1194,17 +1231,17 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       if(e>1) continue;
       if(hititer<nbtrackhits){
 	unsigned int myhitbin = kfHitPattern.getHitPattern(hititer);
-    gsf_hitsinfo[e][hititer]=myhitbin;
+        gsf_hitsinfo[e][hititer]=myhitbin;
 
-    for (int j=10; j>=0; j--) {
-      int bit = (myhitbin >> j) & 0x1;
-    }
-    int NValPixelHit = kfHitPattern.numberOfValidPixelHits();
-    int nhits = gsfiter->gsfTrack()->hitPattern().trackerLayersWithMeasurement();
+        //for (int j=10; j>=0; j--) {
+        //  int bit = (myhitbin >> j) & 0x1;
+        //}
+        //int NValPixelHit = kfHitPattern.numberOfValidPixelHits();
+        //int nhits = gsfiter->gsfTrack()->hitPattern().trackerLayersWithMeasurement();
     
       }
       else{
-      gsf_hitsinfo[e][hititer]=0;
+        gsf_hitsinfo[e][hititer]=0;
       }
      
     }
@@ -1236,25 +1273,25 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	      iebhit +=1; 
 	      EcalRecHit hit = (*it);
 	      EBDetId det    = hit.id(); 
-	      const DetId det2     = hit.id(); 
+	      //const DetId det2     = hit.id(); 
 	      float ampli    = hit.energy();
 
 
 	      
 	      amplitot += ampli;
 	      //float time     = hit.time()-toffset; NO OFFSET DECLARED
-	      float time     = hit.time();
-	      float toversig =0;
-	      int   ebflag   = hit.recoFlag();
-	      int sm         = det.ism();
-	      float_t chi2   = hit.chi2();
-	      float_t chi2oot= hit.outOfTimeChi2();
+	      //float time     = hit.time();
+	      //float toversig =0;
+	      //int   ebflag   = hit.recoFlag();
+	      //int sm         = det.ism();
+	      //float_t chi2   = hit.chi2();
+	      //float_t chi2oot= hit.outOfTimeChi2();
 	      
 	      GlobalPoint poseb=geo->getPosition(hit.detid());
 	      float eta_eb=poseb.eta();
-	      float phi_eb=poseb.phi();
-	      float pf=1.0/cosh(eta_eb);
-	      float eteb=ampli*pf;
+	      //float phi_eb=poseb.phi();
+	      //float pf=1.0/cosh(eta_eb);
+	      //float eteb=ampli*pf;
 	      int ieta=det.ieta();      
 	      int iphi=det.iphi();
 	      
@@ -1312,23 +1349,23 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	      EcalRecHit hit = (*it);
 	      EEDetId det = hit.id(); 
 	      
-	      int dee=0;
+	      //int dee=0;
 	      float ampli = hit.energy();
 	     
 	      amplitotee += ampli;
 	      //float time     = hit.time()-toffset;
-	      float time     = hit.time();
-	      int   ebflag   = hit.recoFlag();
+	      //float time     = hit.time();
+	      //int   ebflag   = hit.recoFlag();
 	      
 	      GlobalPoint posee=geo->getPosition(hit.detid());
 	      float eta_ee=posee.eta();
-	      float phi_ee=posee.phi();
-	      float pf=1.0/cosh(eta_ee);
-	      float etee=ampli*pf;
+	      //float phi_ee=posee.phi();
+	      //float pf=1.0/cosh(eta_ee);
+	      //float etee=ampli*pf;
 	      int ix=det.ix();
 	      int iy=det.iy();
-	      int side=det.zside();
-	      int iz=0;
+	      //int side=det.zside();
+	      //int iz=0;
 
       	      if(e==0) {
 		gsf0_crystal_energy[ieehit]=ampli;
@@ -1461,15 +1498,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     gsfscpixconsistent[e] = gsfiter->isGsfScPixChargeConsistent();
     gsfctfconsistent[e] = gsfiter->isGsfCtfChargeConsistent();
     
-    
-    
-
-  
-    
-    
-    
-    
-    
 
     //increment index for gsf
     e++;
@@ -1491,7 +1519,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 	for(reco::GsfElectronCollection::const_iterator gsfiterforconv = gsfelectrons.begin(); gsfiterforconv!=gsfelectrons.end(); ++gsfiterforconv) {
 	  iel++;
-	  bool passconversionveto = !ConversionTools::hasMatchedConversion(*gsfiterforconv,hConversions,bspot.position());
+	  //bool passconversionveto = !ConversionTools::hasMatchedConversion(*gsfiterforconv,hConversions,bspot.position());
 
         if (ConversionTools::matchesConversion(*gsfiterforconv, *conv)) {
 	   iconv++;
@@ -1715,6 +1743,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   
   delete [] muon_pt;
   delete [] muon_ptError;
+  delete [] muon_gTrk_pt;
+  delete [] muon_gTrk_ptError;
   delete [] muon_eta;
   delete [] muon_etaError;
   delete [] muon_phi;
@@ -1737,6 +1767,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   delete [] muon_nlosthits;
   delete [] muon_nSegmentMatch;
   delete [] muon_isTrackerMuon;
+  delete [] muon_isPFMuon;
+  delete [] muon_isPFIsolationValid;
   delete [] muon_chi2;
   delete [] muon_ndof;
   delete [] muon_normChi2;
@@ -2077,6 +2109,8 @@ GsfCheckerTree::beginJob()
   mytree->Branch("muon_size", &muon_size, "muon_size/I");
   mytree->Branch("muon_pt", muon_pt, "muon_pt[muon_size]/F");
   mytree->Branch("muon_ptError", muon_ptError, "muon_ptError[muon_size]/F");
+  mytree->Branch("muon_gTrk_pt", muon_gTrk_pt, "muon_gTrk_pt[muon_size]/F");
+  mytree->Branch("muon_gTrk_ptError", muon_gTrk_ptError, "muon_gTrk_ptError[muon_size]/F");
   mytree->Branch("muon_eta", muon_eta, "muon_eta[muon_size]/F");
   mytree->Branch("muon_etaError", muon_etaError, "muon_etaError[muon_size]/F");
   mytree->Branch("muon_theta", muon_theta, "muon_theta[muon_size]/F");
@@ -2099,6 +2133,8 @@ GsfCheckerTree::beginJob()
   mytree->Branch("muon_nlosthits", muon_nlosthits, "muon_nlosthits[muon_size]/I");
   mytree->Branch("muon_nSegmentMatch", muon_nSegmentMatch, "muon_nSegmentMatch[muon_size]/I");
   mytree->Branch("muon_isTrackerMuon", muon_isTrackerMuon, "muon_isTrackerMuon[muon_size]/O");
+  mytree->Branch("muon_isPFMuon", muon_isPFMuon, "muon_isPFMuon[muon_size]/O");
+  mytree->Branch("muon_isPFIsolationValid", muon_isPFIsolationValid, "muon_isPFIsolationValid[muon_size]/O");
   mytree->Branch("muon_chi2", muon_chi2, "muon_chi2[muon_size]/F");
   mytree->Branch("muon_ndof", muon_ndof, "muon_ndof[muon_size]/I");
   mytree->Branch("muon_normChi2", muon_normChi2, "muon_normChi2[muon_size]/F");

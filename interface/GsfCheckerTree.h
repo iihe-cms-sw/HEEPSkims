@@ -16,7 +16,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.34 2012/08/27 07:10:26 lathomas Exp $
+// $Id: GsfCheckerTree.h,v 1.35 2012/10/07 22:48:02 lathomas Exp $
 //
 //
 
@@ -41,6 +41,7 @@ Implementation:
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
+#include "DataFormats/MuonReco/interface/MuonCocktails.h"
 #include "DataFormats/METReco/interface/CaloMET.h"
 #include "DataFormats/METReco/interface/CaloMETCollection.h"
 #include "DataFormats/METReco/interface/MET.h"
@@ -126,13 +127,14 @@ private:
   double bJetPtMin_;
   double GsfPtMin_;
   double GsfTrackPtMin_;
+  double muPtMin_;
   // parameter for SKIMMING
   double ele1EtMin_;
   double ele1EtMax_;
   double ele2EtMin_;
   double ele2EtMax_;
-  double muPtMin_;
-  double muPtMax_;
+  double muonPtMin_;
+  double muonPtMax_;
 
 
   //parameters for PU subtraction 
@@ -201,6 +203,8 @@ private:
   int muon_size;
   float *muon_pt;
   float *muon_ptError;
+  float *muon_gTrk_pt;
+  float *muon_gTrk_ptError;
   float *muon_eta;
   float *muon_etaError;
   float *muon_phi;
@@ -223,6 +227,8 @@ private:
   int *muon_nlosthits;
   int *muon_nSegmentMatch;
   bool *muon_isTrackerMuon;
+  bool *muon_isPFMuon;
+  bool *muon_isPFIsolationValid;
   float *muon_chi2;
   int *muon_ndof;
   float *muon_normChi2;

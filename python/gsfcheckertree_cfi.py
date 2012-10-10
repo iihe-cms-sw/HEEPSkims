@@ -10,9 +10,10 @@ gsfcheckerjob = cms.EDAnalyzer("GsfCheckerTree",
 
   #Pt cut for stored infos. This is *NOT* the skimming part ! 
   bJetPtMin = cms.untracked.double(20.),
-  ScPtMin =  cms.untracked.double(20.),
-  GsfPtMin=   cms.untracked.double(10.),
-  GsfTrackPtMin=   cms.untracked.double(10.),
+  ScPtMin = cms.untracked.double(20.),
+  GsfPtMin= cms.untracked.double(10.),
+  GsfTrackPtMin = cms.untracked.double(10.),
+  muPtMin = cms.untracked.double(5.),
                                
   # for skimming on 2ele, 1ele-1mu
   electron1EtMin = cms.untracked.double(35),
