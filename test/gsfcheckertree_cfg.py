@@ -6,11 +6,13 @@ process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load("Configuration.Geometry.GeometryIdeal_cff")
 process.load("Configuration.EventContent.EventContent_cff")
 process.load("RecoTracker.Configuration.RecoTracker_cff")
+process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 
-
-process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
-#process.GlobalTag.globaltag = 'START53_V7A::All'
-process.GlobalTag.globaltag = 'GR_P_V39_AN1::All'  # this one for run2012A and B
+#process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
+#process.GlobalTag.globaltag = 'START52_V12::All'# To use for MC with 52???
+#process.GlobalTag.globaltag = 'START53_V7F::All'# To use for MC with 53???
+process.GlobalTag.globaltag = 'FT_53_V6_AN2::All'  # this one for run2012A and B  (July Rereco )
+#process.GlobalTag.globaltag = 'GR_P_V39_AN1::All'  # this one for run2012A and B
 #process.GlobalTag.globaltag = 'GR_P_V40_AN1::All'  # this one for run2012C with cmssw version < 533
 #process.GlobalTag.globaltag = 'GR_P_V41_AN1::All'  # this one for run2012C with cmssw version >= 533
 
@@ -24,7 +26,10 @@ process.source = cms.Source("PoolSource",fileNames = readFiles, secondaryFileNam
 
 readFiles.extend( [
 #    'file:/user/treis/heep/CMSSW_5_3_2_patch4/src/DyToEE_madgraph_pu.root'
-    '/store/mc/Summer12/DYToEE_M_20_TuneZ2star_8TeV_pythia6/AODSIM/PU_S7_START50_V15-v1/0000/FCCBFAC4-847E-E111-A077-002618943829.root'
+#    '/store/mc/Summer12/DYToEE_M_20_TuneZ2star_8TeV_pythia6/AODSIM/PU_S7_START50_V15-v1/0000/FCCBFAC4-847E-E111-A077-002618943829.root'
+    'file:/user/lathomas/AOD_testfiles/RunB-DoublePhotonHighPt_13Jul2012-v1_AOD.root'
+    #'file:/user/lathomas/AOD_testfiles/DataDoublePhotonHighPtRun2012Cv1.root'
+    #'file:testdy500_Summer12_START52_pythia.root'
 ##    'dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/lathomas/Photon/LaurentPhoton-Run2011BSkim2ElePt35/319d9d50ddc1c21c2a4623a85e06b6f6/output_77_2_49z.root'
        ##   '/store/mc/Fall11/TTJets_TuneZ2_7TeV-madgraph-tauola/AODSIM/PU_S6_START42_V14B-v1/0000/380EDCD0-CFFA-E011-8B63-002618943834.root',
 ])
@@ -96,6 +101,10 @@ process.muIsoSequence = setupPFMuonIso(process, 'muons')
 process.load("UserCode.HEEPSkims.gsfcheckertree_cfi")
 process.otherStuff = cms.Sequence( process.kt6PFJets )
 
+process.load("RecoMET.METFilters.ecalLaserCorrFilter_cfi")
+process.load('RecoMET.METFilters.eeBadScFilter_cfi')
 
-process.p1 = cms.Path(process.otherStuff * process.hltPhysicsDeclared * process.noscraping * process.primaryVertexFilter * process.pfParticleSelectionSequence * process.eleIsoSequence * process.muIsoSequence * process.gsfcheckerjob) 
-##process.outpath = cms.EndPath(process.out)
+
+process.MessageLogger.suppressError = cms.untracked.vstring ('ecalLaserCorrFilter') 
+
+process.p1 = cms.Path(process.otherStuff * process.hltPhysicsDeclared *   process.eeBadScFilter*  process.ecalLaserCorrFilter* process.noscraping * process.primaryVertexFilter * process.pfParticleSelectionSequence * process.eleIsoSequence * process.muIsoSequence * process.gsfcheckerjob)
