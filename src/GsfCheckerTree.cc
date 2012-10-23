@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.37 2012/10/07 22:48:02 lathomas Exp $
+// $Id: GsfCheckerTree.cc,v 1.38 2012/10/10 13:50:38 treis Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -64,10 +64,10 @@ using namespace edm;
 bool 
 gsfEtGreater(const reco::GsfElectron &gsf1,const reco::GsfElectron &gsf2)
 {
-  float et1 = gsf1.superCluster()->energy() * sin(gsf1.theta());
-  float et2 = gsf1.superCluster()->energy() * sin(gsf2.theta());
-  //float et1 = gsf1.caloEnergy() * sin(gsf1.p4().theta());
-  //float et2 = gsf2.caloEnergy() * sin(gsf2.p4().theta());
+  //float et1 = gsf1.superCluster()->energy() * sin(gsf1.theta());
+  //float et2 = gsf1.superCluster()->energy() * sin(gsf2.theta());
+  float et1 = gsf1.caloEnergy() * sin(gsf1.p4().theta());
+  float et2 = gsf2.caloEnergy() * sin(gsf2.p4().theta());
   return (et1 > et2);
 }
 
