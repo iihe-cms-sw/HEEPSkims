@@ -16,7 +16,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.35 2012/10/07 22:48:02 lathomas Exp $
+// $Id: GsfCheckerTree.h,v 1.36 2012/10/10 13:50:38 treis Exp $
 //
 //
 
@@ -489,6 +489,7 @@ private:
   bool *gsfpass_INVALID;
   bool *gsfpass_NOMISSINGHITS;
   bool *gsfpass_NOCONVERSION;
+  bool *gsfpass_DXYFIRSTPV;
   bool *gsfpass_HEEP;
   bool *gsfpass_ID;
   bool *gsfpass_ISO;

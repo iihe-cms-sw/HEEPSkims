@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.38 2012/10/10 13:50:38 treis Exp $
+// $Id: GsfCheckerTree.cc,v 1.39 2012/10/23 13:16:18 lathomas Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -961,6 +961,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   gsfpass_INVALID = new bool [gsf_size];
   gsfpass_NOMISSINGHITS = new bool [gsf_size];
   gsfpass_NOCONVERSION = new bool [gsf_size];
+  gsfpass_DXYFIRSTPV = new bool [gsf_size];
   gsfpass_HEEP = new bool [gsf_size];
   gsfpass_ID = new bool [gsf_size];
   gsfpass_ISO = new bool [gsf_size];
@@ -1098,6 +1099,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   mytree->GetBranch("gsfpass_INVALID")->SetAddress(gsfpass_INVALID);
   mytree->GetBranch("gsfpass_NOMISSINGHITS")->SetAddress(gsfpass_NOMISSINGHITS);
   mytree->GetBranch("gsfpass_NOCONVERSION")->SetAddress(gsfpass_NOCONVERSION);
+  mytree->GetBranch("gsfpass_DXYFIRSTPV")->SetAddress(gsfpass_DXYFIRSTPV);
   mytree->GetBranch("gsfpass_HEEP")->SetAddress(gsfpass_HEEP);
   mytree->GetBranch("gsfpass_ID")->SetAddress(gsfpass_ID);
   mytree->GetBranch("gsfpass_ISO")->SetAddress(gsfpass_ISO);
@@ -1464,8 +1466,10 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     bool hcaliso2endcap  = true;
     bool trackisobarrel  = gsf_trackiso[e] < 5.;
     bool trackisoendcap  = gsf_trackiso[e] < 5.;
-    bool noMissingHits = gsf_nLostInnerHits[e] == 0;
+    bool noMissingHits = gsf_nLostInnerHits[e] <= 1;
     bool noConversion = gsf_convFlags[e] != 3; 
+    bool dxyfirstpvbarrel = fabs(gsf_dxy_firstPVtx[e]) <0.02;
+    bool dxyfirstpvendcaps =fabs(gsf_dxy_firstPVtx[e]) <0.05;
 
     //Boolean HEEP cuts
     gsfpass_ET[e] = (gsfetbarrel && barrelsc) || (gsfetendcap && endcapsc); 
@@ -1484,10 +1488,11 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     gsfpass_INVALID[e] = true;
     gsfpass_NOMISSINGHITS[e] = noMissingHits;
     gsfpass_NOCONVERSION[e] = noConversion;
-    gsfpass_ID[e] = (gsfpass_DETAIN[e] && gsfpass_DPHIIN[e] && gsfpass_HADEM[e] && gsfpass_SIGMAIETAIETA[e] && gsfpass_E2X5OVER5X5[e]);
+    gsfpass_DXYFIRSTPV[e] = (dxyfirstpvbarrel && barrelsc) || (dxyfirstpvendcaps && endcapsc); 
+    gsfpass_ID[e] = ( gsfpass_DETAIN[e] && gsfpass_DPHIIN[e] && gsfpass_HADEM[e] && gsfpass_SIGMAIETAIETA[e] && gsfpass_E2X5OVER5X5[e]);
     gsfpass_ISO[e] = (gsfpass_ISOLEMHADDEPTH1[e] && gsfpass_ISOLHADDEPTH2[e] && gsfpass_ISOLPTTRKS[e]);
 
-    gsfpass_HEEP[e] = gsfpass_ET[e] && gsfpass_DETAIN[e] && gsfpass_DPHIIN[e] && gsfpass_HADEM[e] && gsfpass_SIGMAIETAIETA[e] && gsfpass_E2X5OVER5X5[e] && gsfpass_ISOLEMHADDEPTH1[e] && gsfpass_ISOLHADDEPTH2[e] && gsfpass_ISOLPTTRKS[e] && gsfpass_NOMISSINGHITS[e];
+    gsfpass_HEEP[e] = gsfpass_ET[e] && gsfpass_DETAIN[e] && gsfpass_DPHIIN[e] && gsfpass_HADEM[e] && gsfpass_SIGMAIETAIETA[e] && gsfpass_E2X5OVER5X5[e] && gsfpass_ISOLEMHADDEPTH1[e] && gsfpass_ISOLHADDEPTH2[e] && gsfpass_ISOLPTTRKS[e] && gsfpass_NOMISSINGHITS[e]&& gsfpass_DXYFIRSTPV[e];
     if (gsfpass_HEEP[e]) ++nHeepEle;
 
     //charge info
@@ -1707,6 +1712,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   delete [] gsfpass_INVALID;
   delete [] gsfpass_NOMISSINGHITS;
   delete [] gsfpass_NOCONVERSION;
+  delete [] gsfpass_DXYFIRSTPV;
   delete [] gsfpass_HEEP;
   delete [] gsfpass_ID;
   delete [] gsfpass_ISO;
@@ -2295,6 +2301,7 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gsfpass_INVALID", gsfpass_INVALID, "gsfpass_INVALID[gsf_size]/O");  
   mytree->Branch("gsfpass_NOMISSINGHITS", gsfpass_NOMISSINGHITS, "gsfpass_NOMISSINGHITS[gsf_size]/O");  
   mytree->Branch("gsfpass_NOCONVERSION", gsfpass_NOCONVERSION, "gsfpass_NOCONVERSION[gsf_size]/O");  
+  mytree->Branch("gsfpass_DXYFIRSTPV", gsfpass_DXYFIRSTPV, "gsfpass_DXYFIRSTPV[gsf_size]/O"); 
   mytree->Branch("gsfpass_HEEP", gsfpass_HEEP, "gsfpass_HEEP[gsf_size]/O");  
   mytree->Branch("gsfpass_ID", gsfpass_ID, "gsfpass_ID[gsf_size]/O");  
   mytree->Branch("gsfpass_ISO", gsfpass_ISO, "gsfpass_ISO[gsf_size]/O");
