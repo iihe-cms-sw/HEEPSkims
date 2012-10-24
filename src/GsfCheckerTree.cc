@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.39 2012/10/23 13:16:18 lathomas Exp $
+// $Id: GsfCheckerTree.cc,v 1.40 2012/10/23 16:20:29 lathomas Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -559,29 +559,29 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       muon_py[index_mu] = tevOptMuTrk.first->py();
       muon_pz[index_mu] = tevOptMuTrk.first->pz();      
       muon_charge[index_mu] = tevOptMuTrk.first->charge();
-      muon_nhitspixel[index_mu] = tevOptMuTrk.first->hitPattern().numberOfValidPixelHits();
-      muon_nhitstrack[index_mu] = tevOptMuTrk.first->hitPattern().numberOfValidTrackerHits();
-      muon_nhitsmuons[index_mu] = tevOptMuTrk.first->hitPattern().numberOfValidMuonHits();
-      muon_nhitstotal[index_mu] = tevOptMuTrk.first->numberOfValidHits();
-      muon_nlayerswithhits[index_mu] = tevOptMuTrk.first->hitPattern().trackerLayersWithMeasurement();
-      muon_nlosthits[index_mu] = tevOptMuTrk.first->numberOfLostHits();
-      muon_nSegmentMatch[index_mu] = muIt->numberOfMatches();
+      muon_nhitspixel[index_mu] = muIt->innerTrack()->hitPattern().numberOfValidPixelHits();
+      muon_nhitstrack[index_mu] = muIt->globalTrack()->hitPattern().numberOfValidTrackerHits();
+      muon_nhitsmuons[index_mu] = muIt->globalTrack()->hitPattern().numberOfValidMuonHits();
+      muon_nhitstotal[index_mu] = muIt->globalTrack()->numberOfValidHits();
+      muon_nlayerswithhits[index_mu] = muIt->track()->hitPattern().trackerLayersWithMeasurement();
+      muon_nlosthits[index_mu] = muIt->globalTrack()->numberOfLostHits();
+      muon_nSegmentMatch[index_mu] = muIt->numberOfMatchedStations();
       muon_isTrackerMuon[index_mu] = muIt->isTrackerMuon();
       muon_isPFMuon[index_mu] = muIt->isPFMuon();
       muon_isPFIsolationValid[index_mu] = muIt->isPFIsolationValid();
-      muon_chi2[index_mu] = tevOptMuTrk.first->chi2();
-      muon_ndof[index_mu] = tevOptMuTrk.first->ndof();
-      muon_normChi2[index_mu] = tevOptMuTrk.first->normalizedChi2();
-      muon_d0[index_mu] = tevOptMuTrk.first->d0();
-      muon_d0Error[index_mu] = tevOptMuTrk.first->d0Error();
-      muon_dz_cmsCenter[index_mu] = tevOptMuTrk.first->dz();
-      muon_dz_beamSpot[index_mu] = tevOptMuTrk.first->dz(beamspot);
-      muon_dz_firstPVtx[index_mu] = tevOptMuTrk.first->dz(firstpvertex);
-      muon_dzError[index_mu] = tevOptMuTrk.first->dzError();
-      muon_dxy_cmsCenter[index_mu] = tevOptMuTrk.first->dxy();
-      muon_dxy_beamSpot[index_mu] = tevOptMuTrk.first->dxy(beamspot);
-      muon_dxy_firstPVtx[index_mu] = tevOptMuTrk.first->dxy(firstpvertex);
-      muon_dxyError[index_mu] = tevOptMuTrk.first->dxyError();
+      muon_chi2[index_mu] = muIt->globalTrack()->chi2();
+      muon_ndof[index_mu] = muIt->globalTrack()->ndof();
+      muon_normChi2[index_mu] = muIt->globalTrack()->normalizedChi2();
+      muon_d0[index_mu] = muIt->muonBestTrack()->d0();
+      muon_d0Error[index_mu] = muIt->muonBestTrack()->d0Error();
+      muon_dz_cmsCenter[index_mu] = muIt->muonBestTrack()->dz();
+      muon_dz_beamSpot[index_mu] = muIt->muonBestTrack()->dz(beamspot);
+      muon_dz_firstPVtx[index_mu] = muIt->muonBestTrack()->dz(firstpvertex);
+      muon_dzError[index_mu] = muIt->muonBestTrack()->dzError();
+      muon_dxy_cmsCenter[index_mu] = muIt->muonBestTrack()->dxy();
+      muon_dxy_beamSpot[index_mu] = muIt->muonBestTrack()->dxy(beamspot);
+      muon_dxy_firstPVtx[index_mu] = muIt->muonBestTrack()->dxy(firstpvertex);
+      muon_dxyError[index_mu] = muIt->muonBestTrack()->dxyError();
       muon_innerPosx[index_mu] = muIt->globalTrack()->innerPosition().X();
       muon_innerPosy[index_mu] = muIt->globalTrack()->innerPosition().Y();
       muon_innerPosz[index_mu] = muIt->globalTrack()->innerPosition().Z();
