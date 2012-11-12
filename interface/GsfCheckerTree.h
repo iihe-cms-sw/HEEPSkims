@@ -16,7 +16,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.36 2012/10/10 13:50:38 treis Exp $
+// $Id: GsfCheckerTree.h,v 1.37 2012/10/23 16:20:29 lathomas Exp $
 //
 //
 
@@ -330,6 +330,8 @@ private:
 
   float *x1quark;
   float *x2quark;
+
+  float genPair_mass;
 
   int trueNVtx;
   int nVtxBefore;

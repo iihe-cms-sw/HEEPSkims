@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.40 2012/10/23 16:20:29 lathomas Exp $
+// $Id: GsfCheckerTree.cc,v 1.41 2012/10/24 14:12:38 treis Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -168,11 +168,6 @@ GsfCheckerTree::GsfCheckerTree(const edm::ParameterSet& iConfig):
 }
 
 
-
-
-
-
-
 GsfCheckerTree::~GsfCheckerTree()
 {
   //cout<<"GsfCheckerTree::~GsfCheckerTree"<<endl; 
@@ -205,12 +200,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   hcalHelper->checkSetup(iSetup);
   hcalHelper->readEvent(iEvent);
-
- 
-
-
-
-
 
   bool useGenData_ = !iEvent.isRealData(); 
   
@@ -340,8 +329,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     genquarks_size = 0;
     gengluons_size = 0;
 
-   
-    
+    genPair_mass = 0.; 
   }
 
   L1TInfo(iEvent);
@@ -354,9 +342,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   JetData(iEvent);
   //cout << "fine bjet" << endl; 
 
-
-
-// get the beamspot from the Event:
+  // get the beamspot from the Event:
   edm::Handle<reco::BeamSpot> theBeamSpot;
   iEvent.getByType(theBeamSpot);
   
@@ -749,10 +735,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     v++;
   }//end of loop on gsf tracks
 
-  double gsfsceta = 0.;
-  double gsfscphi = 0.;
-  double gsfscenergy = 0.;
-
   //To remove spikes (ECAL CLUSTER LAZY TOOLS)
   EcalClusterLazyTools lazytool(iEvent,iSetup,InputTag("reducedEcalRecHitsEB"),InputTag("reducedEcalRecHitsEE"));
 
@@ -760,25 +742,24 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   gsf0_crystal_size=0; 
   gsf1_crystal_size=0; 
 
+  // rechits test Laurent
 
-   // rechits test Laurent
-
-   ESHandle<CaloGeometry> pG;
-   iSetup.get<CaloGeometryRecord>().get(pG);
-   const CaloGeometry* geo=pG.product();
-   edm::ESHandle<CaloTopology> pTopology;
-   iSetup.get<CaloTopologyRecord>().get(pTopology);
-   
-   Handle<EcalRecHitCollection> EBhits;
-   //  event.getByLabel(ebhitcoll_,EBhits);
-   iEvent.getByLabel("reducedEcalRecHitsEB",EBhits);
-   //const EcalRecHitCollection *ebRecHits=EBhits.product();
-   Handle<EcalRecHitCollection> EEhits;
-   iEvent.getByLabel("reducedEcalRecHitsEE",EEhits);
-   // const EcalRecHitCollection *eeRecHits=EEhits.product();
+  ESHandle<CaloGeometry> pG;
+  iSetup.get<CaloGeometryRecord>().get(pG);
+  const CaloGeometry* geo=pG.product();
+  edm::ESHandle<CaloTopology> pTopology;
+  iSetup.get<CaloTopologyRecord>().get(pTopology);
+  
+  Handle<EcalRecHitCollection> EBhits;
+  //  event.getByLabel(ebhitcoll_,EBhits);
+  iEvent.getByLabel("reducedEcalRecHitsEB",EBhits);
+  //const EcalRecHitCollection *ebRecHits=EBhits.product();
+  Handle<EcalRecHitCollection> EEhits;
+  iEvent.getByLabel("reducedEcalRecHitsEE",EEhits);
+  // const EcalRecHitCollection *eeRecHits=EEhits.product();
  
-   for( reco::GsfElectronCollection::const_iterator gsfiterforptcut = gsfelectrons.begin(); gsfiterforptcut != gsfelectrons.end(); ++gsfiterforptcut) {
-     if( gsfiterforptcut->caloEnergy()*sin(gsfiterforptcut->p4().theta()) <GsfPtMin_ ) continue;
+  for( reco::GsfElectronCollection::const_iterator gsfiterforptcut = gsfelectrons.begin(); gsfiterforptcut != gsfelectrons.end(); ++gsfiterforptcut) {
+    if( gsfiterforptcut->caloEnergy()*sin(gsfiterforptcut->p4().theta()) <GsfPtMin_ ) continue;
     
     
     if(fabs((*gsfiterforptcut).superCluster()->eta())<1.479){//First : Barrel
@@ -799,7 +780,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		gsf1_crystal_size++; 
 	      }
 	    }
-	    
     	  }
 	}
       }
@@ -828,27 +808,21 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     gsf_size++;
   }
   
-   conv_size = 0;
+  conv_size = 0;
   
   edm::Handle<reco::ConversionCollection> hConversions;
   iEvent.getByLabel("allConversions", hConversions);
-   for (reco::ConversionCollection::const_iterator conv = hConversions->begin(); conv!= hConversions->end(); ++conv) {
-     reco::Vertex vtx = conv->conversionVertex();
-      if (vtx.isValid()) {
-
-	for(reco::GsfElectronCollection::const_iterator gsfiterforconv = gsfelectrons.begin(); gsfiterforconv!=gsfelectrons.end(); ++gsfiterforconv) {
-	  if (ConversionTools::matchesConversion(*gsfiterforconv, *conv)) {
-	    conv_size++;
-	    break;
-	  }
-	}
+  for (reco::ConversionCollection::const_iterator conv = hConversions->begin(); conv!= hConversions->end(); ++conv) {
+    reco::Vertex vtx = conv->conversionVertex();
+    if (vtx.isValid()) {
+      for(reco::GsfElectronCollection::const_iterator gsfiterforconv = gsfelectrons.begin(); gsfiterforconv!=gsfelectrons.end(); ++gsfiterforconv) {
+        if (ConversionTools::matchesConversion(*gsfiterforconv, *conv)) {
+          conv_size++;
+          break;
+        }
       }
-   }
-   
-   
-
-
-
+    }
+  }
 
   //cout << "gsf_size " <<  gsf_size << endl;
 
@@ -1135,10 +1109,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   reco::GsfElectronCollection::const_iterator gsfiter = gsfelectrons.begin();
   for(; gsfiter != gsfelectrons.end(); ++gsfiter) {
     if( gsfiter->caloEnergy()*sin(gsfiter->p4().theta()) < GsfPtMin_) continue;
-    gsfsceta = gsfiter->superCluster()->eta();
-    gsfscphi = gsfiter->superCluster()->phi();
-    gsfscenergy = gsfiter->superCluster()->energy();
-
     scindexforgsf[e] = -3;
     //try to get the index for the sc assoc to this gsf
     reco::SuperClusterRef gsfrefsc = gsfiter->superCluster();
@@ -1175,7 +1145,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     for (size_t j = 0; j<inputTagIsoValElectronsPFId_.size(); ++j) {
       iEvent.getByLabel(inputTagIsoValElectronsPFId_[j], electronIsoValPFId[j]);
     }
-
 
     const IsoDepositVals * electronIsoVals =  &electronIsoValPFId  ;
     reco::GsfElectronRef myElectronRef(pGsfElectrons ,e);
@@ -1227,7 +1196,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     reco::HitPattern kfHitPattern = gsfiter->gsfTrack()->hitPattern();
     nbtrackhits = kfHitPattern.numberOfHits(); 
-   
         
     for(int hititer =0; hititer<25;hititer++){
       if(e>1) continue;
@@ -1245,7 +1213,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       else{
         gsf_hitsinfo[e][hititer]=0;
       }
-     
     }
     //Try to add info about rechit in the SC 
     //strongly inspired from : http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/DaveC/src/printPhoton.cc
@@ -1278,8 +1245,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	      //const DetId det2     = hit.id(); 
 	      float ampli    = hit.energy();
 
-
-	      
 	      amplitot += ampli;
 	      //float time     = hit.time()-toffset; NO OFFSET DECLARED
 	      //float time     = hit.time();
@@ -1310,18 +1275,10 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		gsf1_crystal_eta[iebhit]=eta_eb;
 	      }
 	      //cout << "Barrel electron hit " << iebhit << ", ieta=" << ieta << " iphi= " << iphi << " et=" << eteb << " ampli=" << ampli << " eta = "<< eta_eb<<  endl;
-
-
-
-
 	    }
-    
 	  }
-
-
 	}
       }
-
       //cout <<  "nb of good hits Barrel : " <<iebhit << endl; 
     }
 
@@ -1381,10 +1338,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		gsf1_crystal_iphioriy[ieehit]=iy;
 		gsf1_crystal_eta[ieehit]=eta_ee;
 	      }
-     
 	      //cout << "Endcaps electron hit " << ieehit << ", ix=" << ix << " iy= " << iy << " et=" << etee << " ampli=" << ampli << " eta = "<< eta_ee<<  endl;
-
-
 	    }
 	  }
 	}
@@ -1507,27 +1461,22 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     //increment index for gsf
     e++;
   }
-
-
-    //Conversion info : https://twiki.cern.ch/twiki/bin/viewauth/CMS/ConversionTools
+  //Conversion info : https://twiki.cern.ch/twiki/bin/viewauth/CMS/ConversionTools
     
-  
   const reco::BeamSpot &bspot = *theBeamSpot.product();
-
     
   int iconv=-1;
   for (reco::ConversionCollection::const_iterator conv = hConversions->begin(); conv!= hConversions->end(); ++conv) {
-     
-      reco::Vertex vtx = conv->conversionVertex();
-      if (vtx.isValid()) {
-	int iel=-1;
+    reco::Vertex vtx = conv->conversionVertex();
+    if (vtx.isValid()) {
+      int iel=-1;
 
-	for(reco::GsfElectronCollection::const_iterator gsfiterforconv = gsfelectrons.begin(); gsfiterforconv!=gsfelectrons.end(); ++gsfiterforconv) {
-	  iel++;
-	  //bool passconversionveto = !ConversionTools::hasMatchedConversion(*gsfiterforconv,hConversions,bspot.position());
+      for(reco::GsfElectronCollection::const_iterator gsfiterforconv = gsfelectrons.begin(); gsfiterforconv!=gsfelectrons.end(); ++gsfiterforconv) {
+        iel++;
+        //bool passconversionveto = !ConversionTools::hasMatchedConversion(*gsfiterforconv,hConversions,bspot.position());
 
         if (ConversionTools::matchesConversion(*gsfiterforconv, *conv)) {
-	   iconv++;
+          iconv++;
           conv_eleind[iconv] = iel;
           conv_vtxProb[iconv] = (float)TMath::Prob( vtx.chi2(), vtx.ndof() );
           math::XYZVector mom(conv->refittedPairMomentum());
@@ -1535,17 +1484,15 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
           double dbsy = vtx.y() - bspot.position().y();
           conv_lxy[iconv] = (float)((mom.x()*dbsx + mom.y()*dbsy)/mom.rho());
           conv_nHitsMax[iconv]=0;
-	  for (std::vector<uint8_t>::const_iterator it = conv->nHitsBeforeVtx().begin(); it!=conv->nHitsBeforeVtx().end(); ++it) {
+          for (std::vector<uint8_t>::const_iterator it = conv->nHitsBeforeVtx().begin(); it!=conv->nHitsBeforeVtx().end(); ++it) {
             if ((*it)>conv_nHitsMax[iconv]) conv_nHitsMax[iconv] = (int)(*it);
           }
           break;
         }
       }
-      }
-     
+    }
   }
-    //End of conversion info
-
+  //End of conversion info
 
   // calculate the invariant mass of two heep electrons if there are any
   heepHeepMass = -100.;
@@ -1731,7 +1678,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   delete [] gsftrackpy;
   delete [] gsftrackpz;
 
-
   delete [] gsf0_crystal_ietaorix;
   delete [] gsf0_crystal_iphioriy;
   delete [] gsf0_crystal_energy;
@@ -1740,7 +1686,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   delete [] gsf1_crystal_iphioriy;
   delete [] gsf1_crystal_energy;
   delete [] gsf1_crystal_eta ;
-
 
   delete [] conv_vtxProb;
   delete [] conv_lxy;
@@ -1829,8 +1774,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   delete [] softMuPtBTags;
 
   if (useGenData_) {
-    
-    
     delete [] genquark_e;
     delete [] genquark_pt;
     delete [] genquark_px; 
@@ -1850,7 +1793,6 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     delete [] gengluon_phi;
     delete [] gengluon_charge;
     delete [] gengluon_pdgid;
-
 
     delete [] genele_e;
     delete [] genele_pt;
@@ -2320,7 +2262,6 @@ GsfCheckerTree::beginJob()
   mytree->Branch("genquarks_size", &genquarks_size, "genquarks_size/I");
   mytree->Branch("gengluons_size", &gengluons_size, "gengluons_size/I");
 
-
   // Conversion info 
   mytree->Branch("conv_size",&conv_size,"conv_size/I");
   mytree->Branch("conv_vtxProb",conv_vtxProb,"conv_vtxProb[conv_size]/F");
@@ -2396,6 +2337,8 @@ GsfCheckerTree::beginJob()
   //x1 and x2
   mytree->Branch("x1quark", x1quark, "x1quark[genparticles_size]/F");
   mytree->Branch("x2quark", x2quark, "x2quark[genparticles_size]/F");
+  
+  mytree->Branch("genPair_mass", &genPair_mass, "genPair_mass/F");
 
   mytree->Branch("trueNVtx", &trueNVtx, "trueNVtx/I");
   mytree->Branch("nVtxBefore", &nVtxBefore, "nVtxBefore/I");
@@ -2420,8 +2363,6 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
   genparticles_size = genParticles->size();
   genquarks_size = genParticles->size();
   gengluons_size = genParticles->size();
-
-
 
   genquark_e = new float [genquarks_size];
   genquark_pt = new float [genquarks_size];
@@ -2523,21 +2464,33 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
   unsigned int counter = 0;
   unsigned int counterquark = 0; 
   unsigned int countergluon = 0; 
+  unsigned int counterT = 0; 
+  unsigned int counterTbar = 0; 
+  int tId = -1;
+  int tbarId = -1;
+  genPair_mass = 0.;
   for (size_t i = 0; i < genParticles->size(); ++i) {
     
     const GenParticle & p = (*genParticles)[i];
     int id = p.pdgId();
     int st = p.status(); 
+
+    // find a top and antitop
+    if (id == 6) {
+      tId = i;
+      ++counterT;
+    }
+    else if (id == -6) {
+      tbarId = i;
+      ++counterTbar;
+    }
     
     // Taking incoming partons info
-    
-    
     bool ispartafterisr=true;
     int nbdaughters = p.numberOfDaughters();
     for(int dghtit = 0; dghtit < nbdaughters; ++ dghtit) {
       const Candidate * quarkdaughter = p.daughter( dghtit );
       int qdid = quarkdaughter->pdgId();
-      //if(fabs(qdid) == 22 || fabs(qdid) == 23 || fabs(qdid) == 24 || fabs(qdid) == 32 || fabs(qdid) == 33 || fabs(qdid) == 39)     ispartafterisr =true;
       if(fabs(qdid)<=8) ispartafterisr =false;
     }
     if(ispartafterisr){
@@ -2565,16 +2518,9 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
 	gengluon_pdgid[countergluon]= p.pdgId();
 	countergluon++;
       }
-      
-      
     }
   
-  
-
-    
- 
-    
-    
+    // electrons and their mom
     if (fabs(id) == 11 && st == 1) {
       const Candidate * unstableGenEle = p.clone(); // stable = unstable at the beginning
       const Candidate * mom = p.mother();
@@ -2624,6 +2570,20 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
   genparticles_size=counter;
   genquarks_size = counterquark; 
   gengluons_size = countergluon; 
+
+  // calc invariant mass ot ttbar pair
+  //if (counterT > 1 || counterTbar > 1) std::cout << "Found a lot of tops " << counterT << " " << counterTbar << endl;
+  if (tId > -1 && tbarId > -1) {
+    const GenParticle & top = (*genParticles)[tId];
+    const GenParticle & antiTop = (*genParticles)[tbarId];
+    TLorentzVector topLv;
+    TLorentzVector antiTopLv;
+
+    topLv.SetPxPyPzE(top.px(), top.py(), top.pz(), top.energy());
+    antiTopLv.SetPxPyPzE(antiTop.px(), antiTop.py(), antiTop.pz(), antiTop.energy());
+
+    genPair_mass = (float)(topLv + antiTopLv).Mag();
+  }
 }//end of DataGenPart
 
 //
