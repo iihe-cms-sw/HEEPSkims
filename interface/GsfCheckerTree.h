@@ -16,7 +16,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.37 2012/10/23 16:20:29 lathomas Exp $
+// $Id: GsfCheckerTree.h,v 1.38 2012/11/12 13:53:26 treis Exp $
 //
 //
 
@@ -495,6 +495,13 @@ private:
   bool *gsfpass_HEEP;
   bool *gsfpass_ID;
   bool *gsfpass_ISO;
+  bool *gsfmatch_hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17TrackIsoFilter ;
+  bool *gsfmatch_hltEle17TightIdLooseIsoEle8TightIdLooseIsoTrackIsoDoubleFilter ;
+  bool *gsfmatch_hltEle17TightIdLooseIsoEle8TightIdLooseIsoTrackIsoFilter;
+  bool *gsfmatch_hltL1sL1SingleEG22;
+  bool *gsfmatch_hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter;
+  bool *gsfmatch_hltEle33CaloIdLPixelMatchFilter;
+  bool *scmatch_hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17PMMassFilter;
 
   float heepHeepMass;
 
