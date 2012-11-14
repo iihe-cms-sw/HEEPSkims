@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.42 2012/11/12 13:53:28 treis Exp $
+// $Id: GsfCheckerTree.cc,v 1.43 2012/11/14 01:04:45 lathomas Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -2241,6 +2241,8 @@ GsfCheckerTree::beginJob()
   mytree->Branch("met", &met, "met/F");
   mytree->Branch("pfmet", &pfmet, "pfmet/F");
   mytree->Branch("pfmet_phi", &pfmet_phi, "pfmet_phi/F");
+  mytree->Branch("pfmetcor", &pfmetcor, "pfmetcor/F");
+  mytree->Branch("pfmetcor_phi", &pfmetcor_phi, "pfmetcor_phi/F");
   //Beam spot variables
   mytree->Branch("sigmaZ",&sigmaZ,"sigmaZ/F");
   mytree->Branch("sigmaZ0Error",&sigmaZ0Error,"sigmaZ0Error/F");
@@ -3138,6 +3140,8 @@ GsfCheckerTree::METData(const edm::Event &iEvent)
   met = -1.;
   pfmet = -1.;
   pfmet_phi = -1000.;
+  pfmetcor = -1.;
+  pfmetcor_phi = -1000.;
 
   edm::Handle<CaloMETCollection> pCaloMET;
   bool calometisvalid = iEvent.getByLabel("met", pCaloMET);
@@ -3150,6 +3154,11 @@ GsfCheckerTree::METData(const edm::Event &iEvent)
   edm::Handle<PFMETCollection> pPFMET;
   bool pfmetisvalid = iEvent.getByLabel("pfMet", pPFMET);
   const PFMETCollection *PFMET  = pPFMET.product();
+
+  edm::Handle<PFMETCollection> pPFMETcor;
+  bool pfmetcorisvalid = iEvent.getByLabel("pfType1CorrectedMet", pPFMETcor);
+  const PFMETCollection *PFMETcor  = pPFMETcor.product();
+
 
   //CALOMET
   if (calometisvalid) {
@@ -3171,6 +3180,15 @@ GsfCheckerTree::METData(const edm::Event &iEvent)
       pfmet_phi = pfmetiter->phi();
     }
   } 
+  
+ //PFMET Type1 corrected 
+  if (pfmetcorisvalid) {
+    for(PFMETCollection::const_iterator pfmetcoriter = PFMETcor->begin(); pfmetcoriter != PFMETcor->end(); ++pfmetcoriter) {
+      pfmetcor = pfmetcoriter->et();  
+      pfmetcor_phi = pfmetcoriter->phi();
+    }
+  } 
+
 } // END of METData
 
 //

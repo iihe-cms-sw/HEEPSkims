@@ -10,8 +10,8 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 
 #process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 #process.GlobalTag.globaltag = 'START52_V12::All'# To use for MC with 52???
-#process.GlobalTag.globaltag = 'START53_V7F::All'# To use for MC with 53???
-process.GlobalTag.globaltag = 'FT_53_V6_AN2::All'  # this one for run2012A and B  (July Rereco )
+process.GlobalTag.globaltag = 'START53_V7F::All'# To use for MC with 53???
+#process.GlobalTag.globaltag = 'FT_53_V6_AN2::All'  # this one for run2012A and B  (July Rereco )
 #process.GlobalTag.globaltag = 'GR_P_V39_AN1::All'  # this one for run2012A and B
 #process.GlobalTag.globaltag = 'GR_P_V40_AN1::All'  # this one for run2012C with cmssw version < 533
 #process.GlobalTag.globaltag = 'GR_P_V41_AN1::All'  # this one for run2012C with cmssw version >= 533
@@ -27,7 +27,8 @@ process.source = cms.Source("PoolSource",fileNames = readFiles, secondaryFileNam
 readFiles.extend( [
 #    'file:/user/treis/heep/CMSSW_5_3_2_patch4/src/DyToEE_madgraph_pu.root'
 #    '/store/mc/Summer12/DYToEE_M_20_TuneZ2star_8TeV_pythia6/AODSIM/PU_S7_START50_V15-v1/0000/FCCBFAC4-847E-E111-A077-002618943829.root'
-    'file:/user/lathomas/AOD_testfiles/RunB-DoublePhotonHighPt_13Jul2012-v1_AOD.root'
+    'file:/user/lathomas/AOD_testfiles/TTJetMtt1000_AODSummer12_53X.root'
+    #'file:/user/lathomas/AOD_testfiles/RunB-DoublePhotonHighPt_13Jul2012-v1_AOD.root'
     #'file:/user/lathomas/AOD_testfiles/DataDoublePhotonHighPtRun2012Cv1.root'
     #'file:testdy500_Summer12_START52_pythia.root'
 ##    'dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/lathomas/Photon/LaurentPhoton-Run2011BSkim2ElePt35/319d9d50ddc1c21c2a4623a85e06b6f6/output_77_2_49z.root'
@@ -103,8 +104,13 @@ process.otherStuff = cms.Sequence( process.kt6PFJets )
 
 process.load("RecoMET.METFilters.ecalLaserCorrFilter_cfi")
 process.load('RecoMET.METFilters.eeBadScFilter_cfi')
-
-
 process.MessageLogger.suppressError = cms.untracked.vstring ('ecalLaserCorrFilter') 
 
-process.p1 = cms.Path(process.otherStuff * process.hltPhysicsDeclared *   process.eeBadScFilter*  process.ecalLaserCorrFilter* process.noscraping * process.primaryVertexFilter * process.pfParticleSelectionSequence * process.eleIsoSequence * process.muIsoSequence * process.gsfcheckerjob)
+# PFMET Type 1 (JEC) correction
+process.load("JetMETCorrections.Type1MET.pfMETCorrections_cff")
+#process.pfJetMETcorr.jetCorrLabel = cms.string("ak5PFL1FastL2L3Residual") #this for data
+process.pfJetMETcorr.jetCorrLabel = cms.string("ak5PFL1FastL2L3")  #this for MC 
+
+
+
+process.p1 = cms.Path(process.otherStuff * process.hltPhysicsDeclared *   process.eeBadScFilter*  process.ecalLaserCorrFilter* process.noscraping * process.primaryVertexFilter * process.pfParticleSelectionSequence * process.eleIsoSequence * process.muIsoSequence * process.producePFMETCorrections * process.gsfcheckerjob)

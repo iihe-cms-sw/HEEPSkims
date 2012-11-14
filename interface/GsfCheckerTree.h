@@ -16,7 +16,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.38 2012/11/12 13:53:26 treis Exp $
+// $Id: GsfCheckerTree.h,v 1.39 2012/11/14 01:04:46 lathomas Exp $
 //
 //
 
@@ -162,6 +162,8 @@ private:
   float met;
   float pfmet; 
   float pfmet_phi;
+  float pfmetcor; 
+  float pfmetcor_phi;
   float mass;
 
   //JETS 
