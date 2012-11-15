@@ -8,14 +8,20 @@ process.load("Configuration.EventContent.EventContent_cff")
 process.load("RecoTracker.Configuration.RecoTracker_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 
-#process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
-#process.GlobalTag.globaltag = 'START52_V12::All'# To use for MC with 52???
-process.GlobalTag.globaltag = 'START53_V7F::All'# To use for MC with 53???
-#process.GlobalTag.globaltag = 'FT_53_V6_AN2::All'  # this one for run2012A and B  (July Rereco )
-#process.GlobalTag.globaltag = 'GR_P_V39_AN1::All'  # this one for run2012A and B
-#process.GlobalTag.globaltag = 'GR_P_V40_AN1::All'  # this one for run2012C with cmssw version < 533
-#process.GlobalTag.globaltag = 'GR_P_V41_AN1::All'  # this one for run2012C with cmssw version >= 533
+#process.GlobalTag.globaltag = 'START52_V9E::All'
+process.GlobalTag.globaltag = 'START53_V7F::All'
+#process.GlobalTag.globaltag = 'GR_P_V39_AN2::All'  # this one for run2012A and B
+#process.GlobalTag.globaltag = 'FT_53_V6_AN2::All'  # this one for july13 rereco
+#process.GlobalTag.globaltag = 'FT_53_V6C_AN2::All' # this one for aug06 rereco
+#process.GlobalTag.globaltag = 'FT_53_V10_AN2::All' # this one for aug24 rereco
+#process.GlobalTag.globaltag = 'GR_P_V40_AN2::All'  # this one for run2012C v1 with cmssw version < 533
+#process.GlobalTag.globaltag = 'GR_P_V41_AN2::All'  # this one for run2012C v2 with cmssw version >= 533
+#process.GlobalTag.globaltag = 'GR_P_V42_AN2::All'  # this one for run2012D
 
+# PFMET Type 1 (JEC) correction
+process.load("JetMETCorrections.Type1MET.pfMETCorrections_cff")
+#process.pfJetMETcorr.jetCorrLabel = cms.string("ak5PFL1FastL2L3Residual") #this for data
+process.pfJetMETcorr.jetCorrLabel = cms.string("ak5PFL1FastL2L3")  #this for MC
 
 readFiles = cms.untracked.vstring()
 secFiles = cms.untracked.vstring()
@@ -25,12 +31,10 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.source = cms.Source("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
 
 readFiles.extend( [
-#    'file:/user/treis/heep/CMSSW_5_3_2_patch4/src/DyToEE_madgraph_pu.root'
-#    '/store/mc/Summer12/DYToEE_M_20_TuneZ2star_8TeV_pythia6/AODSIM/PU_S7_START50_V15-v1/0000/FCCBFAC4-847E-E111-A077-002618943829.root'
-    'file:/user/lathomas/AOD_testfiles/TTJetMtt1000_AODSummer12_53X.root'
-    #'file:/user/lathomas/AOD_testfiles/RunB-DoublePhotonHighPt_13Jul2012-v1_AOD.root'
-    #'file:/user/lathomas/AOD_testfiles/DataDoublePhotonHighPtRun2012Cv1.root'
-    #'file:testdy500_Summer12_START52_pythia.root'
+#    '/store/user/treis/McGenSim3_DY/McReco3_DY/ba742de6463696a09655542c9e24f59b/DyToEE_madgraph_pu_7_1_DOp.root'
+#    '/store/mc/Summer12_DR53X/DYToEE_M-20_CT10_TuneZ2star_8TeV-powheg-pythia6/AODSIM/PU_S10_START53_V7A-v1/0000/682F90A9-5FF0-E111-91D7-485B39800BBE.root'
+#    '/store/mc/Summer12_DR53X/DY1JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/AODSIM/PU_S10_START53_V7A-v1/0002/EE14FCF2-15F6-E111-8261-0025B3E05DDA.root'
+    '/store/mc/Summer12_DR53X/TTWJets_8TeV-madgraph/AODSIM/PU_S10_START53_V7A-v1/0000/0C570F59-B7DA-E111-A245-003048D437BA.root'
 ##    'dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/lathomas/Photon/LaurentPhoton-Run2011BSkim2ElePt35/319d9d50ddc1c21c2a4623a85e06b6f6/output_77_2_49z.root'
        ##   '/store/mc/Fall11/TTJets_TuneZ2_7TeV-madgraph-tauola/AODSIM/PU_S6_START42_V14B-v1/0000/380EDCD0-CFFA-E011-8B63-002618943834.root',
 ])
@@ -78,8 +82,8 @@ process.noscraping = cms.EDFilter("FilterOutScraping",
                                 numtrack = cms.untracked.uint32(10),
                                 thresh = cms.untracked.double(0.25)
                                 )
-## from RecoJets.Configuration.CaloTowersRec_cff import *
 
+## from RecoJets.Configuration.CaloTowersRec_cff import *
 ## from RecoJets.JetProducers.CaloJetParameters_cfi import *
 ## from RecoJets.JetProducers.AnomalousCellParameters_cfi import *
 process.load("Geometry.CMSCommonData.cmsIdealGeometryXML_cfi")
@@ -106,11 +110,4 @@ process.load("RecoMET.METFilters.ecalLaserCorrFilter_cfi")
 process.load('RecoMET.METFilters.eeBadScFilter_cfi')
 process.MessageLogger.suppressError = cms.untracked.vstring ('ecalLaserCorrFilter') 
 
-# PFMET Type 1 (JEC) correction
-process.load("JetMETCorrections.Type1MET.pfMETCorrections_cff")
-#process.pfJetMETcorr.jetCorrLabel = cms.string("ak5PFL1FastL2L3Residual") #this for data
-process.pfJetMETcorr.jetCorrLabel = cms.string("ak5PFL1FastL2L3")  #this for MC 
-
-
-
-process.p1 = cms.Path(process.otherStuff * process.hltPhysicsDeclared *   process.eeBadScFilter*  process.ecalLaserCorrFilter* process.noscraping * process.primaryVertexFilter * process.pfParticleSelectionSequence * process.eleIsoSequence * process.muIsoSequence * process.producePFMETCorrections * process.gsfcheckerjob)
+process.p1 = cms.Path(process.otherStuff * process.hltPhysicsDeclared * process.eeBadScFilter * process.ecalLaserCorrFilter * process.noscraping * process.primaryVertexFilter * process.pfParticleSelectionSequence * process.eleIsoSequence * process.muIsoSequence * process.producePFMETCorrections * process.gsfcheckerjob)
