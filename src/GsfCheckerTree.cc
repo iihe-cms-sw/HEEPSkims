@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.43 2012/11/14 01:04:45 lathomas Exp $
+// $Id: GsfCheckerTree.cc,v 1.44 2012/11/14 17:38:13 lathomas Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -527,7 +527,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     
     if (muIt->isGlobalMuon()) {
       // get TeV optimized track
-      reco::Muon::MuonTrackTypePair tevOptMuTrk = muon::tevOptimized(*muIt);
+      reco::Muon::MuonTrackTypePair tevOptMuTrk = muon::tevOptimized(*muIt, 200, 40., 17., 0.25);
 
       if (tevOptMuTrk.first->pt() < muPtMin_) continue;
   
@@ -562,16 +562,16 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       muon_chi2[index_mu] = muIt->globalTrack()->chi2();
       muon_ndof[index_mu] = muIt->globalTrack()->ndof();
       muon_normChi2[index_mu] = muIt->globalTrack()->normalizedChi2();
-      muon_d0[index_mu] = muIt->muonBestTrack()->d0();
-      muon_d0Error[index_mu] = muIt->muonBestTrack()->d0Error();
-      muon_dz_cmsCenter[index_mu] = muIt->muonBestTrack()->dz();
-      muon_dz_beamSpot[index_mu] = muIt->muonBestTrack()->dz(beamspot);
-      muon_dz_firstPVtx[index_mu] = muIt->muonBestTrack()->dz(firstpvertex);
-      muon_dzError[index_mu] = muIt->muonBestTrack()->dzError();
-      muon_dxy_cmsCenter[index_mu] = muIt->muonBestTrack()->dxy();
-      muon_dxy_beamSpot[index_mu] = muIt->muonBestTrack()->dxy(beamspot);
-      muon_dxy_firstPVtx[index_mu] = muIt->muonBestTrack()->dxy(firstpvertex);
-      muon_dxyError[index_mu] = muIt->muonBestTrack()->dxyError();
+      muon_d0[index_mu] = tevOptMuTrk.first->d0();
+      muon_d0Error[index_mu] = tevOptMuTrk.first->d0Error();
+      muon_dz_cmsCenter[index_mu] = tevOptMuTrk.first->dz();
+      muon_dz_beamSpot[index_mu] = tevOptMuTrk.first->dz(beamspot);
+      muon_dz_firstPVtx[index_mu] = tevOptMuTrk.first->dz(firstpvertex);
+      muon_dzError[index_mu] = tevOptMuTrk.first->dzError();
+      muon_dxy_cmsCenter[index_mu] = tevOptMuTrk.first->dxy();
+      muon_dxy_beamSpot[index_mu] = tevOptMuTrk.first->dxy(beamspot);
+      muon_dxy_firstPVtx[index_mu] = tevOptMuTrk.first->dxy(firstpvertex);
+      muon_dxyError[index_mu] = tevOptMuTrk.first->dxyError();
       muon_innerPosx[index_mu] = muIt->globalTrack()->innerPosition().X();
       muon_innerPosy[index_mu] = muIt->globalTrack()->innerPosition().Y();
       muon_innerPosz[index_mu] = muIt->globalTrack()->innerPosition().Z();
