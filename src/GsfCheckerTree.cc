@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.44 2012/11/14 17:38:13 lathomas Exp $
+// $Id: GsfCheckerTree.cc,v 1.45 2012/11/16 18:18:01 treis Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -253,7 +253,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   for(reco::MuonCollection::const_iterator muIt = muons->begin(); muIt < muons->end(); ++muIt){
     if (muIt->isGlobalMuon()) {
       // get TeV optimized track
-      reco::Muon::MuonTrackTypePair tevOptMuTrk = muon::tevOptimized(*muIt);
+      reco::Muon::MuonTrackTypePair tevOptMuTrk = muon::tevOptimized(*muIt, 200, 17., 40., 0.25);
       if (tevOptMuTrk.first->pt() > muonPtMax) {
         muonPtMax = tevOptMuTrk.first->pt();
       }
@@ -527,7 +527,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     
     if (muIt->isGlobalMuon()) {
       // get TeV optimized track
-      reco::Muon::MuonTrackTypePair tevOptMuTrk = muon::tevOptimized(*muIt, 200, 40., 17., 0.25);
+      reco::Muon::MuonTrackTypePair tevOptMuTrk = muon::tevOptimized(*muIt, 200, 17., 40., 0.25);
 
       if (tevOptMuTrk.first->pt() < muPtMin_) continue;
   
