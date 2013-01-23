@@ -8,21 +8,6 @@ process.load("Configuration.EventContent.EventContent_cff")
 process.load("RecoTracker.Configuration.RecoTracker_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 
-#process.GlobalTag.globaltag = 'START52_V9E::All'
-process.GlobalTag.globaltag = 'START53_V7F::All'
-#process.GlobalTag.globaltag = 'GR_P_V39_AN2::All'  # this one for run2012A and B
-#process.GlobalTag.globaltag = 'FT_53_V6_AN2::All'  # this one for july13 rereco
-#process.GlobalTag.globaltag = 'FT_53_V6C_AN2::All' # this one for aug06 rereco
-#process.GlobalTag.globaltag = 'FT_53_V10_AN2::All' # this one for aug24 rereco
-#process.GlobalTag.globaltag = 'GR_P_V40_AN2::All'  # this one for run2012C v1 with cmssw version < 533
-#process.GlobalTag.globaltag = 'GR_P_V41_AN2::All'  # this one for run2012C v2 with cmssw version >= 533
-#process.GlobalTag.globaltag = 'GR_P_V42_AN2::All'  # this one for run2012D
-
-# PFMET Type 1 (JEC) correction
-process.load("JetMETCorrections.Type1MET.pfMETCorrections_cff")
-#process.pfJetMETcorr.jetCorrLabel = cms.string("ak5PFL1FastL2L3Residual") #this for data
-process.pfJetMETcorr.jetCorrLabel = cms.string("ak5PFL1FastL2L3")  #this for MC
-
 readFiles = cms.untracked.vstring()
 secFiles = cms.untracked.vstring()
 process.load('FWCore.MessageService.MessageLogger_cfi')
@@ -35,9 +20,48 @@ readFiles.extend( [
 #    '/store/mc/Summer12_DR53X/DYToEE_M-20_CT10_TuneZ2star_8TeV-powheg-pythia6/AODSIM/PU_S10_START53_V7A-v1/0000/682F90A9-5FF0-E111-91D7-485B39800BBE.root'
 #    '/store/mc/Summer12_DR53X/DY1JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/AODSIM/PU_S10_START53_V7A-v1/0002/EE14FCF2-15F6-E111-8261-0025B3E05DDA.root'
     '/store/mc/Summer12_DR53X/TTWJets_8TeV-madgraph/AODSIM/PU_S10_START53_V7A-v1/0000/0C570F59-B7DA-E111-A245-003048D437BA.root'
-##    'dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/lathomas/Photon/LaurentPhoton-Run2011BSkim2ElePt35/319d9d50ddc1c21c2a4623a85e06b6f6/output_77_2_49z.root'
-       ##   '/store/mc/Fall11/TTJets_TuneZ2_7TeV-madgraph-tauola/AODSIM/PU_S6_START42_V14B-v1/0000/380EDCD0-CFFA-E011-8B63-002618943834.root',
+##   'dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/lathomas/Photon/LaurentPhoton-Run2011BSkim2ElePt35/319d9d50ddc1c21c2a4623a85e06b6f6/output_77_2_49z.root'
+##   '/store/mc/Fall11/TTJets_TuneZ2_7TeV-madgraph-tauola/AODSIM/PU_S6_START42_V14B-v1/0000/380EDCD0-CFFA-E011-8B63-002618943834.root',
 ])
+
+# PFMET Type 1 (JEC) correction
+process.load("JetMETCorrections.Type1MET.pfMETCorrections_cff")
+
+# select global tag and pfJetMET correction automatically from datasetpath when using multicrab
+noDataset = True
+import sys
+for arg in sys.argv:
+    if arg.startswith("-CMSSW.datasetpath"):
+        dataset = arg[19:]
+        noDataset =  False
+        break
+if noDataset:
+    dataset = 'none'
+
+if dataset.endswith('/AOD'):
+    process.pfJetMETcorr.jetCorrLabel = cms.string("ak5PFL1FastL2L3Residual") #this for data
+
+    if dataset.find("13Jul2012") != -1:
+        process.GlobalTag.globaltag = 'FT_53_V6_AN3::All'  # this one for july13 rereco
+    elif dataset.find("06Aug2012") != -1:
+        process.GlobalTag.globaltag = 'FT_53_V6C_AN3::All' # this one for aug06 rereco
+    elif dataset.find("24Aug2012") != -1:
+        process.GlobalTag.globaltag = 'FT_53_V10_AN3::All' # this one for aug24 rereco
+    elif dataset.find("11Dec2012") != -1:
+        process.GlobalTag.globaltag = 'FT_P_V42C_AN3::All' # this one for 11dec rereco
+    elif dataset.find("Run2012C-PromptReco-v1") != -1:
+        process.GlobalTag.globaltag = 'GR_P_V40_AN3::All'  # this one for run2012C v1 with cmssw version < 533
+    elif dataset.find("Run2012C-PromptReco-v2") != -1:
+        process.GlobalTag.globaltag = 'GR_P_V41_AN3::All'  # this one for run2012C v2 with cmssw version >= 533
+    elif dataset.find("Run2012D") != -1:
+        process.GlobalTag.globaltag = 'GR_P_V42_AN3::All'  # this one for run2012D
+    else:
+        process.GlobalTag.globaltag = 'GR_P_V39_AN2::All'  # this one for run2012A and B
+else:
+    process.pfJetMETcorr.jetCorrLabel = cms.string("ak5PFL1FastL2L3")  #this for MC
+    process.GlobalTag.globaltag = 'START53_V7G::All'
+
+print "Global Tag is ", process.GlobalTag.globaltag
 
 ##process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
 
