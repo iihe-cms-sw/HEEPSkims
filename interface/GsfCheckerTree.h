@@ -16,7 +16,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.39 2012/11/14 01:04:46 lathomas Exp $
+// $Id: GsfCheckerTree.h,v 1.40 2012/11/14 17:38:13 lathomas Exp $
 //
 //
 
@@ -239,10 +239,12 @@ private:
   float *muon_dz_cmsCenter;
   float *muon_dz_beamSpot;
   float *muon_dz_firstPVtx;
+  float *muon_dz_firstPVtxwithBS;
   float *muon_dzError;
   float *muon_dxy_cmsCenter;
   float *muon_dxy_beamSpot;
   float *muon_dxy_firstPVtx;
+  float *muon_dxy_firstPVtxwithBS; 
   float *muon_dxyError; 
   float *muon_trackIso03; 
   float *muon_trackIso05; 
@@ -284,6 +286,7 @@ private:
   float *genquark_pz; 
   float *genquark_eta; 
   float *genquark_phi;
+  int *genquark_status;
   int *genquark_charge;
   int *genquark_pdgid;
 
@@ -295,6 +298,7 @@ private:
   float *gengluon_pz; 
   float *gengluon_eta; 
   float *gengluon_phi;
+  int *gengluon_status;
   int *gengluon_charge;
   int *gengluon_pdgid;
 
@@ -378,8 +382,15 @@ private:
   float *scz;
 
   int gsf_size;
+  int pfele_size; 
   int conv_size;
   int nbtrackhits;
+  
+  float *pfele_pt; 
+  float *pfele_eta; 
+  float *pfele_phi; 
+  int *pfele_charge; 
+
   bool *gsf_isEB;
   bool *gsf_isEE;
   float *gsf_px;
@@ -403,10 +414,12 @@ private:
   float *gsf_dxy;
   float *gsf_dxy_beamSpot;
   float *gsf_dxy_firstPVtx;
+  float *gsf_dxy_firstPVtxwithBS;
   float *gsf_dxyError;
   float *gsf_dz;
   float *gsf_dz_beamSpot;
   float *gsf_dz_firstPVtx;
+  float *gsf_dz_firstPVtxwithBS;
   float *gsf_dzError;
   float *gsf_vz;
   int *gsf_nHits;

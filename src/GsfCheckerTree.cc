@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.45 2012/11/16 18:18:01 treis Exp $
+// $Id: GsfCheckerTree.cc,v 1.46 2012/11/29 15:48:52 treis Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -214,7 +214,9 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   eventnumber = iEvent.id().event();
   luminosityBlock = iEvent.id().luminosityBlock();
   
- 
+
+
+
   // for skim on pt 
   //Final GSF Electron collection
   edm::Handle<reco::GsfElectronCollection> pGsfElectrons;
@@ -276,6 +278,12 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   if(isrho)   rho =*rho_;
   //if(isrhoiso) rhoiso =*rhoiso_;
 
+  //edm::Handle<double> rho2012_;
+  //double rho2012 =0;
+  // iEvent.getByLabel(edm::InputTag("kt6PFJets_rho_RECO:double_kt6PFJets_rho_RECO.obj"),rho2012_);
+  
+  //rho2012 = *rho2012_; 
+  //cout << "rho " <<  rho << endl;
   //beam spot variables
   sigmaZ = -5000.;
   sigmaZ0Error = -5000.;
@@ -374,6 +382,22 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     firstpvertex.SetXYZ(firstpv->x(),firstpv->y(),firstpv->z());
   }
   
+
+
+  //There are two vtx collections (at least) : offlinePrimaryVertices and offlinePrimaryVerticeswithBS
+  //Now storing info about the second one
+  math::XYZPoint firstpvertexwithBS(0.,0.,0.);
+  Handle<reco::VertexCollection> primaryVertexCollwithBS;
+  iEvent.getByLabel("offlinePrimaryVerticesWithBS",primaryVertexCollwithBS);
+  const reco::VertexCollection* pvcollwithBS = primaryVertexCollwithBS.product();
+
+  if(pvcollwithBS->size() > 0) {
+    reco::VertexCollection::const_iterator firstpv = pvcollwithBS->begin();
+    firstpvertexwithBS.SetXYZ(firstpv->x(),firstpv->y(),firstpv->z());
+  }
+
+
+
   pvsize = pvcoll->size();
   
   pvx = new float [pvsize];
@@ -444,10 +468,12 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   muon_dz_cmsCenter = new float [muon_size];
   muon_dz_beamSpot = new float [muon_size];
   muon_dz_firstPVtx = new float [muon_size];
+  muon_dz_firstPVtxwithBS = new float [muon_size];
   muon_dzError = new float [muon_size];
   muon_dxy_cmsCenter = new float [muon_size];
   muon_dxy_beamSpot = new float [muon_size];
   muon_dxy_firstPVtx = new float [muon_size];
+  muon_dxy_firstPVtxwithBS = new float [muon_size];
   muon_dxyError = new float [muon_size]; 
   muon_trackIso03 = new float [muon_size]; 
   muon_trackIso05 = new float [muon_size]; 
@@ -500,10 +526,12 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   mytree->GetBranch("muon_dz_cmsCenter")->SetAddress(muon_dz_cmsCenter);
   mytree->GetBranch("muon_dz_beamSpot")->SetAddress(muon_dz_beamSpot);
   mytree->GetBranch("muon_dz_firstPVtx")->SetAddress(muon_dz_firstPVtx);
+  mytree->GetBranch("muon_dz_firstPVtxwithBS")->SetAddress(muon_dz_firstPVtxwithBS);
   mytree->GetBranch("muon_dzError")->SetAddress(muon_dzError);
   mytree->GetBranch("muon_dxy_cmsCenter")->SetAddress(muon_dxy_cmsCenter);
   mytree->GetBranch("muon_dxy_beamSpot")->SetAddress(muon_dxy_beamSpot);
   mytree->GetBranch("muon_dxy_firstPVtx")->SetAddress(muon_dxy_firstPVtx);
+  mytree->GetBranch("muon_dxy_firstPVtxwithBS")->SetAddress(muon_dxy_firstPVtxwithBS);
   mytree->GetBranch("muon_dxyError")->SetAddress(muon_dxyError); 
   mytree->GetBranch("muon_trackIso03")->SetAddress(muon_trackIso03); 
   mytree->GetBranch("muon_trackIso05")->SetAddress(muon_trackIso05); 
@@ -567,10 +595,12 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       muon_dz_cmsCenter[index_mu] = tevOptMuTrk.first->dz();
       muon_dz_beamSpot[index_mu] = tevOptMuTrk.first->dz(beamspot);
       muon_dz_firstPVtx[index_mu] = tevOptMuTrk.first->dz(firstpvertex);
+      muon_dz_firstPVtxwithBS[index_mu] = tevOptMuTrk.first->dz(firstpvertexwithBS);
       muon_dzError[index_mu] = tevOptMuTrk.first->dzError();
       muon_dxy_cmsCenter[index_mu] = tevOptMuTrk.first->dxy();
       muon_dxy_beamSpot[index_mu] = tevOptMuTrk.first->dxy(beamspot);
       muon_dxy_firstPVtx[index_mu] = tevOptMuTrk.first->dxy(firstpvertex);
+      muon_dxy_firstPVtxwithBS[index_mu] = tevOptMuTrk.first->dxy(firstpvertexwithBS);
       muon_dxyError[index_mu] = tevOptMuTrk.first->dxyError();
       muon_innerPosx[index_mu] = muIt->globalTrack()->innerPosition().X();
       muon_innerPosy[index_mu] = muIt->globalTrack()->innerPosition().Y();
@@ -791,7 +821,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   gsf_size = 0;
   gsf0_crystal_size=0; 
   gsf1_crystal_size=0; 
-
+  pfele_size = 0;
   // rechits test Laurent
 
   ESHandle<CaloGeometry> pG;
@@ -876,6 +906,24 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   //cout << "gsf_size " <<  gsf_size << endl;
 
+
+  //Loop over PF electrons to get the size of the vector 
+  //See here : https://savannah.cern.ch/task/?32346
+  edm::Handle<reco::PFCandidateCollection> pflowelectrons;
+  iEvent.getByLabel(edm::InputTag("particleFlow"),pflowelectrons);
+  reco::PFCandidateCollection pfelectrons(pflowelectrons->begin(),pflowelectrons->end());
+  for( reco::PFCandidateCollection::const_iterator pfeleiter = pfelectrons.begin(); pfeleiter != pfelectrons.end(); ++pfeleiter) {
+    if(pfeleiter->pt()>20 && pfeleiter->particleId()==reco::PFCandidate::e) pfele_size++;
+    
+  }
+
+  
+ 
+  pfele_pt= new float [pfele_size]; 
+  pfele_eta= new float [pfele_size];
+  pfele_phi= new float [pfele_size];
+  pfele_charge= new int [pfele_size];
+
   gsf_isEB = new bool [gsf_size];
   gsf_isEE = new bool [gsf_size];
   gsf_px = new float [gsf_size];
@@ -899,10 +947,12 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   gsf_dxy = new float [gsf_size];
   gsf_dxy_beamSpot = new float [gsf_size];
   gsf_dxy_firstPVtx = new float [gsf_size];
+  gsf_dxy_firstPVtxwithBS = new float [gsf_size];
   gsf_dxyError = new float [gsf_size];
   gsf_dz = new float [gsf_size];
   gsf_dz_beamSpot = new float [gsf_size];
   gsf_dz_firstPVtx = new float [gsf_size];
+  gsf_dz_firstPVtxwithBS = new float [gsf_size];
   gsf_dzError = new float [gsf_size];
   gsf_vz = new float [gsf_size];
   gsf_nHits = new int [gsf_size];
@@ -1022,6 +1072,15 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   conv_nHitsMax = new int [conv_size];
   conv_eleind = new int [conv_size];
 
+  
+  mytree->GetBranch("pfele_pt")->SetAddress(pfele_pt);
+  mytree->GetBranch("pfele_eta")->SetAddress(pfele_eta);
+  mytree->GetBranch("pfele_phi")->SetAddress(pfele_phi);
+  mytree->GetBranch("pfele_charge")->SetAddress(pfele_charge);
+
+
+
+  mytree->GetBranch("gsf_py")->SetAddress(gsf_py);
   mytree->GetBranch("gsf_isEB")->SetAddress(gsf_isEB);
   mytree->GetBranch("gsf_isEE")->SetAddress(gsf_isEE);
   mytree->GetBranch("gsf_px")->SetAddress(gsf_px);
@@ -1045,10 +1104,12 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   mytree->GetBranch("gsf_dxy")->SetAddress(gsf_dxy);
   mytree->GetBranch("gsf_dxy_beamSpot")->SetAddress(gsf_dxy_beamSpot);
   mytree->GetBranch("gsf_dxy_firstPVtx")->SetAddress(gsf_dxy_firstPVtx);
+  mytree->GetBranch("gsf_dxy_firstPVtxwithBS")->SetAddress(gsf_dxy_firstPVtxwithBS);
   mytree->GetBranch("gsf_dxyError")->SetAddress(gsf_dxyError);
   mytree->GetBranch("gsf_dz")->SetAddress(gsf_dz);
   mytree->GetBranch("gsf_dz_beamSpot")->SetAddress(gsf_dz_beamSpot);
   mytree->GetBranch("gsf_dz_firstPVtx")->SetAddress(gsf_dz_firstPVtx);
+  mytree->GetBranch("gsf_dz_firstPVtxwithBS")->SetAddress(gsf_dz_firstPVtxwithBS);
   mytree->GetBranch("gsf_dzError")->SetAddress(gsf_dzError);
   mytree->GetBranch("gsf_vz")->SetAddress(gsf_vz);
   mytree->GetBranch("gsf_nHits")->SetAddress(gsf_nHits);
@@ -1426,10 +1487,12 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     gsf_dxy[e] = gsfiter->gsfTrack()->dxy();
     gsf_dxy_beamSpot[e] = gsfiter->gsfTrack()->dxy(beamspot);
     gsf_dxy_firstPVtx[e] = gsfiter->gsfTrack()->dxy(firstpvertex);
+    gsf_dxy_firstPVtxwithBS[e] = gsfiter->gsfTrack()->dxy(firstpvertexwithBS);
     gsf_dxyError[e] = gsfiter->gsfTrack()->dxyError();
     gsf_dz[e] = gsfiter->gsfTrack()->dz(); 
     gsf_dz_beamSpot[e] = gsfiter->gsfTrack()->dz(beamspot); 
     gsf_dz_firstPVtx[e] = gsfiter->gsfTrack()->dz(firstpvertex); 
+    gsf_dz_firstPVtxwithBS[e] = gsfiter->gsfTrack()->dz(firstpvertexwithBS); 
     gsf_dzError[e] = gsfiter->gsfTrack()->dzError(); 
     gsf_vz[e] = gsfiter->gsfTrack()->vz();
     gsf_nHits[e] = gsfiter->gsfTrack()->numberOfValidHits();   
@@ -1728,6 +1791,21 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
   //End of conversion info
 
+
+  //Loop over the PF electron 
+
+  int ctpfele =0; 
+  for( reco::PFCandidateCollection::const_iterator pfeleiter = pfelectrons.begin(); pfeleiter != pfelectrons.end(); ++pfeleiter) {
+    if(pfeleiter->pt()<=20 || pfeleiter->particleId()!=reco::PFCandidate::e ) continue;
+    pfele_pt[ctpfele] = pfeleiter->pt(); 
+    pfele_eta[ctpfele] = pfeleiter->eta(); 
+    pfele_phi[ctpfele] = pfeleiter->phi(); 
+    pfele_charge[ctpfele] = pfeleiter->charge(); 
+    ctpfele ++;
+  }
+
+
+
   // calculate the invariant mass of two heep electrons if there are any
   heepHeepMass = -100.;
   if (nHeepEle > 1) {
@@ -1784,6 +1862,14 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   delete [] scy;
   delete [] scz;
 
+
+  delete [] pfele_pt;
+  delete [] pfele_eta;
+  delete [] pfele_phi;
+  delete [] pfele_charge;
+
+
+
   delete [] gsf_isEB;
   delete [] gsf_isEE;
   delete [] gsf_px;
@@ -1807,10 +1893,12 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   delete [] gsf_dxy;
   delete [] gsf_dxy_beamSpot;
   delete [] gsf_dxy_firstPVtx;
+  delete [] gsf_dxy_firstPVtxwithBS;
   delete [] gsf_dxyError;
   delete [] gsf_dz;
   delete [] gsf_dz_beamSpot;
   delete [] gsf_dz_firstPVtx;
+  delete [] gsf_dz_firstPVtxwithBS;
   delete [] gsf_dzError;
   delete [] gsf_vz;
   delete [] gsf_nHits;
@@ -1971,10 +2059,12 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   delete [] muon_dz_cmsCenter;
   delete [] muon_dz_beamSpot;
   delete [] muon_dz_firstPVtx;
+  delete [] muon_dz_firstPVtxwithBS;
   delete [] muon_dzError;
   delete [] muon_dxy_cmsCenter;
   delete [] muon_dxy_beamSpot;
   delete [] muon_dxy_firstPVtx;
+  delete [] muon_dxy_firstPVtxwithBS;
   delete [] muon_dxyError; 
   delete [] muon_trackIso03; 
   delete [] muon_trackIso05; 
@@ -2024,6 +2114,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     delete [] genquark_pz; 
     delete [] genquark_eta; 
     delete [] genquark_phi;
+    delete [] genquark_status;
     delete [] genquark_charge;
     delete [] genquark_pdgid;
 
@@ -2034,6 +2125,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     delete [] gengluon_pz; 
     delete [] gengluon_eta; 
     delete [] gengluon_phi;
+    delete [] gengluon_status;
     delete [] gengluon_charge;
     delete [] gengluon_pdgid;
 
@@ -2336,10 +2428,12 @@ GsfCheckerTree::beginJob()
   mytree->Branch("muon_dz_cmsCenter", muon_dz_cmsCenter, "muon_dz_cmsCenter[muon_size]/F");
   mytree->Branch("muon_dz_beamSpot", muon_dz_beamSpot, "muon_dz_beamSpot[muon_size]/F");
   mytree->Branch("muon_dz_firstPVtx", muon_dz_firstPVtx, "muon_dz_firstPVtx[muon_size]/F");
+  mytree->Branch("muon_dz_firstPVtxwithBS", muon_dz_firstPVtxwithBS, "muon_dz_firstPVtxwithBS[muon_size]/F");
   mytree->Branch("muon_dzError", muon_dzError, "muon_dzError[muon_size]/F");
   mytree->Branch("muon_dxy_cmsCenter", muon_dxy_cmsCenter, "muon_dxy_cmsCenter[muon_size]/F");
   mytree->Branch("muon_dxy_beamSpot", muon_dxy_beamSpot, "muon_dxy_beamSpot[muon_size]/F");
   mytree->Branch("muon_dxy_firstPVtx", muon_dxy_firstPVtx, "muon_dxy_firstPVtx[muon_size]/F");
+  mytree->Branch("muon_dxy_firstPVtxwithBS", muon_dxy_firstPVtxwithBS, "muon_dxy_firstPVtxwithBS[muon_size]/F");
   mytree->Branch("muon_dxyError", muon_dxyError, "muon_dxyError[muon_size]/F");
   mytree->Branch("muon_innerPosx", muon_innerPosx, "muon_innerPosx[muon_size]/F");
   mytree->Branch("muon_innerPosy", muon_innerPosy, "muon_innerPosy[muon_size]/F");
@@ -2374,6 +2468,14 @@ GsfCheckerTree::beginJob()
   mytree->Branch("scz",scz,"scz[scsize]/F");
   //mytree->Branch("scgsfmatched",scgsfmatched,"scgsfmatched[scsize]/F");  
 
+
+  //PF Ele Variables 
+  mytree->Branch("pfele_size",&pfele_size, "pfele_size/I");
+  mytree->Branch("pfele_pt",pfele_pt, "pfele_pt[pfele_size]/F");
+  mytree->Branch("pfele_eta",pfele_eta, "pfele_eta[pfele_size]/F");
+  mytree->Branch("pfele_phi",pfele_phi, "pfele_phi[pfele_size]/F");
+  mytree->Branch("pfele_charge",pfele_charge, "pfele_charge[pfele_size]/I");
+
   //GSF VARIABLES
   mytree->Branch("gsf_size",&gsf_size, "gsf_size/I");
   mytree->Branch("gsf_isEB", gsf_isEB, "gsf_isEB[gsf_size]/O");
@@ -2395,10 +2497,12 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gsf_dxy", gsf_dxy, "gsf_dxy[gsf_size]/F");
   mytree->Branch("gsf_dxy_beamSpot", gsf_dxy_beamSpot, "gsf_dxy_beamSpot[gsf_size]/F");
   mytree->Branch("gsf_dxy_firstPVtx", gsf_dxy_firstPVtx, "gsf_dxy_firstPVtx[gsf_size]/F");
+  mytree->Branch("gsf_dxy_firstPVtxwithBS", gsf_dxy_firstPVtxwithBS, "gsf_dxy_firstPVtxwithBS[gsf_size]/F");
   mytree->Branch("gsf_dxyError", gsf_dxyError, "gsf_dxyError[gsf_size]/F");
   mytree->Branch("gsf_dz", gsf_dz, "gsf_dz[gsf_size]/F");
   mytree->Branch("gsf_dz_beamSpot", gsf_dz_beamSpot, "gsf_dz_beamSpot[gsf_size]/F");
   mytree->Branch("gsf_dz_firstPVtx", gsf_dz_firstPVtx, "gsf_dz_firstPVtx[gsf_size]/F");
+  mytree->Branch("gsf_dz_firstPVtxwithBS", gsf_dz_firstPVtxwithBS, "gsf_dz_firstPVtxwithBS[gsf_size]/F");
   mytree->Branch("gsf_dzError", gsf_dzError, "gsf_dzError[gsf_size]/F");
   mytree->Branch("gsf_vz", gsf_vz, "gsf_vz[gsf_size]/F");
   mytree->Branch("gsf_nHits", gsf_nHits, "gsf_nHits[gsf_size]/I");
@@ -2546,6 +2650,7 @@ GsfCheckerTree::beginJob()
   mytree->Branch("genquark_px", genquark_px, "genquark_px[genquarks_size]/F");
   mytree->Branch("genquark_py", genquark_py, "genquark_py[genquarks_size]/F");
   mytree->Branch("genquark_pz", genquark_pz, "genquark_pz[genquarks_size]/F");
+  mytree->Branch("genquark_status", genquark_status, "genquark_status[genquarks_size]/I");
   mytree->Branch("genquark_charge", genquark_charge, "genquark_charge[genquarks_size]/I");
   mytree->Branch("genquark_pdgid", genquark_pdgid, "genquark_pdgid[genquarks_size]/I");
   mytree->Branch("gengluon_e", gengluon_e, "gengluon_e[gengluons_size]/F");
@@ -2555,6 +2660,7 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gengluon_px", gengluon_px, "gengluon_px[gengluons_size]/F");
   mytree->Branch("gengluon_py", gengluon_py, "gengluon_py[gengluons_size]/F");
   mytree->Branch("gengluon_pz", gengluon_pz, "gengluon_pz[gengluons_size]/F");
+  mytree->Branch("gengluon_status", gengluon_status, "gengluon_status[gengluons_size]/I");
   mytree->Branch("gengluon_charge", gengluon_charge, "gengluon_charge[gengluons_size]/I");
   mytree->Branch("gengluon_pdgid", gengluon_pdgid, "gengluon_pdgid[gengluons_size]/I");
 
@@ -2627,6 +2733,7 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
   genquark_pz = new float [genquarks_size];
   genquark_eta = new float [genquarks_size];
   genquark_phi = new float [genquarks_size];
+  genquark_status = new int [genquarks_size];
   genquark_charge = new int [genquarks_size];
   genquark_pdgid = new int [genquarks_size];
   gengluon_e = new float [gengluons_size];
@@ -2636,6 +2743,7 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
   gengluon_pz = new float [gengluons_size];
   gengluon_eta = new float [gengluons_size];
   gengluon_phi = new float [gengluons_size];
+  gengluon_status = new int [genquarks_size];
   gengluon_charge = new int [gengluons_size];
   gengluon_pdgid = new int [gengluons_size];
 
@@ -2675,6 +2783,7 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
   mytree->GetBranch("genquark_pz")->SetAddress(genquark_pz);
   mytree->GetBranch("genquark_eta")->SetAddress(genquark_eta);
   mytree->GetBranch("genquark_phi")->SetAddress(genquark_phi);
+  mytree->GetBranch("genquark_status")->SetAddress(genquark_status);
   mytree->GetBranch("genquark_charge")->SetAddress(genquark_charge);
   mytree->GetBranch("genquark_pdgid")->SetAddress(genquark_pdgid);
 
@@ -2684,7 +2793,8 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
   mytree->GetBranch("gengluon_py")->SetAddress(gengluon_py);
   mytree->GetBranch("gengluon_pz")->SetAddress(gengluon_pz);
   mytree->GetBranch("gengluon_eta")->SetAddress(gengluon_eta);
-  mytree->GetBranch("gengluon_phi")->SetAddress(gengluon_phi);
+  mytree->GetBranch("gengluon_phi")->SetAddress(gengluon_phi); 
+  mytree->GetBranch("gengluon_status")->SetAddress(gengluon_status);
   mytree->GetBranch("gengluon_charge")->SetAddress(gengluon_charge);
   mytree->GetBranch("gengluon_pdgid")->SetAddress(gengluon_pdgid);
 
@@ -2741,40 +2851,8 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
       ++counterTbar;
     }
     
-    // Taking incoming partons info
-    bool ispartafterisr=true;
-    int nbdaughters = p.numberOfDaughters();
-    for(int dghtit = 0; dghtit < nbdaughters; ++ dghtit) {
-      const Candidate * quarkdaughter = p.daughter( dghtit );
-      int qdid = quarkdaughter->pdgId();
-      if(fabs(qdid)<=8) ispartafterisr =false;
-    }
-    if(ispartafterisr){
-      if(fabs(id) >=1 &&fabs(id) <=8 && st ==3 ) {//Quarks info (Drell-Yan, Z') 
-	genquark_e[counterquark] = p.energy(); 
-	genquark_pt[counterquark] = p.pt();
-	genquark_px[counterquark] = p.px();
-	genquark_py[counterquark] = p.py();
-	genquark_pz[counterquark] = p.pz();
-	genquark_eta[counterquark] = p.eta(); 
-	genquark_phi[counterquark] = p.phi();
-	genquark_charge[counterquark]= p.charge();
-	genquark_pdgid[counterquark]= p.pdgId();
-	counterquark++;
-      }
-      if(id ==21  && st ==3 ) { // For graviton, incoming partons are gluons 
-	gengluon_e[countergluon] = p.energy(); 
-	gengluon_pt[countergluon] = p.pt();
-	gengluon_px[countergluon] = p.px();
-	gengluon_py[countergluon] = p.py();
-	gengluon_pz[countergluon] = p.pz();
-	gengluon_eta[countergluon] = p.eta(); 
-	gengluon_phi[countergluon] = p.phi();
-	gengluon_charge[countergluon]= p.charge();
-	gengluon_pdgid[countergluon]= p.pdgId();
-	countergluon++;
-      }
-    }
+ 
+    
   
     // electrons and their mom
     if (fabs(id) == 11 && st == 1) {
@@ -2786,9 +2864,55 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
           mom = mom->mother(); 
       }
  
+
+      if(fabs(mom->pdgId()) != 22 && fabs(mom->pdgId()) != 23 && fabs(mom->pdgId()) != 24 && fabs(mom->pdgId()) != 32 && fabs(mom->pdgId()) != 33 && fabs(mom->pdgId()) != 39 )continue; 
+      for(int itpart=0;itpart<fabs(mom->numberOfMothers());itpart++){
+	const Candidate *initpart = mom->mother(itpart); 
+	if(fabs(initpart->pdgId()) <9  ) {//Quarks info (Drell-Yan, Z') 
+	  genquark_e[counterquark] = initpart->energy(); 
+	  genquark_pt[counterquark] = initpart->pt();
+	  genquark_px[counterquark] = initpart->px();
+	  genquark_py[counterquark] = initpart->py();
+	  genquark_pz[counterquark] = initpart->pz();
+	  genquark_eta[counterquark] = initpart->eta(); 
+	  genquark_phi[counterquark] = initpart->phi();
+	  genquark_charge[counterquark]= initpart->charge();
+	  genquark_pdgid[counterquark]= initpart->pdgId();
+	  genquark_status[counterquark]= initpart->status();
+	  counterquark++;
+	}
+	if(initpart->pdgId() ==21 ) { // For graviton, incoming partons can also be gluons 
+	      
+	  gengluon_e[countergluon] = initpart->energy(); 
+	  gengluon_pt[countergluon] = initpart->pt();
+	  gengluon_px[countergluon] = initpart->px();
+	  gengluon_py[countergluon] = initpart->py();
+	  gengluon_pz[countergluon] = initpart->pz();
+	  gengluon_eta[countergluon] = initpart->eta(); 
+	  gengluon_phi[countergluon] = initpart->phi();
+	  gengluon_charge[countergluon]= initpart->charge();
+	  gengluon_pdgid[countergluon]= initpart->pdgId();
+	  gengluon_status[countergluon]= initpart->status();
+	  countergluon++;
+	}
+	
+      }
+
+
+
+
+
+
+
+
       // cut on pdg-id 
+
+
+
       if(fabs(mom->pdgId()) != 22 && fabs(mom->pdgId()) != 23 && fabs(mom->pdgId()) != 24 && fabs(mom->pdgId()) != 32 && fabs(mom->pdgId()) != 33 && fabs(mom->pdgId()) != 39 && fabs(mom->pdgId()) !=  13) continue;
-      
+     
+
+ 
       genele_e[counter] = p.energy(); 
       genele_pt[counter] = p.pt();
       genele_px[counter] = p.px();
