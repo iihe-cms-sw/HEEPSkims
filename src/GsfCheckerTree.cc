@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.46 2012/11/29 15:48:52 treis Exp $
+// $Id: GsfCheckerTree.cc,v 1.47 2013/02/21 12:53:26 lathomas Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -129,6 +129,9 @@ GsfCheckerTree::GsfCheckerTree(const edm::ParameterSet& iConfig):
   comEnergy_ = iConfig.getParameter<double>("centerOfMassEnergy");
   ScPtMin_ = iConfig.getUntrackedParameter<double>("ScPtMin", 10.);
   bJetPtMin_ = iConfig.getUntrackedParameter<double>("bJetPtMin", 10.);
+  bJetEtaMax_ = iConfig.getUntrackedParameter<double>("bJetEtaMax", 3.);
+  jetPtMin_ = iConfig.getUntrackedParameter<double>("jetPtMin", 10.);
+  jetEtaMax_ = iConfig.getUntrackedParameter<double>("jetEtaMax", 3.);
   GsfPtMin_ = iConfig.getUntrackedParameter<double>("GsfPtMin", 5.);
   GsfTrackPtMin_= iConfig.getUntrackedParameter<double>("GsfTrackPtMin", 5.);
   muPtMin_ = iConfig.getUntrackedParameter<double>("muPtMin", 5.);
@@ -2087,10 +2090,16 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 //   delete [] jetAKT_phi;
 //   delete [] jetAKT_em;
 
+  delete [] pfJet_pt;
+  delete [] pfJet_eta;
+  delete [] pfJet_phi;
 //  delete [] Jet_em;
   delete [] Jet_pt;
   delete [] Jet_eta;
   delete [] Jet_phi;
+  delete [] Jet_vx;
+  delete [] Jet_vy;
+  delete [] Jet_vz;
   delete [] tCHighEffBTags;
   delete [] tCHighPurBTags;
   delete [] jetProbBTags;
@@ -2368,11 +2377,19 @@ GsfCheckerTree::beginJob()
   //   mytree->Branch("jetIC5_phi", jetIC5_phi, "jetIC5_phi[jetIC5_size]/F");
   //   mytree->Branch("jetIC5_em", jetIC5_em, "jetIC5_em[jetIC5_size]/F");
  
+  //PF JET
+  mytree->Branch("pfJetColl_size", &pfJetColl_size, "pfJetColl_size/I");
+  mytree->Branch("pfJet_pt", pfJet_pt, "pfJet_pt[pfJetColl_size]/F");
+  mytree->Branch("pfJet_eta", pfJet_eta, "pfJet_eta[pfJetColl_size]/F");
+  mytree->Branch("pfJet_phi", pfJet_phi, "pfJet_phi[pfJetColl_size]/F");
   //BTAG
   mytree->Branch("JetColl_size", &JetColl_size, "JetColl_size/I");
   mytree->Branch("Jet_pt", Jet_pt, "Jet_pt[JetColl_size]/F");
   mytree->Branch("Jet_eta", Jet_eta, "Jet_eta[JetColl_size]/F");
   mytree->Branch("Jet_phi", Jet_phi, "Jet_phi[JetColl_size]/F");
+  mytree->Branch("Jet_vx", Jet_vx, "Jet_vx[JetColl_size]/F");
+  mytree->Branch("Jet_vy", Jet_vy, "Jet_vy[JetColl_size]/F");
+  mytree->Branch("Jet_vz", Jet_vz, "Jet_vz[JetColl_size]/F");
   //  mytree->Branch("Jet_em", Jet_em, "Jet_em[JetColl_size]/F");
   mytree->Branch("tCHighEffBTags", tCHighEffBTags, "tCHighEffBTags[JetColl_size]/F");
   mytree->Branch("tCHighPurBTags", tCHighPurBTags, "tCHighPurBTags[JetColl_size]/F");
@@ -3336,7 +3353,7 @@ GsfCheckerTree::OLDJetData(const edm::Event &iEvent)
   const CaloJetCollection *caloAntiKtJets = pCaloAntiKtJets.product();
   
   //LOOP ON anti kt jets
-  int FnJetsAKT = -1;
+  //int FnJetsAKT = -1;
   int FnJetsAKT_pt10 = 0;
   int FnJetsAKT_pt15 = 0;
   int FnJetsAKT_pt20 = 0;
@@ -3347,7 +3364,7 @@ GsfCheckerTree::OLDJetData(const edm::Event &iEvent)
 
   int index_jetAKT = 0;
   if(caloantiktjetisvalid){
-    FnJetsAKT = caloAntiKtJets->size();
+    //FnJetsAKT = caloAntiKtJets->size();
     //cout << "caloAntiKtJets->size() " << caloAntiKtJets->size()<< endl;
 
     jetAKT_size = caloAntiKtJets->size();
@@ -3439,18 +3456,43 @@ GsfCheckerTree::JetData(const edm::Event &event)
   const reco::JetTagCollection &softMuPtBTag = *(softMuPtBTagHandle.product());
   //cout << "tCHighEffBTag.size() " << tCHighEffBTag.size() << endl;
 
-  
+  // PF jet data
+  edm::Handle<reco::PFJetCollection> pfJets;
+  event.getByLabel("ak5PFJets", pfJets);
+  //pfJetColl_size = pfJets->size();
+  pfJetColl_size = 0.;
+  for (reco::PFJetCollection::const_iterator pfJetIt = pfJets->begin(); pfJetIt != pfJets->end(); ++pfJetIt) {
+    if (pfJetIt->pt() > jetPtMin_ && fabs(pfJetIt->eta()) < jetEtaMax_) ++pfJetColl_size;
+  }
+  pfJet_pt = new float [pfJetColl_size];
+  pfJet_eta = new float [pfJetColl_size];
+  pfJet_phi = new float [pfJetColl_size];
+  mytree->GetBranch("pfJet_pt")->SetAddress(pfJet_pt);
+  mytree->GetBranch("pfJet_eta")->SetAddress(pfJet_eta);
+  mytree->GetBranch("pfJet_phi")->SetAddress(pfJet_phi);
+  int pfjCtr = 0;
+  for (reco::PFJetCollection::const_iterator pfJetIt = pfJets->begin(); pfJetIt != pfJets->end(); ++pfJetIt) {
+    if (!(pfJetIt->pt() > jetPtMin_ && fabs(pfJetIt->eta()) < jetEtaMax_)) continue;
+    pfJet_pt[pfjCtr] = pfJetIt->pt();
+    pfJet_eta[pfjCtr] = pfJetIt->eta();
+    pfJet_phi[pfjCtr] = pfJetIt->phi();
+    ++pfjCtr;
+  }  
+
+  // Jet and btag data
   JetColl_size = 0;
   for (unsigned int i = 0; i < tCHighEffBTag.size(); ++i) {
-    if (tCHighEffBTag[i].first->pt() > bJetPtMin_ && fabs(tCHighEffBTag[i].first->eta()) < 3.) {
-      JetColl_size++;
+    if (tCHighEffBTag[i].first->pt() > bJetPtMin_ && fabs(tCHighEffBTag[i].first->eta()) < bJetEtaMax_) {
+      ++JetColl_size;
     }
   }
-  
 
   Jet_pt = new float [JetColl_size];
   Jet_eta = new float [JetColl_size];
   Jet_phi = new float [JetColl_size];
+  Jet_vx = new float [JetColl_size];
+  Jet_vy = new float [JetColl_size];
+  Jet_vz = new float [JetColl_size];
   //  Jet_em = new float [JetColl_size];
   tCHighEffBTags = new float [JetColl_size];
   tCHighPurBTags = new float [JetColl_size];
@@ -3470,6 +3512,9 @@ GsfCheckerTree::JetData(const edm::Event &event)
   mytree->GetBranch("Jet_pt")->SetAddress(Jet_pt);
   mytree->GetBranch("Jet_eta")->SetAddress(Jet_eta);
   mytree->GetBranch("Jet_phi")->SetAddress(Jet_phi);
+  mytree->GetBranch("Jet_vx")->SetAddress(Jet_vx);
+  mytree->GetBranch("Jet_vy")->SetAddress(Jet_vy);
+  mytree->GetBranch("Jet_vz")->SetAddress(Jet_vz);
   mytree->GetBranch("tCHighEffBTags")->SetAddress(tCHighEffBTags);
   mytree->GetBranch("tCHighPurBTags")->SetAddress(tCHighPurBTags);
   mytree->GetBranch("jetProbBTags")->SetAddress(jetProbBTags);
@@ -3487,11 +3532,14 @@ GsfCheckerTree::JetData(const edm::Event &event)
 
   int btagiter = 0; 
   for (unsigned int i = 0; i < tCHighEffBTag.size(); ++i) {
-    if (tCHighEffBTag[i].first->pt() > bJetPtMin_ && fabs(tCHighEffBTag[i].first->eta()) < 3.) {
+    if (tCHighEffBTag[i].first->pt() > bJetPtMin_ && fabs(tCHighEffBTag[i].first->eta()) < bJetEtaMax_) {
       
       Jet_pt[btagiter] = tCHighEffBTag[i].first->pt();
       Jet_eta[btagiter] = tCHighEffBTag[i].first->eta();
       Jet_phi[btagiter] = tCHighEffBTag[i].first->phi();
+      Jet_vx[btagiter] = tCHighEffBTag[i].first->vx();
+      Jet_vy[btagiter] = tCHighEffBTag[i].first->vy();
+      Jet_vz[btagiter] = tCHighEffBTag[i].first->vz();
       //      Jet_em[btagiter] = tCHighEffBTag[i].first->emEnergyFraction();
       tCHighEffBTags[btagiter] = tCHighEffBTag[i].second;
       tCHighPurBTags[btagiter] = tCHighPurBTag[i].second;
@@ -3508,7 +3556,7 @@ GsfCheckerTree::JetData(const edm::Event &event)
       softMuIP3dBTags[btagiter] = softMuIP3dBTag[i].second;
       softMuPtBTags[btagiter] = softMuPtBTag[i].second;
 
-      btagiter ++;
+      ++btagiter;
     }
   }
 } //END of BTagData

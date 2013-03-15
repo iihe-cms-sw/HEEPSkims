@@ -9,7 +9,10 @@ gsfcheckerjob = cms.EDAnalyzer("GsfCheckerTree",
   centerOfMassEnergy = cms.double(8000.),
 
   #Pt cut for stored infos. This is *NOT* the skimming part ! 
+  jetPtMin = cms.untracked.double(20.),
+  jetEtaMax = cms.untracked.double(3.),
   bJetPtMin = cms.untracked.double(20.),
+  bJetEtaMax = cms.untracked.double(3.),
   ScPtMin = cms.untracked.double(20.),
   GsfPtMin= cms.untracked.double(10.),
   GsfTrackPtMin = cms.untracked.double(10.),

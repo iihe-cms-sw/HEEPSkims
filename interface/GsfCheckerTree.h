@@ -16,7 +16,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.40 2012/11/14 17:38:13 lathomas Exp $
+// $Id: GsfCheckerTree.h,v 1.41 2013/02/21 12:53:26 lathomas Exp $
 //
 //
 
@@ -49,6 +49,7 @@ Implementation:
 #include "DataFormats/METReco/interface/PFMET.h"
 #include "DataFormats/METReco/interface/PFMETCollection.h"
 #include "DataFormats/JetReco/interface/CaloJetCollection.h" 
+#include "DataFormats/JetReco/interface/PFJetCollection.h"
 #include "DataFormats/BTauReco/interface/JetTag.h"
 #include "DataFormats/EgammaReco/interface/BasicCluster.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
@@ -125,6 +126,9 @@ private:
   double comEnergy_;
   double ScPtMin_;
   double bJetPtMin_;
+  double bJetEtaMax_;
+  double jetPtMin_;
+  double jetEtaMax_;
   double GsfPtMin_;
   double GsfTrackPtMin_;
   double muPtMin_;
@@ -173,6 +177,10 @@ private:
   float *jetAKT_pt;
   float *jetAKT_phi;
   float *jetAKT_em;
+  int pfJetColl_size;
+  float *pfJet_pt;
+  float *pfJet_eta;
+  float *pfJet_phi;
    //  int nJetsIC5_pt15; 
 //   int jetIC5_size;
 //   float jetIC5_pt[NbJets];
@@ -182,10 +190,13 @@ private:
 
   //BTAG
   int JetColl_size;
-  float *Jet_em;
+  //float *Jet_em;
   float *Jet_pt;
   float *Jet_eta;
   float *Jet_phi;
+  float *Jet_vx;
+  float *Jet_vy;
+  float *Jet_vz;
   float *tCHighEffBTags;
   float *tCHighPurBTags;
   float *jetProbBTags;
