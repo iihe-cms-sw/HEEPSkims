@@ -1,0 +1,12 @@
+#!/bin/bash
+# My script 
+
+FILENAME=$1
+#this contains all the directory we want to run on 
+cat $FILENAME | while read LINE
+do
+	myprefix="/pnfs/iihe/cms/store/user/lathomas/$LINE/*.root"
+	hadd TOTAL.root `ls $myprefix | tr '\n' ' ' | sed  's/\/pnfs/dcap:\/\/maite.iihe.ac.be\/pnfs\//g'`
+	dccp $PWD"/TOTAL.root" "/pnfs/iihe/cms/store/user/lathomas/"$LINE"/TOTAL.root"
+	rm TOTAL.root
+done
