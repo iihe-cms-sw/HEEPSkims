@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.47 2013/02/21 12:53:26 lathomas Exp $
+// $Id: GsfCheckerTree.cc,v 1.48 2013/03/15 16:23:55 treis Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -55,7 +55,7 @@ Implementation:
 #include "Geometry/Records/interface/CaloTopologyRecord.h"
 
 #include "DataFormats/Math/interface/deltaR.h"
-
+#include "DataFormats/Math/interface/deltaPhi.h"
 #include <TMath.h>
 #define PI 3.141592654
 #define TWOPI 6.283185308
@@ -1629,7 +1629,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	//do what you want with the trigger objects, you have
 	//eta,phi,pt,mass,p,px,py,pz,et,energy accessors
 
-	if(deltaR(gsfiter->eta(),gsfiter->phi(),obj.eta(), obj.phi())<0.3){
+	if(deltaR(gsfiter->eta(),gsfiter->phi(),obj.eta(), obj.phi())<0.5){
 	  gsfmatch_hltEle33CaloIdLPixelMatchFilter[e]=true; 
 	}
       }
@@ -1652,7 +1652,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	//do what you want with the trigger objects, you have
 	//eta,phi,pt,mass,p,px,py,pz,et,energy accessors
 	
-	if(deltaR(gsfiter->eta(),gsfiter->phi(),obj.eta(), obj.phi())<0.3){
+	if(deltaR(gsfiter->eta(),gsfiter->phi(),obj.eta(), obj.phi())<0.5){
 	  gsfmatch_hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter[e]=true; 
 	}
 	
@@ -1662,7 +1662,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     
     
     //HLT_DoubleEle33_CaloIdL_GsfTrkIdVL , L1 
-    
+    //Careful that L1 triggers only have discrete eta phi. Need to be extremely loose. 
+    //See here: http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/SHarper/SHNtupliser/src/SHTrigInfo.cc?revision=1.5&view=markup&pathrev=HEAD
     filterName ="hltL1sL1SingleEG22";
     gsfmatch_hltL1sL1SingleEG22[e]=false; 
     //it is important to specify the right HLT process for the filter, not doing this is a common bug
@@ -1675,11 +1676,37 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	const trigger::TriggerObject& obj = trigObjColl[*keyIt];
 	//do what you want with the trigger objects, you have
 	//eta,phi,pt,mass,p,px,py,pz,et,energy accessors
-	
-	if(deltaR(gsfiter->eta(),gsfiter->phi(),obj.eta(), obj.phi())<0.3){
-	  gsfmatch_hltL1sL1SingleEG22[e]=true; 
-	}
-	
+
+	  float objeta = obj.eta(); 
+	  float objphi = obj.phi();
+
+
+	  const double barrelEnd=1.4791;
+	  // const double endcapEnd=2.65;
+	  const double regionEtaSizeEB=0.522;
+	  const double regionEtaSizeEE=1.0;
+	  const double regionPhiSize=1.044;
+
+	  double etaBinLow  = 0.;
+	  double etaBinHigh = 0.;
+
+	 	  
+	  if(fabs(objeta) < barrelEnd){
+	    etaBinLow = objeta - regionEtaSizeEB/2.;
+	    etaBinHigh = etaBinLow + regionEtaSizeEB;
+	  }
+	  else{
+	    etaBinLow = objeta - regionEtaSizeEE/2.;
+	    etaBinHigh = etaBinLow + regionEtaSizeEE;
+	  }
+
+	  float deltaPhi=reco::deltaPhi(gsfiter->phi(),objphi);
+   
+    
+	  if(gsfiter->eta() < etaBinHigh && gsfiter->eta() > etaBinLow &&   deltaPhi <regionPhiSize/2. )  {
+	    gsfmatch_hltL1sL1SingleEG22[e]=true; 
+	  }
+   	
       }
       
     }//end filter size check
@@ -1700,7 +1727,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	//do what you want with the trigger objects, you have
 	//eta,phi,pt,mass,p,px,py,pz,et,energy accessors
 	
-	if(deltaR(gsfiter->eta(),gsfiter->phi(),obj.eta(), obj.phi())<0.3){
+	if(deltaR(gsfiter->eta(),gsfiter->phi(),obj.eta(), obj.phi())<0.5){
 	  gsfmatch_hltEle17TightIdLooseIsoEle8TightIdLooseIsoTrackIsoFilter[e]=true; 
 	}
 	
@@ -1723,7 +1750,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	//do what you want with the trigger objects, you have
 	//eta,phi,pt,mass,p,px,py,pz,et,energy accessors
       
-	if(deltaR(gsfiter->eta(),gsfiter->phi(),obj.eta(), obj.phi())<0.3){
+	if(deltaR(gsfiter->eta(),gsfiter->phi(),obj.eta(), obj.phi())<0.5){
 	  gsfmatch_hltEle17TightIdLooseIsoEle8TightIdLooseIsoTrackIsoDoubleFilter[e] =true;
 	}
 
@@ -1747,7 +1774,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	//do what you want with the trigger objects, you have
 	//eta,phi,pt,mass,p,px,py,pz,et,energy accessors
       
-	if(deltaR(gsfiter->eta(),gsfiter->phi(),obj.eta(), obj.phi())<0.3){
+	if(deltaR(gsfiter->eta(),gsfiter->phi(),obj.eta(), obj.phi())<0.5){
 	  gsfmatch_hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17TrackIsoFilter[e] =true;
 	}
 
@@ -2244,6 +2271,7 @@ GsfCheckerTree::beginJob()
 {
   edm::Service<TFileService> fs;
   mytree = fs->make<TTree>("tree","tree");
+
 
   //GENERAL TECHNICAL INFOS 
   mytree->Branch("runnumber",&runnumber,"runnumber/i");
