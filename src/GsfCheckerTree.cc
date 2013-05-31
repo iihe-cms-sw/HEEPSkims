@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.48 2013/03/15 16:23:55 treis Exp $
+// $Id: GsfCheckerTree.cc,v 1.49 2013/05/24 13:26:02 lathomas Exp $
 //
 //Cleaning ladies : Thomas and Laurent
 #include "FWCore/Framework/interface/Event.h"
@@ -1049,7 +1049,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   gsfmatch_hltL1sL1SingleEG22 = new bool [gsf_size];
   gsfmatch_hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter = new bool [gsf_size];
   gsfmatch_hltEle33CaloIdLPixelMatchFilter = new bool [gsf_size]; 
-  
+  gsfmatch_hltEle27WP80TrackIsoFilter= new bool [gsf_size]; 
 
   //charge information
   scpixcharge = new int [gsf_size];
@@ -1207,6 +1207,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    mytree->GetBranch("gsfmatch_hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter")->SetAddress(gsfmatch_hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter); 
    mytree->GetBranch("gsfmatch_hltEle33CaloIdLPixelMatchFilter")->SetAddress(gsfmatch_hltEle33CaloIdLPixelMatchFilter);
    mytree->GetBranch("scmatch_hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17PMMassFilter")->SetAddress(scmatch_hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17PMMassFilter); 
+   mytree->GetBranch("gsfmatch_hltEle27WP80TrackIsoFilter")->SetAddress(gsfmatch_hltEle27WP80TrackIsoFilter);
 
 
 
@@ -1785,6 +1786,33 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 
 
+
+  // HLT_Ele27WP80
+    filterName ="hltEle27WP80TrackIsoFilter"; 
+    gsfmatch_hltEle27WP80TrackIsoFilter[e] =false;
+    //it is important to specify the right HLT process for the filter, not doing this is a common bug
+    filterIndex = trigEvent->filterIndex(edm::InputTag(filterName,"",trigEventTag.process())); 
+    if(filterIndex<trigEvent->sizeFilters()){ 
+      const trigger::Keys& trigKeys = trigEvent->filterKeys(filterIndex); 
+      const trigger::TriggerObjectCollection & trigObjColl(trigEvent->getObjects());
+      //now loop of the trigger objects passing filter
+      for(trigger::Keys::const_iterator keyIt=trigKeys.begin();keyIt!=trigKeys.end();++keyIt){ 
+	const trigger::TriggerObject& obj = trigObjColl[*keyIt];
+	//do what you want with the trigger objects, you have
+	//eta,phi,pt,mass,p,px,py,pz,et,energy accessors
+      
+	if(deltaR(gsfiter->eta(),gsfiter->phi(),obj.eta(), obj.phi())<0.5){
+	  gsfmatch_hltEle27WP80TrackIsoFilter[e] =true;
+	}
+
+      }
+    
+    }//end filter size check
+
+
+
+
+
     //increment index for gsf
     e++;
   }
@@ -2022,7 +2050,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   delete [] gsfmatch_hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter;
   delete [] gsfmatch_hltEle33CaloIdLPixelMatchFilter; 
   delete [] scmatch_hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17PMMassFilter;
-
+  delete [] gsfmatch_hltEle27WP80TrackIsoFilter; 
 
   delete [] scpixcharge;
   delete [] ctfcharge;
@@ -2332,6 +2360,7 @@ GsfCheckerTree::beginJob()
   mytree->Branch("HLT_Photon36_Photon22",&HLT_Photon36_Photon22,"HLT_Photon36_Photon22/I");
   mytree->Branch("HLT_DoublePhoton70",&HLT_DoublePhoton70,"HLT_DoublePhoton70/I");
   mytree->Branch("HLT_DoublePhoton80",&HLT_DoublePhoton80,"HLT_DoublePhoton80/I");
+  mytree->Branch("HLT_Ele27_WP80",&HLT_Ele27_WP80,"HLT_Ele27_WP80/I");
   mytree->Branch("prescale_HLT_Mu15_eta2p1",&prescale_HLT_Mu15_eta2p1,"prescale_HLT_Mu15_eta2p1/I");
   mytree->Branch("prescale_HLT_Mu30_eta2p1",&prescale_HLT_Mu30_eta2p1,"prescale_HLT_Mu30_eta2p1/I");
   mytree->Branch("prescale_HLT_Mu40_eta2p1",&prescale_HLT_Mu40_eta2p1,"prescale_HLT_Mu40_eta2p1/I");
@@ -2360,7 +2389,7 @@ GsfCheckerTree::beginJob()
   mytree->Branch("prescale_HLT_Photon36_Photon22",&prescale_HLT_Photon36_Photon22,"prescale_HLT_Photon36_Photon22/I");
   mytree->Branch("prescale_HLT_DoublePhoton70",&prescale_HLT_DoublePhoton70,"prescale_HLT_DoublePhoton70/I");
   mytree->Branch("prescale_HLT_DoublePhoton80",&prescale_HLT_DoublePhoton80,"prescale_HLT_DoublePhoton80/I");
-
+  mytree->Branch("prescale_HLT_Ele27_WP80",&prescale_HLT_Ele27_WP80,"prescale_HLT_Ele27_WP80/I");
 
   //GLOBAL PHYSICAL INFO 
   mytree->Branch("rho", &rho, "rho/F");
@@ -2648,7 +2677,7 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gsfmatch_hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter",gsfmatch_hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter,"gsfmatch_hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter[gsf_size]/O");
   mytree->Branch("gsfmatch_hltEle33CaloIdLPixelMatchFilter",gsfmatch_hltEle33CaloIdLPixelMatchFilter,"gsfmatch_hltEle33CaloIdLPixelMatchFilter[gsf_size]/O"); 
   mytree->Branch("scmatch_hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17PMMassFilter",scmatch_hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17PMMassFilter,"scmatch_hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17PMMassFilter[scsize]/O");
-
+  mytree->Branch("gsfmatch_hltEle27WP80TrackIsoFilter",gsfmatch_hltEle27WP80TrackIsoFilter,"gsfmatch_hltEle27WP80TrackIsoFilter[gsf_size]/O"); 
 
 
 
@@ -3072,7 +3101,8 @@ GsfCheckerTree::HLTInfo(const edm::Event &iEvent, const edm::EventSetup& iSetup)
   HLT_Photon36_Photon22 = -10;
   HLT_DoublePhoton70 = -10;
   HLT_DoublePhoton80 = -10;
-
+  HLT_Ele27_WP80 = -10;
+  
   prescale_HLT_Mu15_eta2p1 = -10;
   prescale_HLT_Mu24_eta2p1 = -10;
   prescale_HLT_Mu30_eta2p1 = -10;
@@ -3103,7 +3133,8 @@ GsfCheckerTree::HLTInfo(const edm::Event &iEvent, const edm::EventSetup& iSetup)
   prescale_HLT_Photon36_Photon22 = -10;
   prescale_HLT_DoublePhoton70 = -10;
   prescale_HLT_DoublePhoton80 = -10;
-
+  prescale_HLT_Ele27_WP80 = -10;
+ 
   hltCount = 0;   
  
   // get hold of TriggerResults
@@ -3254,7 +3285,12 @@ GsfCheckerTree::HLTInfo(const edm::Event &iEvent, const edm::EventSetup& iSetup)
       HLTR->accept(i) ? HLT_DoublePhoton80 = 1 : HLT_DoublePhoton80 = 0;
       prescale_HLT_DoublePhoton80 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
     }
-    
+    if (hlNames_.at(i).find("HLT_Ele27_WP80_v") == 0) {
+      HLTR->accept(i) ? HLT_Ele27_WP80 = 1 : HLT_Ele27_WP80 = 0;
+      prescale_HLT_Ele27_WP80 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
+    }
+
+
   }
 
   for (unsigned int i = 0; i != n; ++i) {

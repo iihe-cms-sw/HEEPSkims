@@ -16,7 +16,7 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.h,v 1.41 2013/02/21 12:53:26 lathomas Exp $
+// $Id: GsfCheckerTree.h,v 1.42 2013/03/15 16:23:54 treis Exp $
 //
 //
 
@@ -68,8 +68,9 @@ Implementation:
 #include "TTree.h"
 #include "TLorentzVector.h"
 #include "RecoEgamma/EgammaElectronAlgos/interface/ElectronHcalHelper.h"
+#include "TH1F.h"
 
-class TH1;
+//class TH1; //Laurent LT
 
 namespace edm {
   class ParameterSet;
@@ -148,6 +149,7 @@ private:
 
   
   TTree* mytree;
+
 
   //L1TRIGGER
   int L1trigger_size;
@@ -528,6 +530,10 @@ private:
   bool *gsfmatch_hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter;
   bool *gsfmatch_hltEle33CaloIdLPixelMatchFilter;
   bool *scmatch_hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17PMMassFilter;
+  
+  bool *gsfmatch_hltEle27WP80TrackIsoFilter;
+  //  bool *gsfmatch_hltEle33CaloIdLPixelMatchFilter; //HLT_Ele27_WP80
+
 
   float heepHeepMass;
 
@@ -623,6 +629,8 @@ private:
   int HLT_Photon36_Photon22;
   int HLT_DoublePhoton70;
   int HLT_DoublePhoton80;
+  int HLT_Ele27_WP80;
+
 
   int prescale_HLT_Mu15_eta2p1;
   int prescale_HLT_Mu24_eta2p1;
@@ -654,6 +662,7 @@ private:
   int prescale_HLT_Photon36_Photon22;
   int prescale_HLT_DoublePhoton70;
   int prescale_HLT_DoublePhoton80;
+  int prescale_HLT_Ele27_WP80;
 
 };
 #endif
