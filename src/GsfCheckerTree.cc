@@ -2939,8 +2939,8 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
           mom = mom->mother(); 
       }
  
-
-      if(fabs(mom->pdgId()) != 22 && fabs(mom->pdgId()) != 23 && fabs(mom->pdgId()) != 24 && fabs(mom->pdgId()) != 32 && fabs(mom->pdgId()) != 33 && fabs(mom->pdgId()) != 39 )continue; 
+      //      if(mom->mass()>20) cout << "Mass, Pdg Id " <<mom->mass()<< " "<< mom->pdgId()<< endl;
+      if(fabs(mom->pdgId()) != 22 && fabs(mom->pdgId()) != 23 && fabs(mom->pdgId()) != 24 && fabs(mom->pdgId()) != 32 && fabs(mom->pdgId()) != 33 && fabs(mom->pdgId()) != 39 && fabs(mom->pdgId()) != 5000039 &&fabs(mom->pdgId()) != 9000006 && mom->mass()<20 )continue; 
       for(int itpart=0;itpart<fabs(mom->numberOfMothers());itpart++){
 	const Candidate *initpart = mom->mother(itpart); 
 	if(fabs(initpart->pdgId()) <9  ) {//Quarks info (Drell-Yan, Z') 
@@ -2984,7 +2984,6 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
 
 
 
-      if(fabs(mom->pdgId()) != 22 && fabs(mom->pdgId()) != 23 && fabs(mom->pdgId()) != 24 && fabs(mom->pdgId()) != 32 && fabs(mom->pdgId()) != 33 && fabs(mom->pdgId()) != 39 && fabs(mom->pdgId()) !=  13) continue;
      
 
  
