@@ -16,6 +16,7 @@ Implementation:
 // $Id: GsfCheckerTree.cc,v 1.49 2013/05/24 13:26:02 lathomas Exp $
 //
 //Cleaning ladies : Thomas and Laurent
+//Test
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/LuminosityBlock.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
