@@ -2939,8 +2939,9 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
           mom = mom->mother(); 
       }
  
-      //      if(mom->mass()>20) cout << "Mass, Pdg Id " <<mom->mass()<< " "<< mom->pdgId()<< endl;
-      if(fabs(mom->pdgId()) != 22 && fabs(mom->pdgId()) != 23 && fabs(mom->pdgId()) != 24 && fabs(mom->pdgId()) != 32 && fabs(mom->pdgId()) != 33 && fabs(mom->pdgId()) != 39 && fabs(mom->pdgId()) != 5000039 &&fabs(mom->pdgId()) != 9000006 && mom->mass()<20 )continue; 
+      //            cout << "Mass, Pdg Id " <<mom->mass()<< " "<< mom->pdgId()<< endl;
+      if(fabs(mom->pdgId()) >6&&  fabs(mom->pdgId()) != 21 && fabs(mom->pdgId()) != 22 && fabs(mom->pdgId()) != 23 && fabs(mom->pdgId()) != 24 && fabs(mom->pdgId()) != 32 && fabs(mom->pdgId()) != 33 && fabs(mom->pdgId()) != 39 && fabs(mom->pdgId()) != 5000039 &&fabs(mom->pdgId()) != 9000006 && mom->mass()<20 )continue; 
+      if(fabs(mom->pdgId()) == 22 && mom->mass()<10 )continue; //This to remove low mass virtual photons converting to a dielectron pair
       for(int itpart=0;itpart<fabs(mom->numberOfMothers());itpart++){
 	const Candidate *initpart = mom->mother(itpart); 
 	if(fabs(initpart->pdgId()) <9  ) {//Quarks info (Drell-Yan, Z') 
