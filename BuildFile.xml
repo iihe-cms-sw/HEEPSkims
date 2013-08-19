@@ -53,6 +53,4 @@
 <use   name="SHarper/HEEPAnalyzer"/>
 <use   name="DataFormats/Luminosity"/>
 <flags   EDM_PLUGIN="1"/>
-<export>
-  <lib   name="1"/>
-</export>
+
