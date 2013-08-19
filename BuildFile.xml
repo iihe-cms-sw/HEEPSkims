@@ -50,7 +50,6 @@
 <use   name="DataFormats/Common"/>
 <use   name="hepmc"/>
 <use   name="root"/>
-<use   name="SHarper/HEEPAnalyzer"/>
 <use   name="DataFormats/Luminosity"/>
 <flags   EDM_PLUGIN="1"/>
 

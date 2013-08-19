@@ -32,8 +32,8 @@ Implementation:
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
-#include "SHarper/HEEPAnalyzer/interface/HEEPEventHelper.h"
-#include "SHarper/HEEPAnalyzer/interface/HEEPEvent.h"
+//#include "SHarper/HEEPAnalyzer/interface/HEEPEventHelper.h"
+//#include "SHarper/HEEPAnalyzer/interface/HEEPEvent.h"
 
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
@@ -84,8 +84,8 @@ const int NbJets = 100;
 class GsfCheckerTree : public edm::EDAnalyzer {
 
 private:
-  heep::EventHelper evtHelper_; //this is our magic class where all the nastyness is contained
-  heep::Event heepEvt_;
+  //heep::EventHelper evtHelper_; //this is our magic class where all the nastyness is contained
+  //heep::Event heepEvt_;
 
   //the next three variables are simply for the example analysis
   int nrPass_;

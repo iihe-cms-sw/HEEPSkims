@@ -22,11 +22,11 @@ Implementation:
 #include "UserCode/HEEPSkims/interface/GsfCheckerTree.h"
 #include "DataFormats/RecoCandidate/interface/IsoDepositFwd.h"
 #include "DataFormats/RecoCandidate/interface/IsoDeposit.h"
-#include "SHarper/HEEPAnalyzer/interface/HEEPDebug.h"
+//#include "SHarper/HEEPAnalyzer/interface/HEEPDebug.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 #include "DataFormats/TrackReco/interface/HitPattern.h"
-#include "SHarper/HEEPAnalyzer/interface/HEEPEventHelper.h"
-#include "SHarper/HEEPAnalyzer/interface/HEEPEvent.h"
+//#include "SHarper/HEEPAnalyzer/interface/HEEPEventHelper.h"
+//#include "SHarper/HEEPAnalyzer/interface/HEEPEvent.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
 #include "DataFormats/Common/interface/ValueMap.h"
@@ -118,9 +118,10 @@ GsfCheckerTree::CalcInvariantMass(const int& iEle1, const int& iEle2)
 }
 
 GsfCheckerTree::GsfCheckerTree(const edm::ParameterSet& iConfig):
-  evtHelper_(),heepEvt_(),nrPass_(0),nrFail_(0)
+  //evtHelper_(),heepEvt_(),
+  nrPass_(0),nrFail_(0)
 {
-  evtHelper_.setup(iConfig);
+  //evtHelper_.setup(iConfig);
   //now do what ever initialization is needed
   eventcounter = 0;
 
