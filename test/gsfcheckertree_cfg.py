@@ -1,5 +1,5 @@
 import FWCore.ParameterSet.Config as cms
-##test for committing
+
 process = cms.Process("gsfcheckertree")
 
 process.load("Configuration.StandardSequences.MagneticField_cff")
@@ -16,7 +16,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.source = cms.Source("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
 
 readFiles.extend( [
-#    '/store/user/treis/McGenSim3_DY/McReco3_DY/ba742de6463696a09655542c9e24f59b/DyToEE_madgraph_pu_7_1_DOp.root'
+#    '/store/user/treis/zp_lfv_v1_m1000_noAccCuts/EXOMCRECO_Summer12_DR53X_PU_S10_START53_V7A-v1/9920984e5435b51f86199f7edab22679/zp_lfv_v1_m1000_noAccCuts_Summer12_DR53X_PU_S10_START53_V7A-v1_10_1_g3O.root',
     '/store/mc/Summer12_DR53X/DYToEE_M-20_CT10_TuneZ2star_8TeV-powheg-pythia6/AODSIM/PU_S10_START53_V7A-v1/0000/682F90A9-5FF0-E111-91D7-485B39800BBE.root'
 #    '/store/mc/Summer12_DR53X/DY1JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/AODSIM/PU_S10_START53_V7A-v1/0002/EE14FCF2-15F6-E111-8261-0025B3E05DDA.root'
 #    '/store/mc/Summer12_DR53X/TTWJets_8TeV-madgraph/AODSIM/PU_S10_START53_V7A-v1/0000/0C570F59-B7DA-E111-A245-003048D437BA.root'
@@ -60,6 +60,7 @@ if dataset.endswith('/AOD'):
 else:
     process.pfJetMETcorr.jetCorrLabel = cms.string("ak5PFL1FastL2L3")  #this for MC
     process.GlobalTag.globaltag = 'START53_V7G::All'
+    #process.GlobalTag.globaltag = 'START53_V7C1::All'
 
 print "Global Tag is ", process.GlobalTag.globaltag
 
@@ -129,6 +130,7 @@ process.muIsoSequence = setupPFMuonIso(process, 'muons')
 process.load("UserCode.HEEPSkims.gsfcheckertree_cfi")
 #process.gsfcheckerjob.electron1EtMin = 0.
 #process.gsfcheckerjob.electron2EtMin = 0.
+#process.gsfcheckerjob.muonPtMin = 0.
 process.otherStuff = cms.Sequence( process.kt6PFJets )
 
 process.load("RecoMET.METFilters.ecalLaserCorrFilter_cfi")

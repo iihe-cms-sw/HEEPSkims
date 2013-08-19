@@ -150,7 +150,6 @@ private:
   
   TTree* mytree;
 
-
   //L1TRIGGER
   int L1trigger_size;
   int *L1trigger_bool;
@@ -288,6 +287,10 @@ private:
   float weight;
 
   int genparticles_size;
+  int hardGenEle_size;
+  int hardGenMu_size;
+  int genEle_size;
+  int genMu_size;
   int genquarks_size;
   int gengluons_size;
   
@@ -335,6 +338,17 @@ private:
   float *unstableGenEle_eta;
   float *unstableGenEle_phi; 
   int *unstableGenEle_charge;
+
+  //Generated variables (from hard process)
+  float *hardGenEle_e;
+  float *hardGenEle_pt;
+  float *hardGenEle_px;
+  float *hardGenEle_py;
+  float *hardGenEle_pz; 
+  float *hardGenEle_eta;
+  float *hardGenEle_phi; 
+  int *hardGenEle_charge;
+
   //Generated variables (Z variables)
   float *genelemom_e; 
   float *genelemom_pt; 
@@ -346,6 +360,51 @@ private:
   int *genelemom_charge;
   float *genelemom_mass;
   int *genelemom_pdgid;
+
+  //Generated variables (after FSR)
+  float *genmu_e;
+  float *genmu_pt;
+  float *genmu_px; 
+  float *genmu_py; 
+  float *genmu_pz; 
+  float *genmu_eta; 
+  float *genmu_phi;
+  int *genmu_charge;
+
+  //Generated variables (before FSR)
+  float *unstableGenMu_e;
+  float *unstableGenMu_pt;
+  float *unstableGenMu_px;
+  float *unstableGenMu_py;
+  float *unstableGenMu_pz; 
+  float *unstableGenMu_eta;
+  float *unstableGenMu_phi; 
+  int *unstableGenMu_charge;
+
+  //Generated variables (from hard process)
+  float *hardGenMu_e;
+  float *hardGenMu_pt;
+  float *hardGenMu_px;
+  float *hardGenMu_py;
+  float *hardGenMu_pz; 
+  float *hardGenMu_eta;
+  float *hardGenMu_phi; 
+  int *hardGenMu_charge;
+
+  //Generated variables (Z variables)
+  float *genmumom_e; 
+  float *genmumom_pt; 
+  float *genmumom_px;
+  float *genmumom_py; 
+  float *genmumom_pz; 
+  float *genmumom_eta;  
+  float *genmumom_phi; 
+  int *genmumom_charge;
+  float *genmumom_mass;
+  int *genmumom_pdgid;
+
+  float emu_mass;
+  float res_mass;
 
   float *x1quark;
   float *x2quark;
@@ -630,7 +689,6 @@ private:
   int HLT_DoublePhoton70;
   int HLT_DoublePhoton80;
   int HLT_Ele27_WP80;
-
 
   int prescale_HLT_Mu15_eta2p1;
   int prescale_HLT_Mu24_eta2p1;

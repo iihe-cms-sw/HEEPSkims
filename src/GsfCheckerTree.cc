@@ -13,10 +13,8 @@ Implementation:
 //
 // Original Author:  Charaf Otman
 //         Created:  Thu Jan 17 14:41:56 CET 2008
-// $Id: GsfCheckerTree.cc,v 1.49 2013/05/24 13:26:02 lathomas Exp $
 //
 //Cleaning ladies : Thomas and Laurent
-//Test
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/LuminosityBlock.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -342,6 +340,10 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
   } else {
     genparticles_size = 0;
+    hardGenEle_size = 0;
+    hardGenMu_size = 0;
+    genEle_size = 0;
+    genMu_size = 0;
     genquarks_size = 0;
     gengluons_size = 0;
 
@@ -2210,6 +2212,14 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     delete [] unstableGenEle_eta;
     delete [] unstableGenEle_phi;
     delete [] unstableGenEle_charge;
+    delete [] hardGenEle_e;
+    delete [] hardGenEle_pt;
+    delete [] hardGenEle_px;
+    delete [] hardGenEle_py;
+    delete [] hardGenEle_pz;
+    delete [] hardGenEle_eta;
+    delete [] hardGenEle_phi;
+    delete [] hardGenEle_charge;
     delete [] genelemom_e;
     delete [] genelemom_pt;
     delete [] genelemom_px;
@@ -2220,6 +2230,42 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     delete [] genelemom_charge;
     delete [] genelemom_mass;
     delete [] genelemom_pdgid;
+
+    delete [] genmu_e;
+    delete [] genmu_pt;
+    delete [] genmu_px;
+    delete [] genmu_py;
+    delete [] genmu_pz;
+    delete [] genmu_eta;
+    delete [] genmu_phi;
+    delete [] genmu_charge;
+    delete [] unstableGenMu_e;
+    delete [] unstableGenMu_pt;
+    delete [] unstableGenMu_px;
+    delete [] unstableGenMu_py;
+    delete [] unstableGenMu_pz;
+    delete [] unstableGenMu_eta;
+    delete [] unstableGenMu_phi;
+    delete [] unstableGenMu_charge;
+    delete [] hardGenMu_e;
+    delete [] hardGenMu_pt;
+    delete [] hardGenMu_px;
+    delete [] hardGenMu_py;
+    delete [] hardGenMu_pz;
+    delete [] hardGenMu_eta;
+    delete [] hardGenMu_phi;
+    delete [] hardGenMu_charge;
+    delete [] genmumom_e;
+    delete [] genmumom_pt;
+    delete [] genmumom_px;
+    delete [] genmumom_py;
+    delete [] genmumom_pz;
+    delete [] genmumom_eta;
+    delete [] genmumom_phi;
+    delete [] genmumom_charge;
+    delete [] genmumom_mass;
+    delete [] genmumom_pdgid;
+
     delete [] x1quark;
     delete [] x2quark;
 
@@ -2300,7 +2346,6 @@ GsfCheckerTree::beginJob()
 {
   edm::Service<TFileService> fs;
   mytree = fs->make<TTree>("tree","tree");
-
 
   //GENERAL TECHNICAL INFOS 
   mytree->Branch("runnumber",&runnumber,"runnumber/i");
@@ -2694,6 +2739,10 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gsfctfconsistent", gsfctfconsistent, "gsfctfconsistent[gsf_size]/O");
 
   mytree->Branch("genparticles_size", &genparticles_size, "genparticles_size/I");
+  mytree->Branch("hardGenEle_size", &hardGenEle_size, "hardGenEle_size/I");
+  mytree->Branch("hardGenMu_size", &hardGenMu_size, "hardGenMu_size/I");
+  mytree->Branch("genEle_size", &genEle_size, "genEle_size/I");
+  mytree->Branch("genMu_size", &genMu_size, "genMu_size/I");
   mytree->Branch("genquarks_size", &genquarks_size, "genquarks_size/I");
   mytree->Branch("gengluons_size", &gengluons_size, "gengluons_size/I");
 
@@ -2740,42 +2789,95 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gengluon_pdgid", gengluon_pdgid, "gengluon_pdgid[gengluons_size]/I");
 
 
-  mytree->Branch("genele_e", genele_e, "genele_e[genparticles_size]/F");
-  mytree->Branch("genele_eta", genele_eta, "genele_eta[genparticles_size]/F");
-  mytree->Branch("genele_phi", genele_phi, "genele_phi[genparticles_size]/F");
-  mytree->Branch("genele_pt", genele_pt, "genele_pt[genparticles_size]/F");
-  mytree->Branch("genele_px", genele_px, "genele_px[genparticles_size]/F");
-  mytree->Branch("genele_py", genele_py, "genele_py[genparticles_size]/F");
-  mytree->Branch("genele_pz", genele_pz, "genele_pz[genparticles_size]/F");
-  mytree->Branch("genele_charge", genele_charge, "genele_charge[genparticles_size]/I");
+  mytree->Branch("genele_e", genele_e, "genele_e[genEle_size]/F");
+  mytree->Branch("genele_eta", genele_eta, "genele_eta[genEle_size]/F");
+  mytree->Branch("genele_phi", genele_phi, "genele_phi[genEle_size]/F");
+  mytree->Branch("genele_pt", genele_pt, "genele_pt[genEle_size]/F");
+  mytree->Branch("genele_px", genele_px, "genele_px[genEle_size]/F");
+  mytree->Branch("genele_py", genele_py, "genele_py[genEle_size]/F");
+  mytree->Branch("genele_pz", genele_pz, "genele_pz[genEle_size]/F");
+  mytree->Branch("genele_charge", genele_charge, "genele_charge[genEle_size]/I");
   
   //generated variables for the tree (before FSR)   
-  mytree->Branch("unstableGenEle_e", unstableGenEle_e, "unstableGenEle_e[genparticles_size]/F");
-  mytree->Branch("unstableGenEle_eta", unstableGenEle_eta, "unstableGenEle_eta[genparticles_size]/F");
-  mytree->Branch("unstableGenEle_phi", unstableGenEle_phi, "unstableGenEle_phi[genparticles_size]/F");
-  mytree->Branch("unstableGenEle_pt", unstableGenEle_pt, "unstableGenEle_pt[genparticles_size]/F");
-  mytree->Branch("unstableGenEle_px", unstableGenEle_px, "unstableGenEle_px[genparticles_size]/F");
-  mytree->Branch("unstableGenEle_py", unstableGenEle_py, "unstableGenEle_py[genparticles_size]/F");
-  mytree->Branch("unstableGenEle_pz", unstableGenEle_pz, "unstableGenEle_pz[genparticles_size]/F");
-  mytree->Branch("unstableGenEle_charge", unstableGenEle_charge, "unstableGenEle_charge[genparticles_size]/I");
+  mytree->Branch("unstableGenEle_e", unstableGenEle_e, "unstableGenEle_e[genEle_size]/F");
+  mytree->Branch("unstableGenEle_eta", unstableGenEle_eta, "unstableGenEle_eta[genEle_size]/F");
+  mytree->Branch("unstableGenEle_phi", unstableGenEle_phi, "unstableGenEle_phi[genEle_size]/F");
+  mytree->Branch("unstableGenEle_pt", unstableGenEle_pt, "unstableGenEle_pt[genEle_size]/F");
+  mytree->Branch("unstableGenEle_px", unstableGenEle_px, "unstableGenEle_px[genEle_size]/F");
+  mytree->Branch("unstableGenEle_py", unstableGenEle_py, "unstableGenEle_py[genEle_size]/F");
+  mytree->Branch("unstableGenEle_pz", unstableGenEle_pz, "unstableGenEle_pz[genEle_size]/F");
+  mytree->Branch("unstableGenEle_charge", unstableGenEle_charge, "unstableGenEle_charge[genEle_size]/I");
+
+  //generated variables for the tree (from hard process)   
+  mytree->Branch("hardGenEle_e", hardGenEle_e, "hardGenEle_e[hardGenEle_size]/F");
+  mytree->Branch("hardGenEle_eta", hardGenEle_eta, "hardGenEle_eta[hardGenEle_size]/F");
+  mytree->Branch("hardGenEle_phi", hardGenEle_phi, "hardGenEle_phi[hardGenEle_size]/F");
+  mytree->Branch("hardGenEle_pt", hardGenEle_pt, "hardGenEle_pt[hardGenEle_size]/F");
+  mytree->Branch("hardGenEle_px", hardGenEle_px, "hardGenEle_px[hardGenEle_size]/F");
+  mytree->Branch("hardGenEle_py", hardGenEle_py, "hardGenEle_py[hardGenEle_size]/F");
+  mytree->Branch("hardGenEle_pz", hardGenEle_pz, "hardGenEle_pz[hardGenEle_size]/F");
+  mytree->Branch("hardGenEle_charge", hardGenEle_charge, "hardGenEle_charge[hardGenEle_size]/I");
   
   //generated variables for the tree (Z variables)
-  mytree->Branch("genelemom_e", genelemom_e, "genelemom_e[genparticles_size]/F");
-  mytree->Branch("genelemom_eta", genelemom_eta, "genelemom_eta[genparticles_size]/F");
-  mytree->Branch("genelemom_phi", genelemom_phi, "genelemom_phi[genparticles_size]/F");
-  mytree->Branch("genelemom_pt", genelemom_pt, "genelemom_pt[genparticles_size]/F");
-  mytree->Branch("genelemom_px", genelemom_px, "genelemom_px[genparticles_size]/F");
-  mytree->Branch("genelemom_py", genelemom_py, "genelemom_py[genparticles_size]/F");
-  mytree->Branch("genelemom_pz", genelemom_pz, "genelemom_pz[genparticles_size]/F");
-  mytree->Branch("genelemom_charge", genelemom_charge, "genelemom_charge[genparticles_size]/I");
-  mytree->Branch("genelemom_pdgid", genelemom_pdgid, "genelemom_pdgid[genparticles_size]/I");
-  mytree->Branch("genelemom_mass", genelemom_mass, "genelemom_mass[genparticles_size]/F");
+  mytree->Branch("genelemom_e", genelemom_e, "genelemom_e[genEle_size]/F");
+  mytree->Branch("genelemom_eta", genelemom_eta, "genelemom_eta[genEle_size]/F");
+  mytree->Branch("genelemom_phi", genelemom_phi, "genelemom_phi[genEle_size]/F");
+  mytree->Branch("genelemom_pt", genelemom_pt, "genelemom_pt[genEle_size]/F");
+  mytree->Branch("genelemom_px", genelemom_px, "genelemom_px[genEle_size]/F");
+  mytree->Branch("genelemom_py", genelemom_py, "genelemom_py[genEle_size]/F");
+  mytree->Branch("genelemom_pz", genelemom_pz, "genelemom_pz[genEle_size]/F");
+  mytree->Branch("genelemom_charge", genelemom_charge, "genelemom_charge[genEle_size]/I");
+  mytree->Branch("genelemom_pdgid", genelemom_pdgid, "genelemom_pdgid[genEle_size]/I");
+  mytree->Branch("genelemom_mass", genelemom_mass, "genelemom_mass[genEle_size]/F");
+
+  mytree->Branch("genmu_e", genmu_e, "genmu_e[genMu_size]/F");
+  mytree->Branch("genmu_eta", genmu_eta, "genmu_eta[genMu_size]/F");
+  mytree->Branch("genmu_phi", genmu_phi, "genmu_phi[genMu_size]/F");
+  mytree->Branch("genmu_pt", genmu_pt, "genmu_pt[genMu_size]/F");
+  mytree->Branch("genmu_px", genmu_px, "genmu_px[genMu_size]/F");
+  mytree->Branch("genmu_py", genmu_py, "genmu_py[genMu_size]/F");
+  mytree->Branch("genmu_pz", genmu_pz, "genmu_pz[genMu_size]/F");
+  mytree->Branch("genmu_charge", genmu_charge, "genmu_charge[genMu_size]/I");
+  
+  //generated variables for the tree (before FSR)   
+  mytree->Branch("unstableGenMu_e", unstableGenMu_e, "unstableGenMu_e[genMu_size]/F");
+  mytree->Branch("unstableGenMu_eta", unstableGenMu_eta, "unstableGenMu_eta[genMu_size]/F");
+  mytree->Branch("unstableGenMu_phi", unstableGenMu_phi, "unstableGenMu_phi[genMu_size]/F");
+  mytree->Branch("unstableGenMu_pt", unstableGenMu_pt, "unstableGenMu_pt[genMu_size]/F");
+  mytree->Branch("unstableGenMu_px", unstableGenMu_px, "unstableGenMu_px[genMu_size]/F");
+  mytree->Branch("unstableGenMu_py", unstableGenMu_py, "unstableGenMu_py[genMu_size]/F");
+  mytree->Branch("unstableGenMu_pz", unstableGenMu_pz, "unstableGenMu_pz[genMu_size]/F");
+  mytree->Branch("unstableGenMu_charge", unstableGenMu_charge, "unstableGenMu_charge[genMu_size]/I");
+
+  //generated variables for the tree (from hard process)   
+  mytree->Branch("hardGenMu_e", hardGenMu_e, "hardGenMu_e[hardGenMu_size]/F");
+  mytree->Branch("hardGenMu_eta", hardGenMu_eta, "hardGenMu_eta[hardGenMu_size]/F");
+  mytree->Branch("hardGenMu_phi", hardGenMu_phi, "hardGenMu_phi[hardGenMu_size]/F");
+  mytree->Branch("hardGenMu_pt", hardGenMu_pt, "hardGenMu_pt[hardGenMu_size]/F");
+  mytree->Branch("hardGenMu_px", hardGenMu_px, "hardGenMu_px[hardGenMu_size]/F");
+  mytree->Branch("hardGenMu_py", hardGenMu_py, "hardGenMu_py[hardGenMu_size]/F");
+  mytree->Branch("hardGenMu_pz", hardGenMu_pz, "hardGenMu_pz[hardGenMu_size]/F");
+  mytree->Branch("hardGenMu_charge", hardGenMu_charge, "hardGenMu_charge[hardGenMu_size]/I");
+  
+  //generated variables for the tree (Z variables)
+  mytree->Branch("genmumom_e", genmumom_e, "genmumom_e[genMu_size]/F");
+  mytree->Branch("genmumom_eta", genmumom_eta, "genmumom_eta[genMu_size]/F");
+  mytree->Branch("genmumom_phi", genmumom_phi, "genmumom_phi[genMu_size]/F");
+  mytree->Branch("genmumom_pt", genmumom_pt, "genmumom_pt[genMu_size]/F");
+  mytree->Branch("genmumom_px", genmumom_px, "genmumom_px[genMu_size]/F");
+  mytree->Branch("genmumom_py", genmumom_py, "genmumom_py[genMu_size]/F");
+  mytree->Branch("genmumom_pz", genmumom_pz, "genmumom_pz[genMu_size]/F");
+  mytree->Branch("genmumom_charge", genmumom_charge, "genmumom_charge[genMu_size]/I");
+  mytree->Branch("genmumom_pdgid", genmumom_pdgid, "genmumom_pdgid[genMu_size]/I");
+  mytree->Branch("genmumom_mass", genmumom_mass, "genmumom_mass[genMu_size]/F");
   
   //x1 and x2
-  mytree->Branch("x1quark", x1quark, "x1quark[genparticles_size]/F");
-  mytree->Branch("x2quark", x2quark, "x2quark[genparticles_size]/F");
+  mytree->Branch("x1quark", x1quark, "x1quark[genEle_size]/F");
+  mytree->Branch("x2quark", x2quark, "x2quark[genEle_size]/F");
   
   mytree->Branch("genPair_mass", &genPair_mass, "genPair_mass/F");
+  mytree->Branch("emu_mass", &emu_mass, "emu_mass/F");
+  mytree->Branch("res_mass", &res_mass, "res_mass/F");
 
   mytree->Branch("trueNVtx", &trueNVtx, "trueNVtx/I");
   mytree->Branch("nVtxBefore", &nVtxBefore, "nVtxBefore/I");
@@ -2838,6 +2940,14 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
   unstableGenEle_eta = new float [genparticles_size];
   unstableGenEle_phi = new float [genparticles_size];
   unstableGenEle_charge = new int [genparticles_size];
+  hardGenEle_e = new float [genparticles_size];
+  hardGenEle_pt = new float [genparticles_size];
+  hardGenEle_px = new float [genparticles_size];
+  hardGenEle_py = new float [genparticles_size];
+  hardGenEle_pz = new float [genparticles_size];
+  hardGenEle_eta = new float [genparticles_size];
+  hardGenEle_phi = new float [genparticles_size];
+  hardGenEle_charge = new int [genparticles_size];
   genelemom_e = new float [genparticles_size];
   genelemom_pt = new float [genparticles_size];
   genelemom_px = new float [genparticles_size];
@@ -2848,6 +2958,42 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
   genelemom_charge = new int [genparticles_size];
   genelemom_mass = new float [genparticles_size];
   genelemom_pdgid = new int [genparticles_size];
+
+  genmu_e = new float [genparticles_size];
+  genmu_pt = new float [genparticles_size];
+  genmu_px = new float [genparticles_size];
+  genmu_py = new float [genparticles_size];
+  genmu_pz = new float [genparticles_size];
+  genmu_eta = new float [genparticles_size];
+  genmu_phi = new float [genparticles_size];
+  genmu_charge = new int [genparticles_size];
+  unstableGenMu_e = new float [genparticles_size];
+  unstableGenMu_pt = new float [genparticles_size];
+  unstableGenMu_px = new float [genparticles_size];
+  unstableGenMu_py = new float [genparticles_size];
+  unstableGenMu_pz = new float [genparticles_size];
+  unstableGenMu_eta = new float [genparticles_size];
+  unstableGenMu_phi = new float [genparticles_size];
+  unstableGenMu_charge = new int [genparticles_size];
+  hardGenMu_e = new float [genparticles_size];
+  hardGenMu_pt = new float [genparticles_size];
+  hardGenMu_px = new float [genparticles_size];
+  hardGenMu_py = new float [genparticles_size];
+  hardGenMu_pz = new float [genparticles_size];
+  hardGenMu_eta = new float [genparticles_size];
+  hardGenMu_phi = new float [genparticles_size];
+  hardGenMu_charge = new int [genparticles_size];
+  genmumom_e = new float [genparticles_size];
+  genmumom_pt = new float [genparticles_size];
+  genmumom_px = new float [genparticles_size];
+  genmumom_py = new float [genparticles_size];
+  genmumom_pz = new float [genparticles_size];
+  genmumom_eta = new float [genparticles_size];
+  genmumom_phi = new float [genparticles_size];
+  genmumom_charge = new int [genparticles_size];
+  genmumom_mass = new float [genparticles_size];
+  genmumom_pdgid = new int [genparticles_size];
+
   x1quark = new float [genparticles_size];
   x2quark = new float [genparticles_size];
 
@@ -2889,6 +3035,14 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
   mytree->GetBranch("unstableGenEle_eta")->SetAddress(unstableGenEle_eta);
   mytree->GetBranch("unstableGenEle_phi")->SetAddress(unstableGenEle_phi);
   mytree->GetBranch("unstableGenEle_charge")->SetAddress(unstableGenEle_charge);
+  mytree->GetBranch("hardGenEle_e")->SetAddress(hardGenEle_e);
+  mytree->GetBranch("hardGenEle_pt")->SetAddress(hardGenEle_pt);
+  mytree->GetBranch("hardGenEle_px")->SetAddress(hardGenEle_px);
+  mytree->GetBranch("hardGenEle_py")->SetAddress(hardGenEle_py);
+  mytree->GetBranch("hardGenEle_pz")->SetAddress(hardGenEle_pz);
+  mytree->GetBranch("hardGenEle_eta")->SetAddress(hardGenEle_eta);
+  mytree->GetBranch("hardGenEle_phi")->SetAddress(hardGenEle_phi);
+  mytree->GetBranch("hardGenEle_charge")->SetAddress(hardGenEle_charge);
   mytree->GetBranch("genelemom_e")->SetAddress(genelemom_e);
   mytree->GetBranch("genelemom_pt")->SetAddress(genelemom_pt);
   mytree->GetBranch("genelemom_px")->SetAddress(genelemom_px);
@@ -2899,17 +3053,62 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
   mytree->GetBranch("genelemom_charge")->SetAddress(genelemom_charge);
   mytree->GetBranch("genelemom_mass")->SetAddress(genelemom_mass);
   mytree->GetBranch("genelemom_pdgid")->SetAddress(genelemom_pdgid);
+
+  mytree->GetBranch("genmu_e")->SetAddress(genmu_e);
+  mytree->GetBranch("genmu_pt")->SetAddress(genmu_pt);
+  mytree->GetBranch("genmu_px")->SetAddress(genmu_px);
+  mytree->GetBranch("genmu_py")->SetAddress(genmu_py);
+  mytree->GetBranch("genmu_pz")->SetAddress(genmu_pz);
+  mytree->GetBranch("genmu_eta")->SetAddress(genmu_eta);
+  mytree->GetBranch("genmu_phi")->SetAddress(genmu_phi);
+  mytree->GetBranch("genmu_charge")->SetAddress(genmu_charge);
+  mytree->GetBranch("unstableGenMu_e")->SetAddress(unstableGenMu_e);
+  mytree->GetBranch("unstableGenMu_pt")->SetAddress(unstableGenMu_pt);
+  mytree->GetBranch("unstableGenMu_px")->SetAddress(unstableGenMu_px);
+  mytree->GetBranch("unstableGenMu_py")->SetAddress(unstableGenMu_py);
+  mytree->GetBranch("unstableGenMu_pz")->SetAddress(unstableGenMu_pz);
+  mytree->GetBranch("unstableGenMu_eta")->SetAddress(unstableGenMu_eta);
+  mytree->GetBranch("unstableGenMu_phi")->SetAddress(unstableGenMu_phi);
+  mytree->GetBranch("unstableGenMu_charge")->SetAddress(unstableGenMu_charge);
+  mytree->GetBranch("hardGenMu_e")->SetAddress(hardGenMu_e);
+  mytree->GetBranch("hardGenMu_pt")->SetAddress(hardGenMu_pt);
+  mytree->GetBranch("hardGenMu_px")->SetAddress(hardGenMu_px);
+  mytree->GetBranch("hardGenMu_py")->SetAddress(hardGenMu_py);
+  mytree->GetBranch("hardGenMu_pz")->SetAddress(hardGenMu_pz);
+  mytree->GetBranch("hardGenMu_eta")->SetAddress(hardGenMu_eta);
+  mytree->GetBranch("hardGenMu_phi")->SetAddress(hardGenMu_phi);
+  mytree->GetBranch("hardGenMu_charge")->SetAddress(hardGenMu_charge);
+  mytree->GetBranch("genmumom_e")->SetAddress(genmumom_e);
+  mytree->GetBranch("genmumom_pt")->SetAddress(genmumom_pt);
+  mytree->GetBranch("genmumom_px")->SetAddress(genmumom_px);
+  mytree->GetBranch("genmumom_py")->SetAddress(genmumom_py);
+  mytree->GetBranch("genmumom_pz")->SetAddress(genmumom_pz);
+  mytree->GetBranch("genmumom_eta")->SetAddress(genmumom_eta);
+  mytree->GetBranch("genmumom_phi")->SetAddress(genmumom_phi);
+  mytree->GetBranch("genmumom_charge")->SetAddress(genmumom_charge);
+  mytree->GetBranch("genmumom_mass")->SetAddress(genmumom_mass);
+  mytree->GetBranch("genmumom_pdgid")->SetAddress(genmumom_pdgid);
+
   mytree->GetBranch("x1quark")->SetAddress(x1quark);
   mytree->GetBranch("x2quark")->SetAddress(x2quark);
 
-  unsigned int counter = 0;
+  unsigned int counterEle = 0;
+  unsigned int counterMu = 0;
   unsigned int counterquark = 0; 
   unsigned int countergluon = 0; 
   unsigned int counterT = 0; 
   unsigned int counterTbar = 0; 
+  unsigned int counterHardBoson = 0;
+  unsigned int counterHardEle = 0;
+  unsigned int counterHardMu = 0;
   int tId = -1;
   int tbarId = -1;
+  //int hardBosonId = -1;
+  int hardEleId = -1;
+  int hardMuId = -1;
   genPair_mass = 0.;
+  emu_mass = 0.;
+  res_mass = 0.;
   for (size_t i = 0; i < genParticles->size(); ++i) {
     
     const GenParticle & p = (*genParticles)[i];
@@ -2925,9 +3124,37 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
       tbarId = i;
       ++counterTbar;
     }
-    
- 
-    
+  
+    // find a hard boson, electron and muon
+    if (fabs(id) == 11 && st == 3) {
+      hardEleId = i;
+      hardGenEle_e[counterHardEle] = p.energy();
+      hardGenEle_pt[counterHardEle] = p.pt();
+      hardGenEle_px[counterHardEle] = p.px();
+      hardGenEle_py[counterHardEle] = p.py();
+      hardGenEle_pz[counterHardEle] = p.pz();
+      hardGenEle_eta[counterHardEle] = p.eta();
+      hardGenEle_phi[counterHardEle] = p.phi();
+      hardGenEle_charge[counterHardEle]= p.charge();
+      ++counterHardEle;
+    }
+    else if (fabs(id) == 13 && st == 3) {
+      hardMuId = i;
+      hardGenMu_e[counterHardMu] = p.energy(); 
+      hardGenMu_pt[counterHardMu] = p.pt();
+      hardGenMu_px[counterHardMu] = p.px();
+      hardGenMu_py[counterHardMu] = p.py();
+      hardGenMu_pz[counterHardMu] = p.pz();
+      hardGenMu_eta[counterHardMu] = p.eta(); 
+      hardGenMu_phi[counterHardMu] = p.phi();
+      hardGenMu_charge[counterHardMu]= p.charge();
+       ++counterHardMu;
+    }
+    else if ((fabs(id) == 32 || fabs(id) == 9000006) && st == 3) {
+      //hardBosonId = i;
+      res_mass = p.mass();
+      ++counterHardBoson;
+    }
   
     // electrons and their mom
     if (fabs(id) == 11 && st == 1) {
@@ -2939,10 +3166,21 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
           mom = mom->mother(); 
       }
  
-      //            cout << "Mass, Pdg Id " <<mom->mass()<< " "<< mom->pdgId()<< endl;
-      if(fabs(mom->pdgId()) >6&&  fabs(mom->pdgId()) != 21 && fabs(mom->pdgId()) != 22 && fabs(mom->pdgId()) != 23 && fabs(mom->pdgId()) != 24 && fabs(mom->pdgId()) != 32 && fabs(mom->pdgId()) != 33 && fabs(mom->pdgId()) != 39 && fabs(mom->pdgId()) != 5000039 &&fabs(mom->pdgId()) != 9000006 && mom->mass()<20 )continue; 
-      if(fabs(mom->pdgId()) == 22 && mom->mass()<10 )continue; //This to remove low mass virtual photons converting to a dielectron pair
-      for(int itpart=0;itpart<fabs(mom->numberOfMothers());itpart++){
+      //cout << "Mass, Pdg Id " <<mom->mass()<< " "<< mom->pdgId()<< endl;
+      if(fabs(mom->pdgId()) > 6
+         && fabs(mom->pdgId()) != 13 
+         && fabs(mom->pdgId()) != 21 
+         && fabs(mom->pdgId()) != 22 
+         && fabs(mom->pdgId()) != 23 
+         && fabs(mom->pdgId()) != 24 
+         && fabs(mom->pdgId()) != 32 
+         && fabs(mom->pdgId()) != 33 
+         && fabs(mom->pdgId()) != 39 
+         && fabs(mom->pdgId()) != 5000039 
+         && fabs(mom->pdgId()) != 9000006 
+         && mom->mass() < 20) continue; 
+      if(fabs(mom->pdgId()) == 22 && mom->mass() < 10) continue; //This to remove low mass virtual photons converting to a dielectron pair
+      for(int itpart=0; itpart < fabs(mom->numberOfMothers()); ++itpart){
 	const Candidate *initpart = mom->mother(itpart); 
 	if(fabs(initpart->pdgId()) <9  ) {//Quarks info (Drell-Yan, Z') 
 	  genquark_e[counterquark] = initpart->energy(); 
@@ -2971,58 +3209,106 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
 	  gengluon_status[countergluon]= initpart->status();
 	  countergluon++;
 	}
-	
       }
-
-
-
-
-
-
-
-
-      // cut on pdg-id 
-
-
-
      
-
- 
-      genele_e[counter] = p.energy(); 
-      genele_pt[counter] = p.pt();
-      genele_px[counter] = p.px();
-      genele_py[counter] = p.py();
-      genele_pz[counter] = p.pz();
-      genele_eta[counter] = p.eta(); 
-      genele_phi[counter] = p.phi();
-      genele_charge[counter]= p.charge();
+      genele_e[counterEle] = p.energy(); 
+      genele_pt[counterEle] = p.pt();
+      genele_px[counterEle] = p.px();
+      genele_py[counterEle] = p.py();
+      genele_pz[counterEle] = p.pz();
+      genele_eta[counterEle] = p.eta(); 
+      genele_phi[counterEle] = p.phi();
+      genele_charge[counterEle]= p.charge();
       
-      unstableGenEle_e[counter] = unstableGenEle->energy(); 
-      unstableGenEle_pt[counter] = unstableGenEle->pt();
-      unstableGenEle_px[counter] = unstableGenEle->px();
-      unstableGenEle_py[counter] = unstableGenEle->py();
-      unstableGenEle_pz[counter] = unstableGenEle->pz();
-      unstableGenEle_eta[counter] = unstableGenEle->eta(); 
-      unstableGenEle_phi[counter] = unstableGenEle->phi();
-      unstableGenEle_charge[counter]= unstableGenEle->charge();
+      unstableGenEle_e[counterEle] = unstableGenEle->energy(); 
+      unstableGenEle_pt[counterEle] = unstableGenEle->pt();
+      unstableGenEle_px[counterEle] = unstableGenEle->px();
+      unstableGenEle_py[counterEle] = unstableGenEle->py();
+      unstableGenEle_pz[counterEle] = unstableGenEle->pz();
+      unstableGenEle_eta[counterEle] = unstableGenEle->eta(); 
+      unstableGenEle_phi[counterEle] = unstableGenEle->phi();
+      unstableGenEle_charge[counterEle]= unstableGenEle->charge();
       
-      genelemom_e[counter] = mom->energy(); 
-      genelemom_pt[counter] = mom->pt();
-      genelemom_px[counter] = mom->px();
-      genelemom_py[counter] = mom->py();
-      genelemom_pz[counter] = mom->pz();
-      genelemom_eta[counter] = mom->eta(); 
-      genelemom_phi[counter] = mom->phi();
-      genelemom_charge[counter]= mom->charge();
-      genelemom_mass[counter]= mom->mass();
-      genelemom_pdgid[counter]= mom->pdgId();
+      genelemom_e[counterEle] = mom->energy(); 
+      genelemom_pt[counterEle] = mom->pt();
+      genelemom_px[counterEle] = mom->px();
+      genelemom_py[counterEle] = mom->py();
+      genelemom_pz[counterEle] = mom->pz();
+      genelemom_eta[counterEle] = mom->eta(); 
+      genelemom_phi[counterEle] = mom->phi();
+      genelemom_charge[counterEle]= mom->charge();
+      genelemom_mass[counterEle]= mom->mass();
+      genelemom_pdgid[counterEle]= mom->pdgId();
       
-      x1quark[counter] = (genelemom_mass[counter]*genelemom_mass[counter]) / (comEnergy_ * (genelemom_pz[counter] + sqrt(genelemom_pz[counter]*genelemom_pz[counter]+genelemom_mass[counter]*genelemom_mass[counter] )));
-      x2quark[counter] = (genelemom_pz[counter] + sqrt(genelemom_pz[counter]*genelemom_pz[counter]+genelemom_mass[counter]*genelemom_mass[counter] )) / comEnergy_;
-      counter++;      
+      x1quark[counterEle] = (genelemom_mass[counterEle]*genelemom_mass[counterEle]) / (comEnergy_ * (genelemom_pz[counterEle] + sqrt(genelemom_pz[counterEle]*genelemom_pz[counterEle]+genelemom_mass[counterEle]*genelemom_mass[counterEle] )));
+      x2quark[counterEle] = (genelemom_pz[counterEle] + sqrt(genelemom_pz[counterEle]*genelemom_pz[counterEle]+genelemom_mass[counterEle]*genelemom_mass[counterEle] )) / comEnergy_;
+      counterEle++;      
     }
-  }  
-  genparticles_size=counter;
+
+    // muons and their mom
+    if (fabs(id) == 13 && st == 1) {
+      const Candidate * unstableGenMu = p.clone(); // stable = unstable at the beginning
+      const Candidate * mom = p.mother();
+ 
+      while (fabs(mom->pdgId()) == 13) { 
+        if(mom->status() == 3 ) unstableGenMu = mom; 
+          mom = mom->mother(); 
+      }
+ 
+      // cut on pdg-id 
+      if(fabs(mom->pdgId()) > 6 
+         && fabs(mom->pdgId()) != 13 
+         && fabs(mom->pdgId()) != 21 
+         && fabs(mom->pdgId()) != 22 
+         && fabs(mom->pdgId()) != 23 
+         && fabs(mom->pdgId()) != 24 
+         && fabs(mom->pdgId()) != 32 
+         && fabs(mom->pdgId()) != 33 
+         && fabs(mom->pdgId()) != 39 
+         && fabs(mom->pdgId()) != 5000039
+         && fabs(mom->pdgId()) != 9000006
+         && mom->mass() < 20) continue; 
+      if(fabs(mom->pdgId()) == 22 && mom->mass() < 10) continue;
+
+
+      genmu_e[counterMu] = p.energy(); 
+      genmu_pt[counterMu] = p.pt();
+      genmu_px[counterMu] = p.px();
+      genmu_py[counterMu] = p.py();
+      genmu_pz[counterMu] = p.pz();
+      genmu_eta[counterMu] = p.eta(); 
+      genmu_phi[counterMu] = p.phi();
+      genmu_charge[counterMu]= p.charge();
+      
+      unstableGenMu_e[counterMu] = unstableGenMu->energy(); 
+      unstableGenMu_pt[counterMu] = unstableGenMu->pt();
+      unstableGenMu_px[counterMu] = unstableGenMu->px();
+      unstableGenMu_py[counterMu] = unstableGenMu->py();
+      unstableGenMu_pz[counterMu] = unstableGenMu->pz();
+      unstableGenMu_eta[counterMu] = unstableGenMu->eta(); 
+      unstableGenMu_phi[counterMu] = unstableGenMu->phi();
+      unstableGenMu_charge[counterMu]= unstableGenMu->charge();
+      
+      genmumom_e[counterMu] = mom->energy(); 
+      genmumom_pt[counterMu] = mom->pt();
+      genmumom_px[counterMu] = mom->px();
+      genmumom_py[counterMu] = mom->py();
+      genmumom_pz[counterMu] = mom->pz();
+      genmumom_eta[counterMu] = mom->eta(); 
+      genmumom_phi[counterMu] = mom->phi();
+      genmumom_charge[counterMu]= mom->charge();
+      genmumom_mass[counterMu]= mom->mass();
+      genmumom_pdgid[counterMu]= mom->pdgId();
+      
+      counterMu++;      
+    }
+  }
+
+  genparticles_size=counterEle+counterMu;
+  hardGenEle_size=counterHardEle;
+  hardGenMu_size=counterHardMu;
+  genEle_size=counterEle;
+  genMu_size=counterMu;
   genquarks_size = counterquark; 
   gengluons_size = countergluon; 
 
@@ -3038,6 +3324,22 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
     antiTopLv.SetPxPyPzE(antiTop.px(), antiTop.py(), antiTop.pz(), antiTop.energy());
 
     genPair_mass = (float)(topLv + antiTopLv).Mag();
+  }
+
+  // calc invariant mass of hard e-mu pair
+  if (hardEleId > -1 && hardMuId > -1) {
+    const GenParticle & ele = (*genParticles)[hardEleId];
+    const GenParticle & mu = (*genParticles)[hardMuId];
+    TLorentzVector eleLv;
+    TLorentzVector muLv;
+
+    eleLv.SetPxPyPzE(ele.px(), ele.py(), ele.pz(), ele.energy());
+    muLv.SetPxPyPzE(mu.px(), mu.py(), mu.pz(), mu.energy());
+
+    emu_mass = (float)(eleLv + muLv).Mag();
+    //if (counterHardBoson == 0) emu_mass = 0.;
+    //if (counterHardBoson == 0) cout << emu_mass << "    " << (float)(eleLv + muLv).Pt() << "    " << (float)(eleLv + muLv).PseudoRapidity() << "    " << (float)(eleLv + muLv).Phi() << endl;
+    //else emu_mass = 0.;
   }
 }//end of DataGenPart
 
@@ -3291,7 +3593,6 @@ GsfCheckerTree::HLTInfo(const edm::Event &iEvent, const edm::EventSetup& iSetup)
       prescale_HLT_Ele27_WP80 = hltConfig_.prescaleValue(iEvent, iSetup, hlNames_.at(i));
     }
 
-
   }
 
   for (unsigned int i = 0; i != n; ++i) {
@@ -3319,22 +3620,6 @@ GsfCheckerTree::HLTInfo(const edm::Event &iEvent, const edm::EventSetup& iSetup)
       if (index > posPre_[i]) hltPre_[i]++;
     }
   }
-  
-
-
-
-
- 
-
-
-
-
-
-  
-
-
-
-
 } // END of HLTInfo
 
 //
