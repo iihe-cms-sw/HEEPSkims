@@ -1,9 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 
-from SHarper.HEEPAnalyzer.HEEPEventParameters_cfi import *
+#from SHarper.HEEPAnalyzer.HEEPEventParameters_cfi import *
 
 gsfcheckerjob = cms.EDAnalyzer("GsfCheckerTree",
-  heepEventPara,
+  #heepEventPara,
   TriggerResultsTag = cms.InputTag("TriggerResults","","HLT"),
   #TriggerResultsTag = cms.InputTag("TriggerResults","","RECO"),
   centerOfMassEnergy = cms.double(8000.),
