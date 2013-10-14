@@ -41,7 +41,9 @@ if noDataset:
 if dataset.endswith('/AOD'):
     process.pfJetMETcorr.jetCorrLabel = cms.string("ak5PFL1FastL2L3Residual") #this for data
 
-    if dataset.find("13Jul2012") != -1:
+    if dataset.find("22Jan2013") != -1:
+        process.GlobalTag.globaltag = 'FT_53_V21_AN6::All'  # this one for 22jan2013 rereco
+    elif dataset.find("13Jul2012") != -1:
         process.GlobalTag.globaltag = 'FT_53_V6C_AN4::All'  # this one for july13 rereco
     elif dataset.find("06Aug2012") != -1:
         process.GlobalTag.globaltag = 'FT_53_V6C_AN4::All' # this one for aug06 rereco
@@ -128,9 +130,9 @@ process.eleIsoSequence = setupPFElectronIso(process, 'gsfElectrons')
 process.muIsoSequence = setupPFMuonIso(process, 'muons')
 
 process.load("UserCode.HEEPSkims.gsfcheckertree_cfi")
-#process.gsfcheckerjob.electron1EtMin = 0.
-#process.gsfcheckerjob.electron2EtMin = 0.
-#process.gsfcheckerjob.muonPtMin = 0.
+process.gsfcheckerjob.electron1EtMin = 0.
+process.gsfcheckerjob.electron2EtMin = 0.
+process.gsfcheckerjob.muonPtMin = 0.
 process.otherStuff = cms.Sequence( process.kt6PFJets )
 
 process.load("RecoMET.METFilters.ecalLaserCorrFilter_cfi")
