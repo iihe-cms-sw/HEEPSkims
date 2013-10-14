@@ -660,7 +660,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         }
       }//end filter size check
 
-      // HLT_Mu22_Photon22_CaloIdL muon leg
+      // HLT_Mu40_eta2p1
       filterName ="hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q"; 
       muMatch_hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q[index_mu] = false;
       //it is important to specify the right HLT process for the filter, not doing this is a common bug
