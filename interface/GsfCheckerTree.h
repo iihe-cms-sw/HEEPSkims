@@ -589,9 +589,11 @@ private:
   bool *gsfmatch_hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter;
   bool *gsfmatch_hltEle33CaloIdLPixelMatchFilter;
   bool *scmatch_hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17PMMassFilter;
-  
   bool *gsfmatch_hltEle27WP80TrackIsoFilter;
   //  bool *gsfmatch_hltEle33CaloIdLPixelMatchFilter; //HLT_Ele27_WP80
+  bool *gsfmatch_hltMu22Photon22CaloIdLHEFilter;
+  bool *muMatch_hltL1Mu3p5EG12L3Filtered22;
+  bool *muMatch_hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q;
 
 
   float heepHeepMass;
