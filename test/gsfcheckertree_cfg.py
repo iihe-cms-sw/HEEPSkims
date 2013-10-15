@@ -61,8 +61,12 @@ if dataset.endswith('/AOD'):
         process.GlobalTag.globaltag = 'GR_P_V39_AN2::All'  # this one for run2012A and B
 else:
     process.pfJetMETcorr.jetCorrLabel = cms.string("ak5PFL1FastL2L3")  #this for MC
-    process.GlobalTag.globaltag = 'START53_V7G::All'
-    #process.GlobalTag.globaltag = 'START53_V7C1::All'
+    if dataset.find("START53_V7C1") != -1:
+        process.GlobalTag.globaltag = 'START53_V7C1::All'
+    elif dataset.find("START53_V19E") != -1:
+        process.GlobalTag.globaltag = 'START53_V19E::All'
+    else:
+        process.GlobalTag.globaltag = 'START53_V7G::All'
 
 print "Global Tag is ", process.GlobalTag.globaltag
 
