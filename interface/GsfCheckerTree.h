@@ -585,6 +585,8 @@ private:
   bool *gsfmatch_hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17TrackIsoFilter ;
   bool *gsfmatch_hltEle17TightIdLooseIsoEle8TightIdLooseIsoTrackIsoDoubleFilter ;
   bool *gsfmatch_hltEle17TightIdLooseIsoEle8TightIdLooseIsoTrackIsoFilter;
+  bool *gsfmatch_hltL1sL1SingleEG12;
+  bool *gsfmatch_hltL1sL1Mu3p5EG12;
   bool *gsfmatch_hltL1sL1SingleEG22;
   bool *gsfmatch_hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter;
   bool *gsfmatch_hltEle33CaloIdLPixelMatchFilter;
@@ -592,6 +594,8 @@ private:
   bool *gsfmatch_hltEle27WP80TrackIsoFilter;
   //  bool *gsfmatch_hltEle33CaloIdLPixelMatchFilter; //HLT_Ele27_WP80
   bool *gsfmatch_hltMu22Photon22CaloIdLHEFilter;
+  bool *muMatch_hltL1sMu16Eta2p1;
+  bool *muMatch_hltL1sL1Mu3p5EG12;
   bool *muMatch_hltL1Mu3p5EG12L3Filtered22;
   bool *muMatch_hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q;
 
@@ -724,6 +728,12 @@ private:
   int prescale_HLT_DoublePhoton80;
   int prescale_HLT_Ele27_WP80;
 
+  bool hltL1sL1SingleEG12;
+  bool hltL1sL1Mu3p5EG12;
+  bool hltL1sMu16Eta2p1;
+  bool hltL1Mu3p5EG12L3Filtered22;
+  bool hltMu22Photon22CaloIdLHEFilter;
+  bool hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q;
 };
 #endif
 //define this as a plug-in

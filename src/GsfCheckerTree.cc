@@ -511,6 +511,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   muon_innerPosx = new float [muon_size];
   muon_innerPosy = new float [muon_size];
   muon_innerPosz = new float [muon_size];
+  muMatch_hltL1sMu16Eta2p1 = new bool [muon_size]; 
+  muMatch_hltL1sL1Mu3p5EG12 = new bool [muon_size]; 
   muMatch_hltL1Mu3p5EG12L3Filtered22 = new bool [muon_size]; 
   muMatch_hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q= new bool [muon_size]; 
   mytree->GetBranch("muon_pt")->SetAddress(muon_pt);
@@ -571,6 +573,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   mytree->GetBranch("muon_innerPosx")->SetAddress(muon_innerPosx);
   mytree->GetBranch("muon_innerPosy")->SetAddress(muon_innerPosy);
   mytree->GetBranch("muon_innerPosz")->SetAddress(muon_innerPosz);
+  mytree->GetBranch("muMatch_hltL1sMu16Eta2p1")->SetAddress(muMatch_hltL1sMu16Eta2p1);
+  mytree->GetBranch("muMatch_hltL1sL1Mu3p5EG12")->SetAddress(muMatch_hltL1sL1Mu3p5EG12);
   mytree->GetBranch("muMatch_hltL1Mu3p5EG12L3Filtered22")->SetAddress(muMatch_hltL1Mu3p5EG12L3Filtered22);
   mytree->GetBranch("muMatch_hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q")->SetAddress(muMatch_hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q);
   //cout << "muons" << endl; 
@@ -642,6 +646,42 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       muon_hadIso05[index_mu] = muIt->isolationR05().hadEt;
       muon_hadIso03_ptInVeto[index_mu] = muIt->isolationR03().hadVetoEt;
       muon_hadIso05_ptInVeto[index_mu] = muIt->isolationR05().hadVetoEt;
+
+      // L1, hltL1sMu16Eta2p1
+      filterName ="hltL1sMu16Eta2p1"; 
+      muMatch_hltL1sMu16Eta2p1[index_mu] = false;
+      //it is important to specify the right HLT process for the filter, not doing this is a common bug
+      filterIndex = trigEvent->filterIndex(edm::InputTag(filterName,"",trigEventTag.process())); 
+      if(filterIndex<trigEvent->sizeFilters()){ 
+        const trigger::Keys& trigKeys = trigEvent->filterKeys(filterIndex); 
+        const trigger::TriggerObjectCollection & trigObjColl(trigEvent->getObjects());
+        //now loop of the trigger objects passing filter
+        for(trigger::Keys::const_iterator keyIt = trigKeys.begin(); keyIt != trigKeys.end(); ++keyIt) { 
+          const trigger::TriggerObject& obj = trigObjColl[*keyIt];
+
+          if(deltaR(tevOptMuTrk.first->eta(), tevOptMuTrk.first->phi(), obj.eta(), obj.phi())<1.){
+            muMatch_hltL1sMu16Eta2p1[index_mu] = true;
+          }
+        }
+      }//end filter size check
+
+      // HLT_Mu22_Photon22_CaloIdL L1
+      filterName ="hltL1sL1Mu3p5EG12"; 
+      muMatch_hltL1sL1Mu3p5EG12[index_mu] = false;
+      //it is important to specify the right HLT process for the filter, not doing this is a common bug
+      filterIndex = trigEvent->filterIndex(edm::InputTag(filterName,"",trigEventTag.process())); 
+      if(filterIndex<trigEvent->sizeFilters()){ 
+        const trigger::Keys& trigKeys = trigEvent->filterKeys(filterIndex); 
+        const trigger::TriggerObjectCollection & trigObjColl(trigEvent->getObjects());
+        //now loop of the trigger objects passing filter
+        for(trigger::Keys::const_iterator keyIt = trigKeys.begin(); keyIt != trigKeys.end(); ++keyIt) { 
+          const trigger::TriggerObject& obj = trigObjColl[*keyIt];
+
+          if(deltaR(tevOptMuTrk.first->eta(), tevOptMuTrk.first->phi(), obj.eta(), obj.phi())<1.){
+            muMatch_hltL1sL1Mu3p5EG12[index_mu] = true;
+          }
+        }
+      }//end filter size check
 
       // HLT_Mu22_Photon22_CaloIdL muon leg
       filterName ="hltL1Mu3p5EG12L3Filtered22"; 
@@ -1084,6 +1124,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   gsfmatch_hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17TrackIsoFilter = new bool [gsf_size];
   gsfmatch_hltEle17TightIdLooseIsoEle8TightIdLooseIsoTrackIsoDoubleFilter = new bool [gsf_size];
   gsfmatch_hltEle17TightIdLooseIsoEle8TightIdLooseIsoTrackIsoFilter = new bool [gsf_size];
+  gsfmatch_hltL1sL1SingleEG12 = new bool [gsf_size];
+  gsfmatch_hltL1sL1Mu3p5EG12 = new bool [gsf_size];
   gsfmatch_hltL1sL1SingleEG22 = new bool [gsf_size];
   gsfmatch_hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter = new bool [gsf_size];
   gsfmatch_hltEle33CaloIdLPixelMatchFilter = new bool [gsf_size]; 
@@ -1242,6 +1284,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   mytree->GetBranch("gsfmatch_hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17TrackIsoFilter")->SetAddress(gsfmatch_hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17TrackIsoFilter);
   mytree->GetBranch("gsfmatch_hltEle17TightIdLooseIsoEle8TightIdLooseIsoTrackIsoDoubleFilter")->SetAddress(gsfmatch_hltEle17TightIdLooseIsoEle8TightIdLooseIsoTrackIsoDoubleFilter); 
   mytree->GetBranch("gsfmatch_hltEle17TightIdLooseIsoEle8TightIdLooseIsoTrackIsoFilter")->SetAddress(gsfmatch_hltEle17TightIdLooseIsoEle8TightIdLooseIsoTrackIsoFilter); 
+  mytree->GetBranch("gsfmatch_hltL1sL1SingleEG12")->SetAddress(gsfmatch_hltL1sL1SingleEG12);
+  mytree->GetBranch("gsfmatch_hltL1sL1Mu3p5EG12")->SetAddress(gsfmatch_hltL1sL1Mu3p5EG12);
   mytree->GetBranch("gsfmatch_hltL1sL1SingleEG22")->SetAddress(gsfmatch_hltL1sL1SingleEG22);
   mytree->GetBranch("gsfmatch_hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter")->SetAddress(gsfmatch_hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter); 
   mytree->GetBranch("gsfmatch_hltEle33CaloIdLPixelMatchFilter")->SetAddress(gsfmatch_hltEle33CaloIdLPixelMatchFilter);
@@ -1677,6 +1721,101 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       }
     }//end filter size check
     
+    //L1 hltL1sL1SingleEG12
+    //Careful that L1 triggers only have discrete eta phi. Need to be extremely loose. 
+    //See here: http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/SHarper/SHNtupliser/src/SHTrigInfo.cc?revision=1.5&view=markup&pathrev=HEAD
+    filterName ="hltL1sL1SingleEG12";
+    gsfmatch_hltL1sL1SingleEG12[e]=false; 
+    //it is important to specify the right HLT process for the filter, not doing this is a common bug
+    filterIndex = trigEvent->filterIndex(edm::InputTag(filterName,"",trigEventTag.process())); 
+    if(filterIndex<trigEvent->sizeFilters()){ 
+      const trigger::Keys& trigKeys = trigEvent->filterKeys(filterIndex); 
+      const trigger::TriggerObjectCollection & trigObjColl(trigEvent->getObjects());
+      //now loop of the trigger objects passing filter
+      for(trigger::Keys::const_iterator keyIt=trigKeys.begin();keyIt!=trigKeys.end();++keyIt){ 
+	const trigger::TriggerObject& obj = trigObjColl[*keyIt];
+	//do what you want with the trigger objects, you have
+	//eta,phi,pt,mass,p,px,py,pz,et,energy accessors
+
+	  float objeta = obj.eta(); 
+	  float objphi = obj.phi();
+
+
+	  const double barrelEnd=1.4791;
+	  // const double endcapEnd=2.65;
+	  const double regionEtaSizeEB=0.522;
+	  const double regionEtaSizeEE=1.0;
+	  const double regionPhiSize=1.044;
+
+	  double etaBinLow  = 0.;
+	  double etaBinHigh = 0.;
+
+	 	  
+	  if(fabs(objeta) < barrelEnd){
+	    etaBinLow = objeta - regionEtaSizeEB/2.;
+	    etaBinHigh = etaBinLow + regionEtaSizeEB;
+	  }
+	  else{
+	    etaBinLow = objeta - regionEtaSizeEE/2.;
+	    etaBinHigh = etaBinLow + regionEtaSizeEE;
+	  }
+    
+	  float deltaPhi=reco::deltaPhi(gsfiter->phi(),objphi);
+
+	  if(gsfiter->eta() < etaBinHigh && gsfiter->eta() > etaBinLow &&   deltaPhi <regionPhiSize/2. )  {
+	    gsfmatch_hltL1sL1SingleEG12[e]=true; 
+	  }
+      }
+    }//end filter size check
+
+    //HLT_Mu22_Photon22_CaloIdL, L1
+    //Careful that L1 triggers only have discrete eta phi. Need to be extremely loose. 
+    //See here: http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/SHarper/SHNtupliser/src/SHTrigInfo.cc?revision=1.5&view=markup&pathrev=HEAD
+    filterName ="hltL1sL1Mu3p5EG12";
+    gsfmatch_hltL1sL1Mu3p5EG12[e]=false; 
+    //it is important to specify the right HLT process for the filter, not doing this is a common bug
+    filterIndex = trigEvent->filterIndex(edm::InputTag(filterName,"",trigEventTag.process())); 
+    if(filterIndex<trigEvent->sizeFilters()){ 
+      const trigger::Keys& trigKeys = trigEvent->filterKeys(filterIndex); 
+      const trigger::TriggerObjectCollection & trigObjColl(trigEvent->getObjects());
+      //now loop of the trigger objects passing filter
+      for(trigger::Keys::const_iterator keyIt=trigKeys.begin();keyIt!=trigKeys.end();++keyIt){ 
+	const trigger::TriggerObject& obj = trigObjColl[*keyIt];
+	//do what you want with the trigger objects, you have
+	//eta,phi,pt,mass,p,px,py,pz,et,energy accessors
+
+	  float objeta = obj.eta(); 
+	  float objphi = obj.phi();
+
+
+	  const double barrelEnd=1.4791;
+	  // const double endcapEnd=2.65;
+	  const double regionEtaSizeEB=0.522;
+	  const double regionEtaSizeEE=1.0;
+	  const double regionPhiSize=1.044;
+
+	  double etaBinLow  = 0.;
+	  double etaBinHigh = 0.;
+
+	 	  
+	  if(fabs(objeta) < barrelEnd){
+	    etaBinLow = objeta - regionEtaSizeEB/2.;
+	    etaBinHigh = etaBinLow + regionEtaSizeEB;
+	  }
+	  else{
+	    etaBinLow = objeta - regionEtaSizeEE/2.;
+	    etaBinHigh = etaBinLow + regionEtaSizeEE;
+	  }
+
+	  float deltaPhi=reco::deltaPhi(gsfiter->phi(),objphi);
+   
+    
+	  if(gsfiter->eta() < etaBinHigh && gsfiter->eta() > etaBinLow &&   deltaPhi <regionPhiSize/2. )  {
+	    gsfmatch_hltL1sL1Mu3p5EG12[e]=true; 
+	  }
+      }
+    }//end filter size check
+
     //HLT_DoubleEle33_CaloIdL_GsfTrkIdVL , L1 
     //Careful that L1 triggers only have discrete eta phi. Need to be extremely loose. 
     //See here: http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/SHarper/SHNtupliser/src/SHTrigInfo.cc?revision=1.5&view=markup&pathrev=HEAD
@@ -2058,6 +2197,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   delete [] gsfmatch_hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17TrackIsoFilter;
   delete [] gsfmatch_hltEle17TightIdLooseIsoEle8TightIdLooseIsoTrackIsoDoubleFilter;
   delete [] gsfmatch_hltEle17TightIdLooseIsoEle8TightIdLooseIsoTrackIsoFilter;
+  delete [] gsfmatch_hltL1sL1SingleEG12;
+  delete [] gsfmatch_hltL1sL1Mu3p5EG12;
   delete [] gsfmatch_hltL1sL1SingleEG22;
   delete [] gsfmatch_hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter;
   delete [] gsfmatch_hltEle33CaloIdLPixelMatchFilter; 
@@ -2152,6 +2293,8 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   delete [] muon_innerPosx;
   delete [] muon_innerPosy;
   delete [] muon_innerPosz;
+  delete [] muMatch_hltL1sMu16Eta2p1; 
+  delete [] muMatch_hltL1sL1Mu3p5EG12; 
   delete [] muMatch_hltL1Mu3p5EG12L3Filtered22; 
   delete [] muMatch_hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q; 
 
@@ -2448,6 +2591,12 @@ GsfCheckerTree::beginJob()
   mytree->Branch("prescale_HLT_DoublePhoton70",&prescale_HLT_DoublePhoton70,"prescale_HLT_DoublePhoton70/I");
   mytree->Branch("prescale_HLT_DoublePhoton80",&prescale_HLT_DoublePhoton80,"prescale_HLT_DoublePhoton80/I");
   mytree->Branch("prescale_HLT_Ele27_WP80",&prescale_HLT_Ele27_WP80,"prescale_HLT_Ele27_WP80/I");
+  mytree->Branch("hltL1sL1SingleEG12", &hltL1sL1SingleEG12, "hltL1sL1SingleEG12/O");
+  mytree->Branch("hltL1sL1Mu3p5EG12", &hltL1sL1Mu3p5EG12, "hltL1sL1Mu3p5EG12/O");
+  mytree->Branch("hltL1sMu16Eta2p1", &hltL1sMu16Eta2p1, "hltL1sMu16Eta2p1/O");
+  mytree->Branch("hltL1Mu3p5EG12L3Filtered22", &hltL1Mu3p5EG12L3Filtered22, "hltL1Mu3p5EG12L3Filtered22/O");
+  mytree->Branch("hltMu22Photon22CaloIdLHEFilter", &hltMu22Photon22CaloIdLHEFilter, "hltMu22Photon22CaloIdLHEFilter/O");
+  mytree->Branch("hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q", &hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q, "hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q/O");
 
   //GLOBAL PHYSICAL INFO 
   mytree->Branch("rho", &rho, "rho/F");
@@ -2582,6 +2731,8 @@ GsfCheckerTree::beginJob()
   mytree->Branch("muon_hadIso05", muon_hadIso05, "muon_hadIso05[muon_size]/F");
   mytree->Branch("muon_hadIso03_ptInVeto", muon_hadIso03_ptInVeto, "muon_hadIso03_ptInVeto[muon_size]/F");
   mytree->Branch("muon_hadIso05_ptInVeto", muon_hadIso05_ptInVeto, "muon_hadIso05_ptInVeto[muon_size]/F");
+  mytree->Branch("muMatch_hltL1sMu16Eta2p1", muMatch_hltL1sMu16Eta2p1, "muMatch_hltL1sMu16Eta2p1[muon_size]/O"); 
+  mytree->Branch("muMatch_hltL1sL1Mu3p5EG12", muMatch_hltL1sL1Mu3p5EG12, "muMatch_hltL1sL1Mu3p5EG12[muon_size]/O"); 
   mytree->Branch("muMatch_hltL1Mu3p5EG12L3Filtered22", muMatch_hltL1Mu3p5EG12L3Filtered22, "muMatch_hltL1Mu3p5EG12L3Filtered22[muon_size]/O"); 
   mytree->Branch("muMatch_hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q", muMatch_hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q, "muMatch_hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q[muon_size]/O"); 
 
@@ -2733,6 +2884,8 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gsfmatch_hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17TrackIsoFilter",gsfmatch_hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17TrackIsoFilter,"gsfmatch_hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17TrackIsoFilter[gsf_size]/O");
   mytree->Branch("gsfmatch_hltEle17TightIdLooseIsoEle8TightIdLooseIsoTrackIsoDoubleFilter",gsfmatch_hltEle17TightIdLooseIsoEle8TightIdLooseIsoTrackIsoDoubleFilter,"gsfmatch_hltEle17TightIdLooseIsoEle8TightIdLooseIsoTrackIsoDoubleFilter[gsf_size]/O");
   mytree->Branch("gsfmatch_hltEle17TightIdLooseIsoEle8TightIdLooseIsoTrackIsoFilter",gsfmatch_hltEle17TightIdLooseIsoEle8TightIdLooseIsoTrackIsoFilter,"gsfmatch_hltEle17TightIdLooseIsoEle8TightIdLooseIsoTrackIsoFilter[gsf_size]/O");
+  mytree->Branch("gsfmatch_hltL1sL1SingleEG12",gsfmatch_hltL1sL1SingleEG12,"gsfmatch_hltL1sL1SingleEG12[gsf_size]/O");
+  mytree->Branch("gsfmatch_hltL1sL1Mu3p5EG12",gsfmatch_hltL1sL1Mu3p5EG12,"gsfmatch_hltL1sL1Mu3p5EG12[gsf_size]/O");
   mytree->Branch("gsfmatch_hltL1sL1SingleEG22",gsfmatch_hltL1sL1SingleEG22,"gsfmatch_hltL1sL1SingleEG22[gsf_size]/O");
   mytree->Branch("gsfmatch_hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter",gsfmatch_hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter,"gsfmatch_hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter[gsf_size]/O");
   mytree->Branch("gsfmatch_hltEle33CaloIdLPixelMatchFilter",gsfmatch_hltEle33CaloIdLPixelMatchFilter,"gsfmatch_hltEle33CaloIdLPixelMatchFilter[gsf_size]/O"); 
@@ -3635,6 +3788,66 @@ GsfCheckerTree::HLTInfo(const edm::Event &iEvent, const edm::EventSetup& iSetup)
       if (index > posPre_[i]) hltPre_[i]++;
     }
   }
+
+  // Trigger filter pass
+  edm::InputTag trigEventTag("hltTriggerSummaryAOD","","HLT"); //make sure have correct process on MC
+  edm::Handle<trigger::TriggerEvent> trigEvent; 
+  iEvent.getByLabel(trigEventTag,trigEvent);
+  // L1, hltL1sMu16Eta2p1
+  std::string filterName("hltL1sMu16Eta2p1"); 
+  hltL1sMu16Eta2p1 = false;
+  trigger::size_type filterIndex = trigEvent->filterIndex(edm::InputTag(filterName,"",trigEventTag.process())); 
+  if(filterIndex<trigEvent->sizeFilters()){ 
+    const trigger::Keys& trigKeys = trigEvent->filterKeys(filterIndex); 
+    if (trigKeys.size() > 0) hltL1sMu16Eta2p1 = true;
+  }//end filter size check
+
+  // HLT_Mu22_Photon22_CaloIdL L1
+  filterName ="hltL1sL1Mu3p5EG12"; 
+  hltL1sL1Mu3p5EG12 = false;
+  filterIndex = trigEvent->filterIndex(edm::InputTag(filterName,"",trigEventTag.process())); 
+  if(filterIndex<trigEvent->sizeFilters()){ 
+    const trigger::Keys& trigKeys = trigEvent->filterKeys(filterIndex); 
+    if (trigKeys.size() > 1) hltL1sL1Mu3p5EG12 = true;
+  }//end filter size check
+
+  //L1 hltL1sL1SingleEG12
+  filterName ="hltL1sL1SingleEG12";
+  hltL1sL1SingleEG12 = false; 
+  //it is important to specify the right HLT process for the filter, not doing this is a common bug
+  filterIndex = trigEvent->filterIndex(edm::InputTag(filterName,"",trigEventTag.process())); 
+  if(filterIndex<trigEvent->sizeFilters()){ 
+    const trigger::Keys& trigKeys = trigEvent->filterKeys(filterIndex); 
+    if (trigKeys.size() > 0) hltL1sL1SingleEG12 = true;
+  }//end filter size check
+
+  // HLT_Mu22_Photon22_CaloIdL muon leg
+  filterName ="hltL1Mu3p5EG12L3Filtered22"; 
+  hltL1Mu3p5EG12L3Filtered22 = false;
+  filterIndex = trigEvent->filterIndex(edm::InputTag(filterName,"",trigEventTag.process())); 
+  if(filterIndex<trigEvent->sizeFilters()){ 
+    const trigger::Keys& trigKeys = trigEvent->filterKeys(filterIndex); 
+    if (trigKeys.size() > 0) hltL1Mu3p5EG12L3Filtered22 = true;
+  }//end filter size check
+
+  // HLT_Mu40_eta2p1
+  filterName ="hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q"; 
+  hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q = false;
+  filterIndex = trigEvent->filterIndex(edm::InputTag(filterName,"",trigEventTag.process())); 
+  if(filterIndex<trigEvent->sizeFilters()){ 
+    const trigger::Keys& trigKeys = trigEvent->filterKeys(filterIndex); 
+    if (trigKeys.size() > 0) hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q = true;
+  }//end filter size check
+ 
+  // HLT_Mu22_Photon22_CaloIdL electron leg
+  filterName ="hltMu22Photon22CaloIdLHEFilter"; 
+  hltMu22Photon22CaloIdLHEFilter = false;
+  filterIndex = trigEvent->filterIndex(edm::InputTag(filterName,"",trigEventTag.process())); 
+  if(filterIndex<trigEvent->sizeFilters()){ 
+    const trigger::Keys& trigKeys = trigEvent->filterKeys(filterIndex); 
+    if (trigKeys.size() > 0) hltMu22Photon22CaloIdLHEFilter = true;
+  }//end filter size check
+
 } // END of HLTInfo
 
 //
