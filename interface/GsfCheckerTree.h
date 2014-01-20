@@ -293,6 +293,7 @@ private:
   int genMu_size;
   int genquarks_size;
   int gengluons_size;
+  int genPart_size;
   
   //Generated variables for quarks (before ISR)
   float *genquark_e;
@@ -318,6 +319,16 @@ private:
   int *gengluon_charge;
   int *gengluon_pdgid;
 
+  //Generated variables for potentially interesting particles
+  float *genPart_e;
+  float *genPart_pt;
+  float *genPart_eta;
+  float *genPart_phi;
+  float *genPart_mass;
+  int *genPart_status;
+  int *genPart_charge;
+  int *genPart_pdgid;
+  int *genPart_momPdgId;
 
   //Generated variables (after FSR)
   float *genele_e;

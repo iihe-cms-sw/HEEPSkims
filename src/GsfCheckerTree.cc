@@ -347,6 +347,7 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     genMu_size = 0;
     genquarks_size = 0;
     gengluons_size = 0;
+    genPart_size = 0;
 
     genPair_mass = 0.; 
   }
@@ -2367,6 +2368,15 @@ GsfCheckerTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     delete [] unstableGenEle_eta;
     delete [] unstableGenEle_phi;
     delete [] unstableGenEle_charge;
+    delete [] genPart_e;
+    delete [] genPart_pt;
+    delete [] genPart_eta;
+    delete [] genPart_phi;
+    delete [] genPart_mass;
+    delete [] genPart_charge;
+    delete [] genPart_status;
+    delete [] genPart_pdgid;
+    delete [] genPart_momPdgId;
     delete [] hardGenEle_e;
     delete [] hardGenEle_pt;
     delete [] hardGenEle_px;
@@ -2913,6 +2923,7 @@ GsfCheckerTree::beginJob()
   mytree->Branch("genMu_size", &genMu_size, "genMu_size/I");
   mytree->Branch("genquarks_size", &genquarks_size, "genquarks_size/I");
   mytree->Branch("gengluons_size", &gengluons_size, "gengluons_size/I");
+  mytree->Branch("genPart_size", &genPart_size, "genPart_size/I");
 
   // Conversion info 
   mytree->Branch("conv_size",&conv_size,"conv_size/I");
@@ -2956,6 +2967,16 @@ GsfCheckerTree::beginJob()
   mytree->Branch("gengluon_charge", gengluon_charge, "gengluon_charge[gengluons_size]/I");
   mytree->Branch("gengluon_pdgid", gengluon_pdgid, "gengluon_pdgid[gengluons_size]/I");
 
+  //generated variables for the tree (potentially interesting particles)
+  mytree->Branch("genPart_e", genPart_e, "genPart_e[genPart_size]/F");
+  mytree->Branch("genPart_eta", genPart_eta, "genPart_eta[genPart_size]/F");
+  mytree->Branch("genPart_phi", genPart_phi, "genPart_phi[genPart_size]/F");
+  mytree->Branch("genPart_pt", genPart_pt, "genPart_pt[genPart_size]/F");
+  mytree->Branch("genPart_status", genPart_status, "genPart_status[genPart_size]/I");
+  mytree->Branch("genPart_charge", genPart_charge, "genPart_charge[genPart_size]/I");
+  mytree->Branch("genPart_pdgid", genPart_pdgid, "genPart_pdgid[genPart_size]/I");
+  mytree->Branch("genPart_momPdgId", genPart_momPdgId, "genPart_momPdgId[genPart_size]/I");
+  mytree->Branch("genPart_mass", genPart_mass, "genPart_mass[genPart_size]/F");
 
   mytree->Branch("genele_e", genele_e, "genele_e[genEle_size]/F");
   mytree->Branch("genele_eta", genele_eta, "genele_eta[genEle_size]/F");
@@ -3088,9 +3109,19 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
   gengluon_pz = new float [gengluons_size];
   gengluon_eta = new float [gengluons_size];
   gengluon_phi = new float [gengluons_size];
-  gengluon_status = new int [genquarks_size];
+  gengluon_status = new int [gengluons_size];
   gengluon_charge = new int [gengluons_size];
   gengluon_pdgid = new int [gengluons_size];
+
+  genPart_e = new float [genparticles_size];
+  genPart_pt = new float [genparticles_size];
+  genPart_eta = new float [genparticles_size];
+  genPart_phi = new float [genparticles_size];
+  genPart_charge = new int [genparticles_size];
+  genPart_status = new int [genparticles_size];
+  genPart_mass = new float [genparticles_size];
+  genPart_pdgid = new int [genparticles_size];
+  genPart_momPdgId = new int [genparticles_size];
 
   genele_e = new float [genparticles_size];
   genele_pt = new float [genparticles_size];
@@ -3187,6 +3218,16 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
   mytree->GetBranch("gengluon_charge")->SetAddress(gengluon_charge);
   mytree->GetBranch("gengluon_pdgid")->SetAddress(gengluon_pdgid);
 
+  mytree->GetBranch("genPart_e")->SetAddress(genPart_e);
+  mytree->GetBranch("genPart_pt")->SetAddress(genPart_pt);
+  mytree->GetBranch("genPart_eta")->SetAddress(genPart_eta);
+  mytree->GetBranch("genPart_phi")->SetAddress(genPart_phi);
+  mytree->GetBranch("genPart_charge")->SetAddress(genPart_charge);
+  mytree->GetBranch("genPart_status")->SetAddress(genPart_status);
+  mytree->GetBranch("genPart_mass")->SetAddress(genPart_mass);
+  mytree->GetBranch("genPart_pdgid")->SetAddress(genPart_pdgid);
+  mytree->GetBranch("genPart_momPdgId")->SetAddress(genPart_momPdgId);
+
   mytree->GetBranch("genele_e")->SetAddress(genele_e);
   mytree->GetBranch("genele_pt")->SetAddress(genele_pt);
   mytree->GetBranch("genele_px")->SetAddress(genele_px);
@@ -3260,6 +3301,7 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
   mytree->GetBranch("x1quark")->SetAddress(x1quark);
   mytree->GetBranch("x2quark")->SetAddress(x2quark);
 
+  unsigned int counterGenPart = 0;
   unsigned int counterEle = 0;
   unsigned int counterMu = 0;
   unsigned int counterquark = 0; 
@@ -3291,6 +3333,33 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
     else if (id == -6) {
       tbarId = i;
       ++counterTbar;
+    }
+
+    // find particles of interest
+    if (abs(id) == 6      // t
+        || abs(id) == 7   // b'
+        || abs(id) == 8   // t'
+        || abs(id) == 23  // Z^0
+        || abs(id) == 24  // W^+
+        || abs(id) == 25  // h^0
+        || abs(id) == 32  // Z'
+        || abs(id) == 33  // Z''
+        || abs(id) == 34  // W'
+        || abs(id) == 35  // H^0
+        || abs(id) == 39  // gravition
+        || abs(id) == 5000039
+        || abs(id) == 9000006) { // a' (e-mu model)
+      genPart_e[counterGenPart] = p.energy();
+      genPart_pt[counterGenPart] = p.pt();
+      genPart_eta[counterGenPart] = p.eta();
+      genPart_phi[counterGenPart] = p.phi();
+      genPart_charge[counterGenPart] = p.charge();
+      genPart_mass[counterGenPart] = p.mass();
+      genPart_pdgid[counterGenPart] = id;
+      genPart_status[counterGenPart] = st;
+      const Candidate * mom = p.mother();
+      genPart_momPdgId[counterGenPart] = mom->pdgId();
+      ++counterGenPart;
     }
   
     // find a hard boson, electron and muon
@@ -3479,6 +3548,7 @@ GsfCheckerTree::DataGenPart(const edm::Event& e)
   genMu_size=counterMu;
   genquarks_size = counterquark; 
   gengluons_size = countergluon; 
+  genPart_size = counterGenPart;
 
   // calc invariant mass ot ttbar pair
   //if (counterT > 1 || counterTbar > 1) std::cout << "Found a lot of tops " << counterT << " " << counterTbar << endl;
