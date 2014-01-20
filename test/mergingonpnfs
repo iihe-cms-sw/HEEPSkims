@@ -1,12 +1,26 @@
 #!/bin/bash
-# My script 
 
+USER=`whoami`
+PROD_DIR_ON_PNFS="treeNursery/"
 FILENAME=$1
 #this contains all the directory we want to run on 
 cat $FILENAME | while read LINE
 do
-	myprefix="/pnfs/iihe/cms/store/user/lathomas/$LINE/*.root"
-	hadd TOTAL.root `ls $myprefix | tr '\n' ' ' | sed  's/\/pnfs/dcap:\/\/maite.iihe.ac.be\/pnfs\//g'`
-	dccp $PWD"/TOTAL.root" "/pnfs/iihe/cms/store/user/lathomas/"$LINE"/TOTAL.root"
-	rm TOTAL.root
+        crabdir=`echo $LINE | rev | cut -d / -f 2- | rev`
+        sample=`echo $LINE | rev | cut -d / -f 1 | rev`
+
+        num_events_read=`tail $crabdir/$sample/log/crab.log | grep "Total Events read: " | cut -d' ' -f4`
+
+        myprefix="/pnfs/iihe/cms/store/user/$USER/$PROD_DIR_ON_PNFS$sample/gsfcheckertree_Test_*.root"
+
+        # check for duplicates
+        #duplcheck.sh $sample $crabdir/$sample/ /pnfs/iihe/cms/store/user/treis/treeNursery/$sample/
+
+        merged_file=$sample"_"$num_events_read"ev.root"
+
+        # merge locally
+	hadd $merged_file `ls $myprefix | tr '\n' ' ' | sed  's/\/pnfs/dcap:\/\/maite.iihe.ac.be\/pnfs\//g'`
+        # copy merge file back to maite and erase the local one
+	dccp $PWD/$merged_file /pnfs/iihe/cms/store/user/treis/treeNursery/$sample/$merged_file
+	rm $merged_file
 done
